@@ -1,9 +1,8 @@
-const passport = require("../utils/passport")
+const passport = require("../../utils/passport")
 const router = require("express").Router()
-const {LoginWithGoogle} = require("../controllers/user.controllers")
+const {LoginWithGoogle} = require("../../controllers/user.controllers")
 
-
-/// login with goodle routes
+/// login with google routes
 router.get('/google', 
  passport.authenticate('google', {scope: ['profile','email']})
 )
@@ -25,9 +24,6 @@ router.get('/redirect', (req,res,next) => {
 })
 
 
-// router.post('/register',register)
-// router.post('/login',login)
-// router.post('/logout',logout)
 
 
 
