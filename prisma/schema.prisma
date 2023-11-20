@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  password  String?
+  googleId String?
+  profile Profile?
+  transaction Transaction[]
+  enrollment Enrollment[]
+  mentor Mentor[]
+  rating Rating[]
+}
+
+model Course {
+  id    Int     @id @default(autoincrement())
+  title String  
+  price Decimal
+  level  CourseLevel
+  isPremium String
+  description String
+  category Category[]
+  video Video[]
+  transaction Transaction[]
+  enrollment Enrollment[]
+  mentor Mentor[]
+  rating Rating[]
+}
+
+model Profile {
+  id        Int     @id @default(autoincrement())
+  name     String
+  phoneNumber   String?
+  profilePicture   String @default("empty")
+  role Role @default(USER)
+  joinDate DateTime @default(now())
+  location String?
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int @unique
+}
+
+model Category {
+  id    Int     @id @default(autoincrement())
+  name String @unique
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId  Int?
+}
+
+model Video {
+  id    Int     @id @default(autoincrement())
+  title String
+  description String
+  isPremium Boolean 
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId  Int? 
+}
+
+
+model Transaction {
+  id    Int     @id @default(autoincrement())
+  expirationDate DateTime
+  payDone  Boolean
+  payDate DateTime?
+  paymentMethod String?
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId  Int? 
+}
+
+model Enrollment {
+  id    Int     @id @default(autoincrement())
+  date DateTime @default(now())
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId  Int? 
+}
+
+model Mentor {
+  id    Int     @id @default(autoincrement())
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId  Int? 
+}
+
+model Rating {
+  id    Int     @id @default(autoincrement())
+  rate Int
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId  Int? 
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+
+
