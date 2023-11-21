@@ -63,8 +63,8 @@ components:
           type: string
           example: BEGINNER
         isPremium:
-          type: string
-          format: date-time
+          type: boolean
+          example: true
         description:
           type: string
           example: "course ini akan mengejarkan kamu tentang API"
