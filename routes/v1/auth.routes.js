@@ -1,6 +1,9 @@
 const passport = require("../../utils/passport")
 const router = require("express").Router()
-const {LoginWithGoogle} = require("../../controllers/user.controllers")
+const {LoginWithGoogle,register} = require("../../controllers/user.controller")
+
+
+router.post('/register',register)
 
 /// login with google routes
 router.get('/google', 
