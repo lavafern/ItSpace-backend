@@ -16,10 +16,12 @@ model User {
   password  String?
   googleId String?
   profile Profile?
+  verivied Boolean @default(false)
   transaction Transaction[]
   enrollment Enrollment[]
   mentor Mentor[]
   rating Rating[]
+  progress Progress[]
 }
 
 model Course {
@@ -63,13 +65,14 @@ model Video {
   isPremium Boolean 
   course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
   courseId  Int? 
+  progress Progress[]
 }
 
 
 model Transaction {
   id    Int     @id @default(autoincrement())
   expirationDate DateTime
-  payDone  Boolean
+  payDone  Boolean @default(false)
   payDate DateTime?
   paymentMethod String?
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -103,6 +106,16 @@ model Rating {
   course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
   courseId  Int? 
 }
+
+model Progress {
+  id    Int     @id @default(autoincrement())
+  completed Boolean @default(false)
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  video    Video?    @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  videoId  Int? 
+}
+
 
 enum Role {
   USER
