@@ -197,12 +197,12 @@ components:
         description:
           type: string
           example: "course ini akan mengejarkan kamu tentang API"
-        mentor:
+        mentorEmail:
            type: array
            items:
             type: string
            example : ["rian@gmail.com","rafli@gmail.com"]
-        category:
+        courseCategory:
           type: array
           items:
             type: string
