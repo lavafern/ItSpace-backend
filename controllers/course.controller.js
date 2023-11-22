@@ -9,7 +9,14 @@ module.exports = {
             price = Number(price)
 
 
-
+            if (isNaN(price)) throw new Error("Kolom harga harus diisi angka",{cause : 400})
+            if (!title || !price || !level  || !description ) throw new Error("Tolong isi kolom yang wajib di isi", {cause : 400})
+            if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new Error("courseCategory dan mentorEmail harus array", {cause : 400})
+            if (!(isPremium === false || isPremium === true)) throw new Error("isPremium harus boolean", {cause : 400})
+            if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new Error("level tidak valid", {cause : 400})
+            if (description.length > 1024)  throw new Error("description tidak boleh lebih dari 1024 karakter", {cause : 400})
+            if (title.length > 60) throw new Error("title tidak boleh lebih dari 60 karakter", {cause : 400})
+              
             // category data
             const courseCategoryForPrisma = courseCategory.map((c) => {
                 return {name : c}
