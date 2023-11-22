@@ -11,11 +11,7 @@ servers:
 tags:
   - name: courses
     description: Everything about courses
-  - name: courses
-    description: Access to Petstore orders
-    externalDocs:
-      description: Find out more about our store
-      url: http://swagger.io
+  
 paths:
   /courses:
     post:
@@ -26,14 +22,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Courses'
+                $ref: '#/components/schemas/Courses'
+
       responses:
         '201':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/basicResponse' 
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/coursesModel'
+                    
+                    
+                    
+                    
         '400':
           description: Bad request
           content:
@@ -69,6 +75,7 @@ paths:
 components:
   schemas:
     basicResponse:
+      title: basicResponse
       type: object
       properties:
         success:
@@ -77,8 +84,6 @@ components:
         message:
           type: string
           example: "successfully do task"
-        data:
-          type: object
     ErrorResponse400:
       type: object
       properties:
@@ -144,6 +149,35 @@ components:
           type: integer
           nullable: true
           example : null
+    coursesModel:
+      title: course
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Backend dengan expressjs"
+        price:
+          type: integer
+          example: 900000
+        level:
+          type: string
+          example: "BEGINNER"
+        isPremium:
+          type: boolean
+          example: true
+        mentor:
+          type: array
+          items:
+            type: string
+          example : ["mentor1@gmail.com","mentor2@gmail.com"]
+        category:
+          type: array
+          items:
+            type: string
+          example : ["Backend","Database"]
 
     Courses:
       type: object
@@ -163,9 +197,13 @@ components:
         description:
           type: string
           example: "course ini akan mengejarkan kamu tentang API"
-        category:
-          type: array
-          example : ["Backend","Database"]
         mentor:
            type: array
+           items:
+            type: string
            example : ["rian@gmail.com","rafli@gmail.com"]
+        category:
+          type: array
+          items:
+            type: string
+          example : ["Backend","Database"]

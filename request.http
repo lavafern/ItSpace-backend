@@ -1,0 +1,49 @@
+
+//auth
+post http://localhost:8000/api/v1/auth/register
+Content-Type: application/json
+
+{
+    "email" : "tropicalreptile123233@gmail.com",
+    "password" : "123456",
+    "name" : "reptile"
+}
+
+
+
+/// course
+###
+post http://localhost:8000/api/v1/courses
+Content-Type: application/json
+
+{
+  "title" : "Backend dengan expressjs",
+  "price" : 90000,
+  "level" : "BEGINNER",
+  "isPremium" : true,
+  "description" : "course ini akan mengejarkan kamu tentang API",
+  "courseCategory" : [
+    "Backend",
+    "Database"
+  ],
+  "mentorEmail" : [
+    "tropicalreptile123@gmail.com",
+    "tropicalreptile123233@gmail.com"
+  ]
+}
+
+###
+get http://localhost:8000/api/v1/courses
+
+
+///category
+###
+post http://localhost:8000/api/v1/categories
+Content-Type: application/json
+
+{
+    "courseName" : "Database"
+}
+
+###
+get http://localhost:8000/api/v1/categories
