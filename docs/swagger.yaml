@@ -75,12 +75,28 @@ paths:
     get:
       tags:
         - courses
-      description: create new course
-      requestBody:
-        content:
-          application/json:
-            schema:
-                $ref: '#/components/schemas/Courses'
+      description: get all course
+      parameters:
+        - in: query
+          name: categories
+          schema:
+            type: string
+          description: filter course by categories
+        - in: query
+          name: level
+          schema:
+            type: integer
+          description: filter course by level
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: the page you want to access
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The numbers of items to return
       responses:
         '200':
           description: Successful operation
@@ -92,9 +108,14 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/coursesModel'
-                    
-      
+                        type: object
+                        properties:
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+                          courses:
+                            type: array
+                            items:  
+                             $ref: "#/components/schemas/courseGetAll"
       
 
 
@@ -183,6 +204,9 @@ components:
         id:
           type: integer
           example: 1
+        code: 
+          type: string
+          example: "BEX12"
         title:
           type: string
           example: "Backend dengan expressjs"
@@ -208,6 +232,9 @@ components:
     Courses:
       type: object
       properties:
+        code: 
+          type: string
+          example: "BEX12"
         title:
           type: string
           example: Backend dengan expressjs
@@ -227,7 +254,44 @@ components:
            type: array
            items:
             type: string
-           example : ["rian@gmail.com","rafli@gmail.com"]
+           example : ["john@gmail.com","doe@gmail.com"]
+        courseCategory:
+          type: array
+          items:
+            type: string
+          example : ["Backend","Database"]
+    courseGetAll:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Backend dengan expressjs
+        price:
+          type: integer
+          example: 200000
+        level:
+          type: string
+          example: BEGINNER
+        isPremium:
+          type: boolean
+          example: true
+        chapter:
+          type: integer
+          example: 5
+        rating:
+          type: integer
+          example: 4.5
+        progress:
+           type: integer
+           example: 0
+        duration:
+          type: integer
+          example: 90
+        mentor:
+           type: array
+           items:
+            type: string
+           example : ["john","doe"]
         courseCategory:
           type: array
           items:
@@ -242,10 +306,10 @@ components:
           properties:
             next:
               type: string
-              example: "https://domain.com/users?page=3&limit=10"
+              example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=3&limit=10"
             prev:
               type: string
-              example: "https://domain.com/users?page=1&limit=10"
+              example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=1&limit=10"
         total_items:
           type: integer
           example: 100
