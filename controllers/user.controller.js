@@ -12,10 +12,11 @@ module.exports = {
 
     register : async (req,res,next) => {
         try {
-            let {email,password,name} = req.body
+            let {email,password,passwordValidation,name} = req.body
 
-            if (!email || !password || !name ) throw new Error("Harap isi semua kolom", {cause : 400})
+            if (!email || !password || !name || !passwordValidation) throw new Error("Harap isi semua kolom", {cause : 400})
             if (password.length < 8 || password.length > 14 ) throw new Error("Masukan password 8 - 14 karakter", {cause : 400})
+            if (password !== passwordValidation )throw new Error("Password validation salah", {cause : 400})
             if (name.length > 35)  throw new Error("Masukan nama tidak lebih dari 35 karakter", {cause : 400})
             
             //checks if email already used
