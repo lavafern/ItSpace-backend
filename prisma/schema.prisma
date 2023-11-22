@@ -32,11 +32,11 @@ model Course {
   isPremium Boolean
   description String
   courseCategory CourseCategory[]
-  video Video[]
   transaction Transaction[]
   enrollment Enrollment[]
   mentor Mentor[]
   rating Rating[]
+  chapter Chapter[]
 }
 
 model Profile {
@@ -66,14 +66,25 @@ model Category {
   courseCategory CourseCategory[]
 }
 
+model Chapter {
+  id    Int     @id @default(autoincrement())
+  title String
+  number Int 
+  isPremium Boolean
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  Int 
+  video Video[]
+}
+
+ 
 
 model Video {
   id    Int     @id @default(autoincrement())
   title String
   description String
-  isPremium Boolean 
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  courseId  Int? 
+  duration Int 
+  chapter    Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapterId  Int 
   progress Progress[]
 }
 
@@ -95,16 +106,16 @@ model Enrollment {
   date DateTime @default(now())
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  courseId  Int? 
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  Int 
 }
 
 model Mentor {
   id    Int     @id @default(autoincrement())
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  courseId  Int? 
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  Int 
 }
 
 model Rating {
@@ -112,8 +123,8 @@ model Rating {
   rate Int
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  courseId  Int? 
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  Int 
 }
 
 model Progress {
@@ -121,8 +132,8 @@ model Progress {
   completed Boolean @default(false)
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int
-  video    Video?    @relation(fields: [videoId], references: [id], onDelete: SetNull)
-  videoId  Int? 
+  video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId  Int 
 }
 
 
