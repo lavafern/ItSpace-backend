@@ -29,9 +29,9 @@ model Course {
   title String  
   price Decimal
   level  CourseLevel
-  isPremium String
+  isPremium Boolean
   description String
-  category Category[]
+  courseCategory CourseCategory[]
   video Video[]
   transaction Transaction[]
   enrollment Enrollment[]
@@ -51,12 +51,21 @@ model Profile {
   authorId  Int @unique
 }
 
+model CourseCategory {
+  id    Int     @id @default(autoincrement())
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  courseId  Int?
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId  Int
+}
+
+
 model Category {
   id    Int     @id @default(autoincrement())
   name String @unique
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  courseId  Int?
+  courseCategory CourseCategory[]
 }
+
 
 model Video {
   id    Int     @id @default(autoincrement())
