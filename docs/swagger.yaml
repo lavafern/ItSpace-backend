@@ -1,0 +1,342 @@
+openapi: 3.0.3
+info:
+  title: ITspace - OpenAPI 3.0
+  description: |-
+     itSpace API documentation, binar final project K13
+  contact:
+    email: rian.rafli@gmail.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api/v1
+tags:
+  - name: courses
+    description: Everything about courses
+  - name : auth
+    description: login,logout,register
+  
+paths:
+  /courses:
+    post:
+      tags:
+        - courses
+      description: create new course
+      requestBody:
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/Courses'
+
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/coursesModel'
+                    
+                    
+                    
+                    
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'          
+    get:
+      tags:
+        - courses
+      description: get all course
+      parameters:
+        - in: query
+          name: categories
+          schema:
+            type: string
+          description: filter course by categories
+        - in: query
+          name: level
+          schema:
+            type: integer
+          description: filter course by level
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: the page you want to access
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The numbers of items to return
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+                          courses:
+                            type: array
+                            items:  
+                             $ref: "#/components/schemas/courseGetAll"
+      
+
+
+
+components:
+  schemas:
+    basicResponse:
+      title: basicResponse
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "successfully do task"
+    ErrorResponse400:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "failed to do task"
+        data:
+          type: integer
+          nullable: true
+          example : null
+    ErrorResponse401:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Unauthorized"
+        data:
+          type: integer
+          nullable: true
+          example : null
+    ErrorResponse403:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Forbidden"
+        data:
+          type: integer
+          nullable: true
+          example : null
+    ErrorResponse404:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "not found"
+        data:
+          type: integer
+          nullable: true
+          example : null
+    ErrorResponse500:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "failed to do task"
+        data:
+          type: integer
+          nullable: true
+          example : null
+    coursesModel:
+      title: course
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code: 
+          type: string
+          example: "BEX12"
+        title:
+          type: string
+          example: "Backend dengan expressjs"
+        price:
+          type: string
+          example: 900000
+        level:
+          type: string
+          example: "BEGINNER"
+        isPremium:
+          type: boolean
+          example: true
+        mentor:
+          type: array
+          items:
+            type: string
+          example : ["mentor1@gmail.com","mentor2@gmail.com"]
+        category:
+          type: array
+          items:
+            type: string
+          example : ["Backend","Database"]
+    Courses:
+      type: object
+      properties:
+        code: 
+          type: string
+          example: "BEX12"
+        title:
+          type: string
+          example: Backend dengan expressjs
+        price:
+          type: integer
+          example: 200000
+        level:
+          type: string
+          example: BEGINNER
+        isPremium:
+          type: boolean
+          example: true
+        description:
+          type: string
+          example: "course ini akan mengejarkan kamu tentang API"
+        mentorEmail:
+           type: array
+           items:
+            type: string
+           example : ["john@gmail.com","doe@gmail.com"]
+        courseCategory:
+          type: array
+          items:
+            type: string
+          example : ["Backend","Database"]
+    courseGetAll:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Backend dengan expressjs
+        price:
+          type: integer
+          example: 200000
+        level:
+          type: string
+          example: BEGINNER
+        isPremium:
+          type: boolean
+          example: true
+        chapter:
+          type: integer
+          example: 5
+        rating:
+          type: integer
+          example: 4.5
+        progress:
+           type: integer
+           example: 0
+        duration:
+          type: integer
+          example: 90
+        mentor:
+           type: array
+           items:
+            type: string
+           example : ["john","doe"]
+        courseCategory:
+          type: array
+          items:
+            type: string
+          example : ["Backend","Database"]
+    Pagination:
+      title: Pagination
+      type: object
+      properties:
+        links:
+          type: object
+          properties:
+            next:
+              type: string
+              example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=3&limit=10"
+            prev:
+              type: string
+              example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=1&limit=10"
+        total_items:
+          type: integer
+          example: 100
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
