@@ -15,7 +15,9 @@ module.exports = {
             let {email,password,name} = req.body
 
             if (!email || !password || !name ) throw new Error("Harap isi semua kolom", {cause : 400})
-
+            if (password.length < 8 || password.length > 14 ) throw new Error("Masukan password 8 - 14 karakter", {cause : 400})
+            if (name.length > 35)  throw new Error("Masukan nama tidak lebih dari 35 karakter", {cause : 400})
+            
             //checks if email already used
             const checkEmail = await prisma.user.findUnique({
                 where : {
