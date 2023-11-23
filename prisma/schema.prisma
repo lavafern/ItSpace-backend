@@ -16,7 +16,7 @@ model User {
   password  String?
   googleId String?
   profile Profile?
-  verivied Boolean @default(false)
+  verified Boolean @default(false)
   transaction Transaction[]
   enrollment Enrollment[]
   mentor Mentor[]
