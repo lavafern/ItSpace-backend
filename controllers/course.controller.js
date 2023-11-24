@@ -160,6 +160,7 @@ module.exports = {
                     courseId: courseId
                 }
             })
+git
             // update course
             const updatedCourse = await prisma.course.update({
                 where: {
@@ -193,27 +194,25 @@ module.exports = {
             next(err);
         }
     },
+    // delete course
     deleteCourse: async (req, res, next) => {
-    try {
-        // TODO: Implement admin authorization 
-        const courseId = req.params.id;
+        try {
+            let { id } = req.params;
 
-        // Hapus course
-        const deletedCourse = await prisma.course.delete({
-            where: {
-                id: courseId,
-            },
-        });
+            let deleteCourse = await prisma.course.delete({
+                where: { id: Number(id) }
+            });
 
-        res.json({
-            success: true,
-            message: "Successfully deleted course",
-            data: deletedCourse,
-        });
-    } catch (err) {
-        next(err);
-    }
-},
+            res.status(200).json({
+                status: true,
+                message: 'Deleted Courses Successfully!',
+                data: deleteCourse
+            });
+
+        } catch (err) {
+            next(err);
+        }
+    },
 
 };
 
