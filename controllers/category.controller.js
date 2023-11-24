@@ -6,9 +6,11 @@ module.exports = {
     createCategory : async (req,res,next) => {
         try {
             // TODO: Implement admin authorization 
-            const {name} = req.body
+            let {name} = req.body
+            name = name.toLowerCase()
 
             if (!name) throw new Error("tolong isi semua kolom", {cause : 400})
+            name = name.toLowerCase()
             const checkCategory = await prisma.category.findUnique({
                 where : {
                     name : name
@@ -56,6 +58,7 @@ module.exports = {
             if (!name) throw new Error("tolong isi semua kolom",{cause : 400})
             if (!id) throw new Error("id tidak boleh kosong",{cause : 400})
             if (isNaN(id)) throw new Error("id harus angka",{cause : 400})
+            name = name.toLowerCase()
 
             // check if category exist
             const checkId = await prisma.category.findUnique({
