@@ -16,7 +16,7 @@ tags:
   - name : users
     description: Everything about users
   - name : categories
-    description: login,logout,register
+    description: Everything about categories
   - name : transactions
     description: login,logout,register
   - name : enrollment
@@ -36,7 +36,7 @@ paths:
         content:
           application/json:
             schema:
-                $ref: '#/components/schemas/Courses'
+                $ref: '#/components/schemas/updateCoursesReq'
 
       responses:
         '201':
@@ -100,6 +100,11 @@ paths:
           schema:
             type: integer
           description: filter course by level
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: filter course by type, premium or not
         - in: query
           name: page
           schema:
@@ -216,7 +221,7 @@ paths:
     put:
       tags:
         - courses
-      description: create new course
+      description: update new course
       parameters:
         - in: path
           name: courseId
@@ -228,7 +233,7 @@ paths:
         content:
           application/json:
             schema:
-                $ref: '#/components/schemas/Courses'
+                $ref: '#/components/schemas/updateCoursesReq'
 
       responses:
         '201':
@@ -295,8 +300,8 @@ paths:
                   - type: object
                     properties:
                       data:
-                        type: object
-                        example: null       
+                         $ref: '#/components/schemas/deleteCoursesResponse'
+                           
         '400':
           description: Bad request
           content:
@@ -379,7 +384,272 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /auth/login:
+    post:
+      tags:
+        - auth
+      description: create new course
+      requestBody:
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/LoginReqBody'
+
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ErrorResponse500'    
+  /categories:
+    post:
+      tags:
+        - categories
+      description: create new course
+      requestBody:
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/createCategoriesReqBody'  
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/createCategoriesResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+    get:
+      tags:
+        - categories
+      description: get all categories
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                            $ref: "#/components/schemas/createCategoriesResponse"
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /categories/{categoryId}:             
+    put:
+      tags:
+        - categories
+      description: update category
+      parameters:
+      - in: path
+        name: categoryId
+        schema:
+          type: integer
+        required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/createCategoriesReqBody'  
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/createCategoriesResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+    delete:
+      tags:
+        - categories
+      description: delete category
+      parameters:
+      - in: path
+        name: categoryId
+        schema:
+          type: integer
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/createCategoriesResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+
 
 #---------------------------------------components--------------------------------------
 
@@ -482,6 +752,12 @@ components:
         isPremium:
           type: boolean
           example: true
+        description:
+          type: string
+          example: "course ini akan mengejarkan kamu tentang API"
+        groupUrl:
+          type: string
+          example: "www.url.com"
         mentor:
           type: array
           items:
@@ -492,6 +768,34 @@ components:
           items:
             type: string
           example : ["Backend","Database"]
+    deleteCoursesResponse:
+      title: course
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code: 
+          type: string
+          example: "BEX12"
+        title:
+          type: string
+          example: "Backend dengan expressjs"
+        price:
+          type: string
+          example: 900000
+        level:
+          type: string
+          example: "BEGINNER"
+        isPremium:
+          type: boolean
+          example: true
+        description:
+          type: string
+          example: "course ini akan mengejarkan kamu tentang API"
+        groupUrl:
+          type: string
+          example: "www.url.com"
     getCoursesResponse:
       title: course
       type: object
@@ -537,6 +841,9 @@ components:
     Courses:
       type: object
       properties:
+        id:
+          type: integer
+          example: 1
         code: 
           type: string
           example: "BEX12"
@@ -544,7 +851,7 @@ components:
           type: string
           example: Backend dengan expressjs
         price:
-          type: integer
+          type: string
           example: 200000
         level:
           type: string
@@ -555,6 +862,43 @@ components:
         description:
           type: string
           example: "course ini akan mengejarkan kamu tentang API"
+        groupUrl:
+          type: string
+          example: "www.url.com"
+        mentor:
+           type: array
+           items:
+            type: string
+           example : ["john@gmail.com","doe@gmail.com"]
+        category:
+          type: array
+          items:
+            type: string
+          example : ["Backend","Database"]
+    updateCoursesReq:
+      type: object
+      properties:
+        code: 
+          type: string
+          example: "BEX12"
+        title:
+          type: string
+          example: Backend dengan expressjs
+        price:
+          type: string
+          example: 200000
+        level:
+          type: string
+          example: BEGINNER
+        isPremium:
+          type: boolean
+          example: true
+        description:
+          type: string
+          example: "course ini akan mengejarkan kamu tentang API"
+        groupUrl:
+          type: string
+          example: "www.url.com"
         mentorEmail:
            type: array
            items:
@@ -565,6 +909,7 @@ components:
           items:
             type: string
           example : ["Backend","Database"]
+          
     courseGetAll:
       type: object
       properties:
@@ -641,12 +986,34 @@ components:
         verified:
           type: string
           example: false
-    
-    
-    
-    
-    
-    
+    LoginReqBody:
+      title: Register
+      type: object
+      properties:
+        email:
+         type: string
+         example: example@gmail.com
+        password:
+          type: string
+          example: password123
+    createCategoriesReqBody:
+      title: createCategoriesReqBody
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Frontend"
+    createCategoriesResponse:
+     title: createCategoriesResponse
+     type: object
+     properties:
+       id:
+         type: integer
+         example: 1
+       name:
+        type: string
+        example: "Frontend"
+       
     
     
     
