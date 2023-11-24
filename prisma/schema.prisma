@@ -32,6 +32,7 @@ model Course {
   level  CourseLevel
   isPremium Boolean
   description String
+  groupUrl String?
   courseCategory CourseCategory[]
   transaction Transaction[]
   enrollment Enrollment[]
@@ -84,6 +85,7 @@ model Video {
   title String
   description String
   duration Int 
+  url String
   chapter    Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   chapterId  Int 
   progress Progress[]

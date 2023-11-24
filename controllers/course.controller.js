@@ -4,10 +4,10 @@ module.exports = {
     createCourse : async (req,res,next) => {
         try {
             let {
-                title,price,level,isPremium,description,courseCategory,mentorEmail,code
+                title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl
             } = req.body
             price = Number(price)
-            console.log(typeof isPremium);
+            groupUrl = groupUrl ?? null
 
             if (isNaN(price)) throw new Error("Kolom harga harus diisi angka",{cause : 400})
             if (!title || !price || !level  || !description || !code) throw new Error("Tolong isi kolom yang wajib di isi", {cause : 400})
@@ -16,6 +16,7 @@ module.exports = {
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new Error("level tidak valid", {cause : 400})
             if (description.length > 1024)  throw new Error("description tidak boleh lebih dari 1024 karakter", {cause : 400})
             if (title.length > 60) throw new Error("title tidak boleh lebih dari 60 karakter", {cause : 400})
+
 
             //check if code is exist 
             checkCode = await prisma.course.findUnique({
@@ -75,6 +76,7 @@ module.exports = {
                     level,
                     isPremium,
                     description,
+                    groupUrl,
                     courseCategory : {
                         create : categoryId
                     },
@@ -105,12 +107,14 @@ module.exports = {
             // TODO: Implement admin authorization 
             let courseId = req.params.id;
             let {
-                title, price, level, isPremium, description, courseCategory, mentorEmail
+                title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
             } = req.body;
 
             price = Number(price);
             courseId = Number(courseId);
+            groupUrl = groupUrl ?? null
 
+            if (isNaN(courseId)) throw new Error("id harus angka",{cause : 400})
             if (isNaN(price)) throw new Error("Kolom harga harus diisi angka", { cause: 400 });
             if (!title || !price || !level || !description) throw new Error("Tolong isi kolom yang wajib di isi", { cause: 400 });
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail))) throw new Error("courseCategory dan mentorEmail harus array", { cause: 400 });
@@ -118,6 +122,14 @@ module.exports = {
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new Error("level tidak valid", { cause: 400 });
             if (description.length > 1024) throw new Error("description tidak boleh lebih dari 1024 karakter", { cause: 400 });
             if (title.length > 60) throw new Error("title tidak boleh lebih dari 60 karakter", { cause: 400 });
+
+            //check course is exist
+            const checkCourse = await prisma.course.findUnique({
+                where : {
+                    id : courseId
+                }
+            })
+            if (!checkCourse)throw new Error("CourseId tidak valid", { cause: 400 })
 
             // category data
             const courseCategoryForPrisma = courseCategory.map((c) => {
@@ -160,7 +172,13 @@ module.exports = {
                     courseId: courseId
                 }
             })
-git
+             //delete mentor
+             const deleteMentor = await prisma.mentor.deleteMany({
+                where: {
+                   courseId: courseId
+               }
+            })
+
             // update course
             const updatedCourse = await prisma.course.update({
                 where: {
@@ -172,6 +190,7 @@ git
                     level,
                     isPremium,
                     description,
+                    groupUrl,
                     courseCategory : {
                         create : categoryId
                     },
@@ -185,7 +204,7 @@ git
             updatedCourse.mentor = mentorValidEmail;
             updatedCourse.category = validCategory;
 
-            res.json({
+            res.status(201).json({
                 success: true,
                 message: "Successfully update course",
                 data: updatedCourse,
@@ -194,18 +213,33 @@ git
             next(err);
         }
     },
-    // delete course
+    
     deleteCourse: async (req, res, next) => {
         try {
-            let { id } = req.params;
+            let { id } = req.params
+            id = Number(id)
+
+            if (!id) throw new Error("id tidak boleh kosong",{cause : 400})
+            if (isNaN(id)) throw new Error("id harus angka",{cause : 400})
+
+            //check course is exist
+            const checkCourse = await prisma.course.findUnique({
+                where : {
+                    id 
+                }
+            })
+            if (!checkCourse)throw new Error("CourseId tidak valid", { cause: 400 })
+
 
             let deleteCourse = await prisma.course.delete({
-                where: { id: Number(id) }
+                where: { 
+                    id
+                 }
             });
 
             res.status(200).json({
                 status: true,
-                message: 'Deleted Courses Successfully!',
+                message: 'Successfully delete course',
                 data: deleteCourse
             });
 
