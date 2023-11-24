@@ -1,4 +1,4 @@
-const passport = require("../utils/passport")
+//const passport = require("../utils/passport")
 const bcrypt = require("bcrypt")
 const { prisma } = require("../utils/prismaClient")
 module.exports = {

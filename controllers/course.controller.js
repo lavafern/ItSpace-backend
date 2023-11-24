@@ -7,7 +7,7 @@ module.exports = {
                 title,price,level,isPremium,description,courseCategory,mentorEmail,code
             } = req.body
             price = Number(price)
-
+            console.log(typeof isPremium);
 
             if (isNaN(price)) throw new Error("Kolom harga harus diisi angka",{cause : 400})
             if (!title || !price || !level  || !description || !code) throw new Error("Tolong isi kolom yang wajib di isi", {cause : 400})
@@ -103,12 +103,13 @@ module.exports = {
     updateCourse: async (req, res, next) => {
         try {
             // TODO: Implement admin authorization 
-            const courseId = req.params.id;
+            let courseId = req.params.id;
             let {
                 title, price, level, isPremium, description, courseCategory, mentorEmail
             } = req.body;
 
             price = Number(price);
+            courseId = Number(courseId);
 
             if (isNaN(price)) throw new Error("Kolom harga harus diisi angka", { cause: 400 });
             if (!title || !price || !level || !description) throw new Error("Tolong isi kolom yang wajib di isi", { cause: 400 });
@@ -153,7 +154,12 @@ module.exports = {
             mentorId = mentorId.map((i) => {
                 return { authorId: i.id };
             });
-
+            //delete category
+            const deleteCategory = await prisma.courseCategory.deleteMany({
+                 where: {
+                    courseId: courseId
+                }
+            })
             // update course
             const updatedCourse = await prisma.course.update({
                 where: {
@@ -165,12 +171,13 @@ module.exports = {
                     level,
                     isPremium,
                     description,
-                    courseCategory: {
-                        set: categoryId,
+                    courseCategory : {
+                        create : categoryId
                     },
-                    mentor: {
-                        set: mentorId,
-                    },
+                    mentor : {
+                        create : mentorId
+                    }
+
                 },
             });
 
@@ -186,5 +193,27 @@ module.exports = {
             next(err);
         }
     },
+    deleteCourse: async (req, res, next) => {
+    try {
+        // TODO: Implement admin authorization 
+        const courseId = req.params.id;
+
+        // Hapus course
+        const deletedCourse = await prisma.course.delete({
+            where: {
+                id: courseId,
+            },
+        });
+
+        res.json({
+            success: true,
+            message: "Successfully deleted course",
+            data: deletedCourse,
+        });
+    } catch (err) {
+        next(err);
+    }
+},
+
 };
 
