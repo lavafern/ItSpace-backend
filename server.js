@@ -16,6 +16,17 @@ app.use(cors())
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
+app.use('/',(req,res,next) => {
+    try {
+        res.json({
+            success : true,
+            message : "hello",
+            data : "welcome to itSpace"
+        })
+    } catch (err) {
+        
+    }
+})
 app.use('/api/v1',docsRoute)
 app.use('/api/v1/auth',authRoute)
 app.use('/api/v1',coursesRoute)
