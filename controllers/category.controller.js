@@ -9,7 +9,7 @@ module.exports = {
             let {name} = req.body
             name = name.toLowerCase()
 
-            if (!name) throw new Error("tolong isi semua kolom", {cause : 400})
+            if (!name) throw new Error("tolong isi semua kolom", {cause : 404})
             name = name.toLowerCase()
             const checkCategory = await prisma.category.findUnique({
                 where : {

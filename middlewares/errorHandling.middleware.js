@@ -2,39 +2,11 @@ module.exports = {
     otherError : (err,req,res,next) => {
         
         console.log(err)
+        const errorCode = err.cause || 500
 
-        if (err.cause === 400) {
-            return res
-            .status(400)
-            .json({
-                success : false,
-                message : err.message,
-                data : null
-            })
-        }
-
-        if (err.cause === 401) {
-            return res
-            .status(401)
-            .json({
-                success : false,
-                message : "unauthorized",
-                data : null
-            })
-        }
-
-        if (err.cause === 403) {
-            return res
-            .status(403)
-            .json({
-                success : false,
-                message : "forbidden",
-                data : null
-            })
-        }
 
         return res
-        .status(500)
+        .status(errorCode)
         .json({
             success : false,
             message :  err.message,
