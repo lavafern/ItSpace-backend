@@ -40,7 +40,7 @@ module.exports = {
             const categories = await prisma.category.findMany()
             res.status(200).json({
                 succes : true,
-                message : "succesfully create new category",
+                message : "succesfully get all category",
                 data : categories
             })
         } catch (err) {
