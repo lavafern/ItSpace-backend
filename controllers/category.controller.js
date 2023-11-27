@@ -5,7 +5,7 @@ module.exports = {
 
     createCategory : async (req,res,next) => {
         try {
-            // TODO: Implement admin authorization 
+            const role = req.user.profile.role
             let {name} = req.body
             name = name.toLowerCase()
 

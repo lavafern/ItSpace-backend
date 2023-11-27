@@ -18,6 +18,7 @@ model User {
   password  String?
   googleId String?
   profile Profile?
+  otp Otp?
   verified Boolean @default(false)
   transaction Transaction[]
   enrollment Enrollment[]
@@ -54,6 +55,15 @@ model Profile {
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int @unique
 }
+
+model Otp {
+  id        Int     @id @default(autoincrement())
+  otp     String
+  expiration DateTime
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int @unique
+}
+
 
 model CourseCategory {
   id    Int     @id @default(autoincrement())

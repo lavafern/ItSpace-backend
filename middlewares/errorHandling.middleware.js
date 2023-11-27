@@ -1,6 +1,6 @@
 module.exports = {
     otherError : (err,req,res,next) => {
-        
+        console.log('att error middleware');
         console.log(err)
         const errorCode = err.cause || 500
 
