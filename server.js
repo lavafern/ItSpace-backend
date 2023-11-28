@@ -1,6 +1,6 @@
 require('dotenv').config()
 const {app,express} = require('./app')
-const {PORT} = process.env
+const {PORT,FRONTEND_URL} = process.env
 const cors = require("cors")
 const {otherError,notFoundError} = require('./middlewares/errorHandling.middleware')
 const docsRoute = require('./routes/v1/docs.routes')
@@ -8,11 +8,16 @@ const authRoute = require('./routes/v1/auth.routes')
 const coursesRoute = require('./routes/v1/course.routes')
 const categoriesRoute = require('./routes/v1/category.routes')
 const bodyParser = require('body-parser')
+const cookies = require("cookie-parser");
 
 
 
 
-app.use(cors())
+app.use(cookies());
+app.use(cors({
+    origin : FRONTEND_URL,
+    credentials: true
+  }))
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
