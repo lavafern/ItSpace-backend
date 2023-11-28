@@ -1,7 +1,7 @@
-//const passport = require("../../utils/passport")
+const passport = require("../../utils/passport")
 const router = require("express").Router()
 const {restrict} = require("../../middlewares/auth.middleware")
-const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, resetPassword} = require("../../controllers/user.controller")
+const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, resetPassword} = require("../../controllers/auth.controller")
 
 
 router.post('/register',register)
@@ -12,16 +12,18 @@ router.post('/resend-otp/:email',resendOtp)
 router.put('/verify-otp/:email',verifyOtp)
 router.get('/reset-password/:email',resetPassword)
 
+
+
 /// login with google routes
-//router.get('/google', 
-// passport.authenticate('google', {scope: ['profile','email']})
-//)
-
-//router.get('/google/callback', 
-//    passport.authenticate('google', {failureRedirect : '/auth/redirect', session : false}),
-//    LoginWithGoogle
-//)
-
+router.get('/google', 
+passport.authenticate('google', {scope: ['profile','email']})
+)
+ 
+router.get('/google/callback', 
+   passport.authenticate('google', {failureRedirect : '/auth/redirect', session : false}),
+   LoginWithGoogle
+)
+ 
 ///failure redirect route
 router.get('/redirect', (req,res,next) => {
     try {

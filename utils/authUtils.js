@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken")
+const {UnauthorizedError, InternalServerError} = require("../errors/customErrors")
 module.exports = {
     generateOtp : () => {
         try {
@@ -19,13 +20,13 @@ module.exports = {
     decodeToken : (token,secret) => {
         return new Promise((resolve,reject) => {
             jwt.verify(token,secret,(err,decode) => {
-                if (err) reject(new Error("Unauthorized"), {cause : 401})
+                if (err) reject(new UnauthorizedError("Unauthorized"))
                 resolve(decode)
             })
         })
     },
     signToken : (type,payload,secret) => {
-        if (type !== 'access' && type !== 'refresh') throw new Error("wrong type")
+        if (type !== 'access' && type !== 'refresh') throw new InternalServerError("wrong token type")
         const expiresIn = type === 'access' ? '5s' : '30d'
         return new Promise((resolve,reject) => {
             jwt.sign(payload, secret,  {expiresIn : expiresIn}, function(err, token) {
