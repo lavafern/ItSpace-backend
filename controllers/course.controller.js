@@ -246,7 +246,7 @@ module.exports = {
 
             res.status(200).json({
                 status: true,
-                message: 'Successfully delete course',
+                message: 'Successfully delete course', 
                 data: deleteCourse
             });
 
