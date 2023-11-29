@@ -102,6 +102,48 @@ module.exports = {
         }
     },
 
+    getAllCourse: async (req, res, next) => {
+        try {
+          const courses = await prisma.course.findMany();
+          res.status(200).json({
+            success: true,
+            message: "Successfully get all courses",
+            data: courses,
+          });
+        } catch (err) {
+          next(err);
+        }
+      },
+
+    getCourseDetail: async (req, res, next) => {
+        try {
+          const { id } = req.params;
+          const courseId = Number(id);
+    
+          if (!courseId || isNaN(courseId)) {
+            throw new Error("Course ID must be a valid number", { cause: 400 });
+          }
+    
+          const courseDetail = await prisma.course.findUnique({
+            where: {
+              id: courseId,
+            },
+          });
+    
+          if (!courseDetail) {
+            throw new Error("Course not found", { cause: 404 });
+          }
+    
+          res.status(200).json({
+            success: true,
+            message: "Successfully get course detail",
+            data: courseDetail,
+          });
+        } catch (err) {
+          next(err);
+        }
+      },
+
     updateCourse: async (req, res, next) => {
         try {
             // TODO: Implement admin authorization 
