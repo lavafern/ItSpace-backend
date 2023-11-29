@@ -1,15 +1,16 @@
 const {prisma} = require("../utils/prismaClient")
+const {ForbiddenError,BadRequestError, NotFoundError} = require("../errors/customErrors")
 
 
 module.exports = {
 
     createCategory : async (req,res,next) => {
         try {
-            // TODO: Implement admin authorization 
+            const role = req.user.profile.role
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
             let {name} = req.body
-            name = name.toLowerCase()
 
-            if (!name) throw new Error("tolong isi semua kolom", {cause : 404})
+            if (!name) throw new BadRequestError("Harap isi semua kolom")
             name = name.toLowerCase()
             const checkCategory = await prisma.category.findUnique({
                 where : {
@@ -17,7 +18,7 @@ module.exports = {
                 }
             })
 
-            if (checkCategory) throw new Error("Kategori sudah ada", {cause : 400})
+            if (checkCategory) throw new BadRequestError("Kategori sudah ada")
 
             const newCategory = await prisma.category.create({
                 data : {
@@ -50,14 +51,17 @@ module.exports = {
 
     updateCategory : async (req,res,next) => {
         try {
+            const role = req.user.profile.role
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+
             let {id} = req.params
             let {name} = req.body
 
             id = Number(id)
 
-            if (!name) throw new Error("tolong isi semua kolom",{cause : 400})
-            if (!id) throw new Error("id tidak boleh kosong",{cause : 400})
-            if (isNaN(id)) throw new Error("id harus angka",{cause : 400})
+            if (!name) throw new BadRequestError("Harap isi semua kolom")
+            if (!id) throw new BadRequestError("Harap isi Id")
+            if (isNaN(id)) throw new BadRequestError("Id harus angka")
             name = name.toLowerCase()
 
             // check if category exist
@@ -66,7 +70,7 @@ module.exports = {
                     id
                 }
             })
-            if (!checkId) throw new Error("id tidak valid",{cause : 400})
+            if (!checkId) throw new NotFoundError("Id tidak ditemukan")
 
             // check if name unique
             const checkName = await prisma.category.findUnique({
@@ -74,7 +78,7 @@ module.exports = {
                     name
                 }
             })
-            if (checkName) throw new Error("gunakan nama lain",{cause : 400})
+            if (checkName) throw new BadRequestError("Gunakan nama lain")
 
             const updatedCategory = await prisma.category.update({
                 where : {
@@ -99,11 +103,14 @@ module.exports = {
 
     deleteCategory : async (req,res,next) => {
         try {
+            const role = req.user.profile.role
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+
             let {id} = req.params
             id = Number(id)
 
-            if (!id) throw new Error("id tidak boleh kosong",{cause : 400})
-            if (isNaN(id)) throw new Error("id harus angka",{cause : 400})
+            if (!id) throw new BadRequestError("Harap isi Id")
+            if (isNaN(id)) throw new BadRequestError("Id harus angka")
 
             //check category is exist
             const checkCategory = await prisma.category.findUnique({
@@ -111,7 +118,8 @@ module.exports = {
                     id 
                 }
             })
-            if (!checkCategory)throw new Error("Id tidak valid", { cause: 400 })
+
+            if (!checkCategory) throw new NotFoundError("Id tidak ditemukan")
 
 
             let deleteCategory = await prisma.category.delete({

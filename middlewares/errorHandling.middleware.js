@@ -1,27 +1,32 @@
+const {NotFoundError} = require("../errors/customErrors")
+
 module.exports = {
     otherError : (err,req,res,next) => {
-        
-        console.log(err)
-        const errorCode = err.cause || 500
 
-
-        return res
-        .status(errorCode)
-        .json({
-            success : false,
-            message :  err.message,
-            data : null
-        })
-      
+           console.log(err);
+            
+           return res
+            .status(err.statusCode)
+            .json({
+                success : false,
+                message : err.message,
+                data : null
+            })
     },
 
     notFoundError : (req,res,next) => {
-        return res
-        .status(404)
-        .json({
-            success : false,
-            message : "not found",
-            data : null
-        })
+        try {
+            throw new NotFoundError("Not found")
+        } catch (err) {
+            console.log(err);
+            return res
+            .status(err.statusCode)
+            .json({
+                success : false,
+                message : err.message,
+                data : null
+            })
+        }
+        
     }
 }
