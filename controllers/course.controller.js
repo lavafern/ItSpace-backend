@@ -1,21 +1,24 @@
 const {prisma} = require("../utils/prismaClient")
+const {ForbiddenError,BadRequestError, NotFoundError} = require("../errors/customErrors")
 
 module.exports = {
     createCourse : async (req,res,next) => {
         try {
+            const role = req.user.profile.role
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+
             let {
                 title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl
             } = req.body
             price = Number(price)
-            groupUrl = groupUrl ?? null
 
-            if (isNaN(price)) throw new Error("Kolom harga harus diisi angka",{cause : 400})
-            if (!title || !price || !level  || !description || !code) throw new Error("Tolong isi kolom yang wajib di isi", {cause : 400})
-            if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new Error("courseCategory dan mentorEmail harus array", {cause : 400})
-            if (!(isPremium === false || isPremium === true)) throw new Error("isPremium harus boolean", {cause : 400})
-            if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new Error("level tidak valid", {cause : 400})
-            if (description.length > 1024)  throw new Error("description tidak boleh lebih dari 1024 karakter", {cause : 400})
-            if (title.length > 60) throw new Error("title tidak boleh lebih dari 60 karakter", {cause : 400})
+            if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
+            if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
+            if (!(isPremium === false || isPremium === true)) throw new BadRequestError("isPremium harus boolean")
+            if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
+            if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
+            if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
 
 
             //check if code is exist 
@@ -24,7 +27,7 @@ module.exports = {
                     code
                 }
             })
-            if (checkCode) throw new Error("Gunakan kode lain", {cause : 400})
+            if (checkCode) throw new BadRequestError("Gunakan kode lain")
 
             
             // category data
@@ -146,24 +149,25 @@ module.exports = {
 
     updateCourse: async (req, res, next) => {
         try {
-            // TODO: Implement admin authorization 
+            const role = req.user.profile.role
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+
             let courseId = req.params.id;
             let {
-                title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
+                code, title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
             } = req.body;
 
             price = Number(price);
             courseId = Number(courseId);
-            groupUrl = groupUrl ?? null
 
-            if (isNaN(courseId)) throw new Error("id harus angka",{cause : 400})
-            if (isNaN(price)) throw new Error("Kolom harga harus diisi angka", { cause: 400 });
-            if (!title || !price || !level || !description) throw new Error("Tolong isi kolom yang wajib di isi", { cause: 400 });
-            if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail))) throw new Error("courseCategory dan mentorEmail harus array", { cause: 400 });
-            if (!(isPremium === false || isPremium === true)) throw new Error("isPremium harus boolean", { cause: 400 });
-            if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new Error("level tidak valid", { cause: 400 });
-            if (description.length > 1024) throw new Error("description tidak boleh lebih dari 1024 karakter", { cause: 400 });
-            if (title.length > 60) throw new Error("title tidak boleh lebih dari 60 karakter", { cause: 400 });
+            if (isNaN(courseId)) throw new BadRequestError("Id harus diisi dengan angka")
+            if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
+            if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
+            if (!(isPremium === false || isPremium === true)) throw new BadRequestError("isPremium harus boolean")
+            if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
+            if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
+            if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
 
             //check course is exist
             const checkCourse = await prisma.course.findUnique({
@@ -171,7 +175,7 @@ module.exports = {
                     id : courseId
                 }
             })
-            if (!checkCourse)throw new Error("CourseId tidak valid", { cause: 400 })
+            if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
 
             // category data
             const courseCategoryForPrisma = courseCategory.map((c) => {
@@ -209,13 +213,13 @@ module.exports = {
                 return { authorId: i.id };
             });
             //delete category
-            const deleteCategory = await prisma.courseCategory.deleteMany({
+            await prisma.courseCategory.deleteMany({
                  where: {
                     courseId: courseId
                 }
             })
              //delete mentor
-             const deleteMentor = await prisma.mentor.deleteMany({
+            await prisma.mentor.deleteMany({
                 where: {
                    courseId: courseId
                }
@@ -258,11 +262,14 @@ module.exports = {
     
     deleteCourse: async (req, res, next) => {
         try {
+            const role = req.user.profile.role
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+            
             let { id } = req.params
-            id = Number(id)
+            if (!id) throw new BadRequestError("Id tidak boleh kosong")
 
-            if (!id) throw new Error("id tidak boleh kosong",{cause : 400})
-            if (isNaN(id)) throw new Error("id harus angka",{cause : 400})
+            id = Number(id)
+            if (isNaN(id)) throw new BadRequestError("Id harus angka")
 
             //check course is exist
             const checkCourse = await prisma.course.findUnique({
@@ -270,7 +277,7 @@ module.exports = {
                     id 
                 }
             })
-            if (!checkCourse)throw new Error("CourseId tidak valid", { cause: 400 })
+            if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
 
 
             let deleteCourse = await prisma.course.delete({

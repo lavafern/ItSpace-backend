@@ -1,5 +1,5 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy
-const prisma = require('./prismaClient')
+const {prisma} = require("./prismaClient")
 const passport = require("passport")
 
 const { GOOGLE_CLIENT_ID,
@@ -28,7 +28,7 @@ passport.use(new GoogleStrategy({
                 profile : {
                     create : {
                         name : profile.displayName,
-                        role : "user"
+                        role : "USER"
                     }
                 }
 
