@@ -116,26 +116,23 @@ module.exports = {
         } catch (err) {
           next(err);
         }
-      },
+    },
 
     getCourseDetail: async (req, res, next) => {
         try {
           const { id } = req.params;
           const courseId = Number(id);
     
-          if (!courseId || isNaN(courseId)) {
-            throw new Error("Course ID must be a valid number", { cause: 400 });
-          }
-    
+          if (isNaN(courseId)) throw new BadRequestError("Id harus diisi dengan angka")
+          if (!courseId) throw new BadRequestError("Id harus diisi")
+          
           const courseDetail = await prisma.course.findUnique({
             where: {
               id: courseId,
             },
           });
     
-          if (!courseDetail) {
-            throw new Error("Course not found", { cause: 404 });
-          }
+          if(!courseDetail)throw new NotFoundError("Course tidak ditemukan")
     
           res.status(200).json({
             success: true,
@@ -145,7 +142,7 @@ module.exports = {
         } catch (err) {
           next(err);
         }
-      },
+    },
 
     updateCourse: async (req, res, next) => {
         try {
