@@ -1,19 +1,29 @@
 const {prisma} = require("../utils/prismaClient")
-const {ForbiddenError,BadRequestError, NotFoundError} = require("../errors/customErrors")
+const {ForbiddenError,BadRequestError, NotFoundError, InternalServerError} = require("../errors/customErrors")
+const imagekit = require("../utils/imagekit")
+const path = require("path")
 
 module.exports = {
     createCourse : async (req,res,next) => {
         try {
             const role = req.user.profile.role
+
+            
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
-            let {
-                title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl,thumbnailUrl
-            } = req.body
-            price = Number(price)
+            let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/download.jpeg?updatedAt=1701289170908" : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
 
+            let {
+                title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl
+            } = req.body
+            console.log(req.body);
+
+            price = Number(price)
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
-            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory || !thumbnailUrl) throw new BadRequestError("Tolong isi semua kolom")
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
             if (!(isPremium === false || isPremium === true)) throw new BadRequestError("isPremium harus boolean")
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
@@ -111,11 +121,12 @@ module.exports = {
             const role = req.user.profile.role
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
+            
             let courseId = req.params.id;
             let {
-                code, title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
+                code, title, price, level, isPremium = true, description, courseCategory, mentorEmail,groupUrl
             } = req.body;
-
+            console.log(req.body);
             price = Number(price);
             courseId = Number(courseId);
 
@@ -134,6 +145,12 @@ module.exports = {
                     id : courseId
                 }
             })
+
+            let thumbnailUrl = !(req.file) ? checkCourse.thumbnailUrl : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
+
             if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
 
             // category data
@@ -196,6 +213,7 @@ module.exports = {
                     isPremium,
                     description,
                     groupUrl,
+                    thumbnailUrl,
                     courseCategory : {
                         create : categoryId
                     },

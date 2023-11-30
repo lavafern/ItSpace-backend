@@ -70,11 +70,10 @@ module.exports = {
             if (isNaN(id)) throw new InternalServerError("Id harus angka")
 
             if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
-
+            
            
            
-            let {name,phoneNumber,profilePicture,location} = req.body
-            profilePicture = profilePicture || "emptyupdated"
+            let {name,phoneNumber,location} = req.body
 
             if (!name)  throw new BadRequestError("Nama wajib di isi")
             if (isNaN(phoneNumber)) throw new BadRequestError("Nomor telepon harus angka")
@@ -87,6 +86,11 @@ module.exports = {
             })
 
             if (!user) throw new BadRequestError("User tidak ditemukan")
+
+            let profilePicture = !(req.file) ? user.profilePicture : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
 
             const updatedProfile = await prisma.profile.update({
                 where : {
@@ -165,57 +169,6 @@ module.exports = {
                 success : true,
                 message : "Succesfully change Password",
                 data : updatePassword
-            })
-
-        } catch (err) {
-            next(err)
-        }
-    },
-
-    changeProfilePicture : async (req,res,next) => {
-        try {
-            let {id} = req.params
-            if (!id) throw new InternalServerError("Sertakan Id")
-
-            id = Number(id)
-            if (isNaN(id)) throw new InternalServerError("Id harus angka")
-
-            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
-
-
-            let strFile = req.file.buffer.toString('base64');
-
-            let { url } = await imagekit.upload({
-                fileName: `${id}` + Date.now() + path.extname(req.file.originalname),
-                file: strFile
-            })
-
-            const foundUser = await prisma.profile.findUnique({
-                where : {
-                    authorId : id
-                }
-            })
-            if (!foundUser) throw new NotFoundError("User tidak ditemukan")
-
-            const updateProfilePicture = await prisma.profile.update({
-                where : {
-                    authorId : id
-                },
-                data : {
-                    profilePicture : url
-                }
-            })
-
-            delete updateProfilePicture.authorId
-            delete updateProfilePicture.joinDate
-            delete updateProfilePicture.location
-            delete updateProfilePicture.phoneNumber
-            delete updateProfilePicture.role
-
-            res.status(201).json({
-                success : true,
-                message : "Succesfully change profile pic",
-                data :  updateProfilePicture
             })
 
         } catch (err) {

@@ -6,6 +6,7 @@ const {otpHtml} = require("../views/templates/emailVerification")
 const {resetPasswordHtml} = require("../views/templates/resetPassword")
 const {generateOtp,signToken} = require("../utils/authUtils")
 const {BadRequestError,UnauthorizedError,NotFoundError} = require("../errors/customErrors")
+const imagekit = require("../utils/imagekit")
 
 module.exports = {
     LoginWithGoogle : async (req,res,next) => {
@@ -30,8 +31,12 @@ module.exports = {
 
     register : async (req,res,next) => {
         try {
-            let {email,password,passwordValidation,name,role} = req.body
-            role = role ?  "ADMIN" : "USER"
+            let {email,password,passwordValidation,name} = req.body
+            let profilePicture = !(req.file) ? "https://ik.imagekit.io/itspace/18b5b599bb873285bd4def283c0d3c09.jpg?updatedAt=1701289000673" : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
+
             if (!email || !password || !name || !passwordValidation) throw new BadRequestError("Harap isi semua kolom")
             if (password.length < 8 || password.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
             if (password !== passwordValidation ) throw new BadRequestError("Validasi password salah")
@@ -66,7 +71,7 @@ module.exports = {
                     profile : {
                         create : {
                             name,
-                            role
+                            profilePicture
                         }
                     },
                     otp : {
