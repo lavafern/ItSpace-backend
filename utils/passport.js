@@ -32,8 +32,22 @@ passport.use(new GoogleStrategy({
                     }
                 }
 
+            },
+            include : {
+                profile : true
             }
         })
+
+        delete user.password
+        delete user.googleId
+        delete user.verified
+        delete user.profile.authorId
+        delete user.profile.name
+        delete user.profile.phoneNumber
+        delete user.profile.profilePicture
+        delete user.profile.joinDate
+        delete user.profile.location 
+        delete user.profile.id 
 
         cb(null,user)
 

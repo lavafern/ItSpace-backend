@@ -8,9 +8,21 @@ const {generateOtp,signToken} = require("../utils/authUtils")
 const {BadRequestError,UnauthorizedError,NotFoundError} = require("../errors/customErrors")
 
 module.exports = {
-    LoginWithGoogle : (req,res,next) => {
+    LoginWithGoogle : async (req,res,next) => {
         try {
-            res.send(req.user)
+            const accesToken = await signToken('access',foundUser,JWT_SECRET)
+
+            const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET)
+            
+            res
+            .cookie("accesToken",accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+            .cookie("refreshToken",refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
+            .status(200).json({
+                success : true,
+                message : "successfully login with google",
+                data : req.user
+            })
+            
         } catch (err) {
             next(err)
         }

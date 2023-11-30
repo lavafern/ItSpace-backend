@@ -36,6 +36,7 @@ model Course {
   isPremium Boolean
   description String
   groupUrl String?
+  thumbnailUrl String @default("https://ik.imagekit.io/itspace/download.jpeg?updatedAt=1701289170908")
   courseCategory CourseCategory[]
   transaction Transaction[]
   enrollment Enrollment[]
@@ -48,7 +49,7 @@ model Profile {
   id        Int     @id @default(autoincrement())
   name     String
   phoneNumber   String?
-  profilePicture   String @default("empty")
+  profilePicture   String @default("https://ik.imagekit.io/itspace/18b5b599bb873285bd4def283c0d3c09.jpg?updatedAt=1701289000673")
   role Role @default(USER)
   joinDate DateTime @default(now())
   location String?

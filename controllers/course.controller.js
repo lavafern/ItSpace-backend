@@ -8,12 +8,12 @@ module.exports = {
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
             let {
-                title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl
+                title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl,thumbnailUrl
             } = req.body
             price = Number(price)
 
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
-            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory || !thumbnailUrl) throw new BadRequestError("Tolong isi semua kolom")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
             if (!(isPremium === false || isPremium === true)) throw new BadRequestError("isPremium harus boolean")
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
@@ -80,6 +80,7 @@ module.exports = {
                     isPremium,
                     description,
                     groupUrl,
+                    thumbnailUrl,
                     courseCategory : {
                         create : categoryId
                     },
