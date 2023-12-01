@@ -124,7 +124,7 @@ module.exports = {
             
             let courseId = req.params.id;
             let {
-                code, title, price, level, isPremium = true, description, courseCategory, mentorEmail,groupUrl
+                code, title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
             } = req.body;
             console.log(req.body);
             price = Number(price);
