@@ -2,6 +2,8 @@ const {prisma} = require("../utils/prismaClient")
 const {ForbiddenError,BadRequestError, NotFoundError, InternalServerError} = require("../errors/customErrors")
 const imagekit = require("../utils/imagekit")
 const path = require("path")
+const {getAllCourseFilter} = require("../utils/searchFilters")
+const getPagination = require("../utils/pagination")
 
 module.exports = {
     createCourse : async (req,res,next) => {
@@ -17,7 +19,7 @@ module.exports = {
             })).url
 
             let {
-                title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl
+                title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl
             } = req.body
             console.log(req.body);
 
@@ -99,6 +101,7 @@ module.exports = {
                     }
                     
                 }
+                
             })
 
             newCourse.mentor = mentorValidEmail
@@ -111,6 +114,158 @@ module.exports = {
                 data : newCourse
             })
 
+        } catch (err) {
+            next(err)
+        }
+    },
+
+    getAllCourse : async (req,res,next) => {
+      try {
+        let {category,level,ispremium,page,limit} = req.query
+        page = page ? Number(page) : 1
+        limit = limit ? Number(limit) : 2
+        console.log(category);
+
+        const filters = getAllCourseFilter(ispremium,level,category)
+        let coursesCount = await prisma.course.findMany({
+            orderBy : [
+                { id : 'asc'}
+            ]
+        ,
+          where : {
+            AND : filters
+          },
+          include : {
+            courseCategory : {
+                select : {
+                    category : {
+                        select : {
+                            name : true
+                        }
+                    }
+                }
+                
+            },
+            mentor : {
+                select : { 
+                    author : {
+                        select :{
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+          }
+        })
+
+        coursesCount = coursesCount.length
+
+        const courses = await prisma.course.findMany({
+            skip : (page - 1) * limit,
+            take : limit,
+            // TODO : buat sorting berdasarkan banyak popularity (enroll)
+            orderBy : [
+                { id : 'asc'}
+            ]
+        ,
+          where : {
+            AND : filters
+          },
+          include : {
+            courseCategory : {
+                select : {
+                    category : {
+                        select : {
+                            name : true
+                        }
+                    }
+                }
+                
+            },
+            mentor : {
+                select : { 
+                    author : {
+                        select :{
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+          }
+        })
+
+        const pagination = getPagination(req,coursesCount,page,limit,category,level,ispremium)
+
+        const result = {
+            pagination,
+            courses
+        }
+        return res.status(200).json({
+            success : true,
+            message : "Sucessfully get all course",
+            data : result
+        })
+
+      } catch (err) {
+        next(err)
+      }
+    },
+
+    getCourseDetail : async (req,res,next) => {
+        try {
+            let {id} = req.params
+
+            if (!id) throw new BadRequestError("Id tidak valid")
+            if (isNaN(Number(id))) throw new BadRequestError("Id tidak valid")
+
+            id = Number(id)
+            // TODO : add chapters, videos, rating, progress etc.
+            const courseDetail = await prisma.course.findUnique({
+                where : {
+                    id
+                },
+                include : {
+                    mentor : {
+                        select : {
+                            author : {
+                                select : {
+                                    profile : {
+                                        select : {
+                                            name : true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    courseCategory : {
+                        select : {
+                            category : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+
+            if (!courseDetail) throw new NotFoundError("Course tidak ditemukan")
+
+            res.status(200).json({
+                success : true,
+                message : "succesfully view course detail",
+                data : courseDetail
+            })
+            
         } catch (err) {
             next(err)
         }

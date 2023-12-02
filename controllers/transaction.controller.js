@@ -53,7 +53,7 @@ module.exports = {
     
     getAllTransaction : async (req,res,next) => {
         try {
-
+            // TODO : finish this function , not completed
             const prem = true
             const level = ["BEGINNER", "INTERMEDIATE"]
             const levelFilter = level.length > 0 ? level.map( i => {
@@ -80,7 +80,11 @@ module.exports = {
                 }
             })
 
-            res.send(allTransactions)
+            res.status(200).json({
+                success : true,
+                message : "Succesfully get all transactions",
+                data : allTransactions
+            })
 
         } catch (err) {
             next(err)

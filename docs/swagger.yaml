@@ -32,7 +32,7 @@ paths:
     post:
       tags:
         - courses
-      description: create new course
+      description: create new course - [DONE]
       requestBody:
         content:
           application/json:
@@ -84,22 +84,25 @@ paths:
     get:
       tags:
         - courses
-      description: get all course
+      description: get all course [DONE]
       parameters:
         - in: query
-          name: type
+          name: ispremium
+          example: 1
           schema:
             type: string
-          description: filter course by type, premium or not
+          description: 1 = premium, 0 = not premium
         - in: query
-          name: categories
+          name: category
+          example : backend,frontend
           schema:
             type: string
           description: filter course by categories
         - in: query
           name: level
+          example: BEGINNER,INTERMEDIATE,ADVANCED
           schema:
-            type: integer
+            type: string
           description: filter course by level
         - in: query
           name: search
@@ -108,11 +111,13 @@ paths:
           description: filter course by type, premium or not
         - in: query
           name: page
+          example: 1
           schema:
             type: integer
           description: the page you want to access
         - in: query
           name: limit
+          example: 10
           schema:
             type: integer
           description: The numbers of items to return
@@ -759,6 +764,9 @@ components:
         groupUrl:
           type: string
           example: "www.url.com"
+        thumbnailUrl:
+          type: string
+          example : "www.url.com"
         mentor:
           type: array
           items:
@@ -900,6 +908,10 @@ components:
         groupUrl:
           type: string
           example: "www.url.com"
+        image:
+            type: string
+            format: binary
+            example : "upload thumbnail image here"
         mentorEmail:
            type: array
            items:
@@ -914,34 +926,60 @@ components:
     courseGetAll:
       type: object
       properties:
+        id :
+          type: integer
+          example: 1
+        code :
+          type: string
+          example: BE1
         title:
           type: string
           example: Backend dengan expressjs
+        price:
+           type: integer
+           example: 1000
         level:
           type: string
           example: BEGINNER
         isPremium:
           type: boolean
           example: true
-        chapter:
-          type: integer
-          example: 5
-        rating:
-          type: integer
-          example: 4.5
-        duration:
-          type: integer
-          example: 90
-        mentor:
-           type: array
-           items:
-            type: string
-           example : ["john","doe"]
+        groupUrl:
+         type: string
+         example: www.url.com
+        thumbnailUrl:
+         type: string
+         example: www.url.com
         courseCategory:
           type: array
           items:
-            type: string
-          example : ["Backend","Database"]
+            type: object
+            properties:
+              category:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: backend
+        mentor:
+          type: array
+          items:
+            type: object
+            properties:
+              author:
+                type: object
+                properties:
+                  profile:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: john doe
+                  
+              
+                  
+          
+          
     Pagination:
       title: Pagination
       type: object
