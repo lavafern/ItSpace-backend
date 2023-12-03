@@ -6,19 +6,24 @@ const path = require("path")
 module.exports = {
     getAllUsers : async (req,res,next) => {
         try {
-            
+            // TODO : add pagination
             let users = await prisma.user.findMany({
-                include : {
-                    profile : true
+                select : {
+                    id : true,
+                    email :true,
+                    verified: true,
+                    profile : {
+                        select : {
+                            name : true,
+                            phoneNumber : true,
+                            role : true
+                        }
+                    }
+                        
                 }
+               
             })
-            users = users.map((i) => {
-                delete i.profile.id
-                delete i.profile.profilePicture
-                delete i.profile.authorId
-                delete i.googleId
-                return i
-            })
+
             res.status(200).json({
                 success : true,
                 message : "Succesfully get all users",
@@ -41,13 +46,24 @@ module.exports = {
                 where : {
                     id
                 },
-                include : {
-                    profile : true
+                select : {
+                    id : true,
+                    email : true,
+                    verified : true,
+                    profile : {
+                        select : {
+                            name : true,
+                            phoneNumber : true,
+                            profilePicture : true,
+                            role : true,
+                            joinDate : true,
+                            location : true
+                        }
+                    }
                 }
             })
 
             if (!userDetail) throw new NotFoundError("Id tidak ditemukan")
-            delete userDetail.password
 
             res.status(200).json({
                 success : true,
@@ -62,14 +78,18 @@ module.exports = {
 
     updateProfile : async (req,res,next) => {
         try {
-            console.log(req.user);
             let {id} = req.params
-            if (!id) throw new InternalServerError("Sertakan Id")
-
+            if (!id) throw new InternalServerError("Id tidak valid")
             id = Number(id)
-            if (isNaN(id)) throw new InternalServerError("Id harus angka")
+            if (isNaN(id)) throw new InternalServerError("Id tidak valid")
+            const realId = await prisma.user.findUnique({
+                where : {
+                    email : req.user.email
+                }
+            })
 
-            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+
+            if (id !== realId.id) throw new ForbiddenError("Anda tidak punya akses kesini")
             
            
            
@@ -104,6 +124,9 @@ module.exports = {
                 }
             })
            
+            delete updatedProfile.id
+            delete updatedProfile.authorId
+
             res.status(201).json({
                 success : true,
                 message : "Succesfully edit profile",
@@ -117,7 +140,6 @@ module.exports = {
 
     changePassword : async (req,res,next) => {
         try {
-            console.log(req.user);
             let {id} = req.params
             if (!id) throw new InternalServerError("Sertakan Id")
 
@@ -178,19 +200,25 @@ module.exports = {
 
     deleteUser : async (req,res,next) => {
         try {
-            console.log(req.user);
             let {id} = req.params
-            if (!id) throw new InternalServerError("Sertakan Id")
-
+            if (!id) throw new InternalServerError("Id tidak valid")
             id = Number(id)
-            if (isNaN(id)) throw new InternalServerError("Id harus angka")
+            if (isNaN(id)) throw new InternalServerError("Id tidak valid")
+            const realId = await prisma.user.findUnique({
+                where : {
+                    email : req.user.email
+                }
+            })
 
-            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
-
+            if (id !== realId.id) throw new ForbiddenError("Anda tidak punya akses kesini")
 
             const userDetail = await prisma.user.findUnique({
                 where : {
                     id
+                },
+                select : {
+                    id : true,
+                    email : true,
                 }
             })
             if (!userDetail) throw new NotFoundError("Id tidak ditemukan")

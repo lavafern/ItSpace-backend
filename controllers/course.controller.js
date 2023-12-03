@@ -121,7 +121,7 @@ module.exports = {
 
     getAllCourse : async (req,res,next) => {
       try {
-        let {category,level,ispremium,page,limit} = req.query
+        let {category,level,ispremium,page,limit,se} = req.query
         page = page ? Number(page) : 1
         limit = limit ? Number(limit) : 2
         console.log(category);
@@ -173,6 +173,10 @@ module.exports = {
             ]
         ,
           where : {
+            title : {
+                contains : se,
+                mode : 'insensitive'
+            },
             AND : filters
           },
           include : {
