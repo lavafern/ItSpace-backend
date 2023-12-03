@@ -123,7 +123,7 @@ module.exports = {
       try {
         let {category,level,ispremium,page,limit,se} = req.query
         page = page ? Number(page) : 1
-        limit = limit ? Number(limit) : 2
+        limit = limit ? Number(limit) : 10
         console.log(category);
 
         const filters = getAllCourseFilter(ispremium,level,category)
