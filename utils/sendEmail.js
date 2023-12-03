@@ -1,15 +1,11 @@
 const nodemailer = require("nodemailer")
 require("dotenv").config()
 const {GOOGLE_APP_PASSWORD,APP_EMAIL} = process.env
-const {otpHtml} = require("../views/templates/emailVerification")
 
 
 module.exports = {
     sendEmail : (to,subject,html) => {
         try {
-            
-       
-       
        
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -31,7 +27,7 @@ module.exports = {
 
         //Step 3: Sending email
         transporter.sendMail(messageOptions)
-        
+
         } catch (err) {
             next(err)
         }

@@ -32,7 +32,7 @@ paths:
     post:
       tags:
         - courses
-      description: create new course
+      description: create new course - [DONE]
       requestBody:
         content:
           application/json:
@@ -84,35 +84,40 @@ paths:
     get:
       tags:
         - courses
-      description: get all course
+      description: get all course [DONE]
       parameters:
         - in: query
-          name: type
+          name: ispremium
+          example: 1
           schema:
             type: string
-          description: filter course by type, premium or not
+          description: 1 = premium, 0 = not premium
         - in: query
-          name: categories
+          name: category
+          example : backend,frontend
           schema:
             type: string
           description: filter course by categories
         - in: query
           name: level
-          schema:
-            type: integer
-          description: filter course by level
-        - in: query
-          name: search
+          example: BEGINNER,INTERMEDIATE,ADVANCED
           schema:
             type: string
-          description: filter course by type, premium or not
+          description: filter course by level
+        - in: query
+          name: se
+          schema:
+            type: string
+          description: search title of course
         - in: query
           name: page
+          example: 1
           schema:
             type: integer
           description: the page you want to access
         - in: query
           name: limit
+          example: 10
           schema:
             type: integer
           description: The numbers of items to return
@@ -169,7 +174,7 @@ paths:
     get:
       tags:
         - courses
-      description: get specific course
+      description: get specific course [not copleted]
       parameters:
         - in: path
           name: courseId
@@ -222,7 +227,7 @@ paths:
     put:
       tags:
         - courses
-      description: update new course
+      description: update course detail [DONE]
       parameters:
         - in: path
           name: courseId
@@ -282,7 +287,7 @@ paths:
     delete:
       tags:
         - courses
-      description: Deletes a specific course.
+      description: Deletes a specific course. [DONE]
       parameters:
        - in: path
          name: courseId
@@ -292,7 +297,7 @@ paths:
          description: The ID of the course to delete.
       responses:
         "200":
-          description: Successful user deletion
+          description: Successful user deletion 
           content:
             application/json:
               schema:
@@ -337,7 +342,7 @@ paths:
     post:
       tags:
         - auth
-      description: create new course
+      description: create new course [DONE]
       requestBody:
         content:
           application/json:
@@ -390,7 +395,7 @@ paths:
     post:
       tags:
         - auth
-      description: create new course
+      description: User login [DONE]
       requestBody:
         content:
           application/json:
@@ -408,7 +413,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/RegisterResponse'
+                        $ref: '#/components/schemas/LoginResponse'
         '400':
           description: Bad request
           content:
@@ -438,7 +443,643 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse500'    
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      description: User login [DONE]
+
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: string
+                        example: null
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /auth/resend-otp/{email}:
+    get:
+      tags:
+        - auth
+      description: resend otp to email, for account verification [DONE]
+      parameters:
+      - in: path
+        name: email
+        example: example@gmail.com
+        schema:
+          type: string
+        required: true
+      
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: string
+                        example: example@gmail.com
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /auth/verify-otp:
+    put:
+      tags:
+        - auth
+      description: verify your otp that has sent to your email [DONE]
+      
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          email:
+                            type: string
+                            example: example@gmail.com
+                          verified:
+                            type: boolean
+                            example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /auth/reset-password:
+    get:
+      tags:
+        - auth
+      description: send reset password form to your email [DONE]
+      requestBody:
+       content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: example@gmail.com
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: string
+                        example: example@gmail.com
+                  
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /auth/reset-password/{token}:
+    put:
+      tags:
+        - auth
+      description: reset user password [DONE]
+      requestBody:
+       content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              newPassword:
+                type: string
+                example: password123
+              newPasswordValidation:
+                type: string
+                example: password123
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          email:
+                            type: string
+                            example: example@gmail.com
+
+                  
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /auth/change-password:
+    put:
+      tags:
+        - auth
+      description: reset user password [DONE]
+      requestBody:
+       content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              oldPassword:
+                type: string
+                example: password123
+              newPassword:
+                type: string
+                example: password1234
+              newPasswordValidation:
+                type: string
+                example: password1234
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          email:
+                            type: string
+                            example: example@gmail.com
+
+                  
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+  /users:
+    get:
+      tags:
+        - users
+      description: get all user [DONE]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id :
+                              type: integer
+                              example: 1
+                            email :
+                              type: string
+                              example: example@gmail.com
+                            verified :
+                              type: boolean
+                              example: true
+                            profile:
+                              type: object
+                              properties:
+                                name :
+                                  type: string
+                                  example: john doe
+                                phoneNumber :
+                                  type: string
+                                  example: 08888888
+                                role :
+                                  type: string
+                                  example: ADMIN
+  /users/{id}:
+      get:
+        tags:
+          - users
+        parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            required: true
+        description: get all user [DONE]
+        responses:
+          '201':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: '#/components/schemas/basicResponse'
+                    - type: object
+                      properties:
+                        data: 
+                            type: object
+                            properties:
+                              id :
+                                type: integer
+                                example: 1
+                              email :
+                                type: string
+                                example: example@gmail.com
+                              verified :
+                                type: boolean
+                                example: true
+                              profile:
+                                type: object
+                                properties:
+                                  name :
+                                    type: string
+                                    example: john doe
+                                  phoneNumber :
+                                    type: string
+                                    example: 08888888
+                                  profilePicture :
+                                     type: string
+                                     example: example.com
+                                  role :
+                                    type: string
+                                    example: ADMIN
+                                  joinDate :
+                                    type: string
+                                    example: 2023-11-29T18:11:00.927Z
+                                  location :
+                                    type: string
+                                    example: Bandung
+          '400':
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse400'
+          '401':
+            description: Unauthenticated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse401'
+          '403':
+            description: Forbidden
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse403'
+          '404':
+            description: Not found
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse404'
+          '500':
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse500'
+      put:
+        tags:
+          - users
+        parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            required: true
+        requestBody:
+          content:
+           application/json:
+             schema:
+               type: object
+               properties:
+                 name:
+                   type: string
+                   example: john doe
+                 phoneNumber:
+                   type: string
+                   example: 0000000
+                 location:
+                   type: string
+                   example: Jakarta
+                 image:
+                    type: string
+                    example: upload profile picture here
+        description: Update profile [DONE]
+        responses:
+          '201':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: '#/components/schemas/basicResponse'
+                    - type: object
+                      properties:
+                        data: 
+                                type: object
+                                properties:
+                                  name :
+                                    type: string
+                                    example: john doe
+                                  phoneNumber :
+                                    type: string
+                                    example: 08888888
+                                  profilePicture :
+                                     type: string
+                                     example: example.com
+                                  role :
+                                    type: string
+                                    example: ADMIN
+                                  joinDate :
+                                    type: string
+                                    example: 2023-11-29T18:11:00.927Z
+                                  location :
+                                    type: string
+                                    example: Bandung
+          '400':
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse400'
+          '401':
+            description: Unauthenticated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse401'
+          '403':
+            description: Forbidden
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse403'
+          '404':
+            description: Not found
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse404'
+          '500':
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse500'
+      delete :
+          tags:
+            - users
+          parameters:
+            - in: path
+              name: id
+              schema:
+                type: integer
+              required: true
+          description: delete profile [DONE]
+          responses:
+            '201':
+              description: Successful operation
+              content:
+                application/json:
+                  schema:
+                    allOf:
+                      - $ref: '#/components/schemas/basicResponse'
+                      - type: object
+                        properties:
+                          data: 
+                                  type: object
+                                  properties:
+                                    id :
+                                      type: integer
+                                      example: 1
+                                    email :
+                                       type: string
+                                       example: example@gmail.com
+            '400':
+              description: Bad request
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ErrorResponse400'
+            '401':
+              description: Unauthenticated
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ErrorResponse401'
+            '403':
+              description: Forbidden
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ErrorResponse403'
+            '404':
+              description: Not found
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ErrorResponse404'
+            '500':
+              description: Bad request
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ErrorResponse500'
+
+
+
   /categories:
     post:
       tags:
@@ -759,6 +1400,9 @@ components:
         groupUrl:
           type: string
           example: "www.url.com"
+        thumbnailUrl:
+          type: string
+          example : "www.url.com"
         mentor:
           type: array
           items:
@@ -795,6 +1439,9 @@ components:
           type: string
           example: "course ini akan mengejarkan kamu tentang API"
         groupUrl:
+          type: string
+          example: "www.url.com"
+        thumbnailUrl:
           type: string
           example: "www.url.com"
     getCoursesResponse:
@@ -900,6 +1547,10 @@ components:
         groupUrl:
           type: string
           example: "www.url.com"
+        image:
+            type: string
+            format: binary
+            example : "upload thumbnail image here"
         mentorEmail:
            type: array
            items:
@@ -914,34 +1565,60 @@ components:
     courseGetAll:
       type: object
       properties:
+        id :
+          type: integer
+          example: 1
+        code :
+          type: string
+          example: BE1
         title:
           type: string
           example: Backend dengan expressjs
+        price:
+           type: integer
+           example: 1000
         level:
           type: string
           example: BEGINNER
         isPremium:
           type: boolean
           example: true
-        chapter:
-          type: integer
-          example: 5
-        rating:
-          type: integer
-          example: 4.5
-        duration:
-          type: integer
-          example: 90
-        mentor:
-           type: array
-           items:
-            type: string
-           example : ["john","doe"]
+        groupUrl:
+         type: string
+         example: www.url.com
+        thumbnailUrl:
+         type: string
+         example: www.url.com
         courseCategory:
           type: array
           items:
-            type: string
-          example : ["Backend","Database"]
+            type: object
+            properties:
+              category:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: backend
+        mentor:
+          type: array
+          items:
+            type: object
+            properties:
+              author:
+                type: object
+                properties:
+                  profile:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: john doe
+                  
+              
+                  
+          
+          
     Pagination:
       title: Pagination
       type: object
@@ -974,6 +1651,10 @@ components:
         passwordValidation:
           type: string
           example: password123
+        image:
+            type: string
+            format: binary
+            example : "upload profile pic image here"
     RegisterResponse:
       title: Register response
       type: object
@@ -997,6 +1678,19 @@ components:
         password:
           type: string
           example: password123
+    LoginResponse:
+      title: Register response
+      type: object
+      properties:
+        email:
+         type: string
+         example: example@gmail.com
+        profile:
+          type: object
+          properties:
+            role :
+              type: string
+              example : ADMIN
     createCategoriesReqBody:
       title: createCategoriesReqBody
       type: object

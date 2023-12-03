@@ -1,5 +1,6 @@
 const {decodeToken,signToken} = require("../utils/authUtils")
 const {JWT_SECRET,JWT_REFRESH_SECRET} = process.env
+const {UnauthorizedError} = require("../errors/customErrors")
 
 module.exports = {
     restrict : async (req,res,next) => {
@@ -7,8 +8,8 @@ module.exports = {
 
             const accesToken = req.cookies.accesToken
 
-            if (!(accesToken) && !(refreshToken)) throw new Error("Unauthorized", {cause : 401})
-            const user = await decodeToken('s',JWT_SECRET)
+            if (!(accesToken) && !(refreshToken)) throw new UnauthorizedError("Unauthorized")
+            const user = await decodeToken(accesToken,JWT_SECRET)
             req.user = user
             next()
 

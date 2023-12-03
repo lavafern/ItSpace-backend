@@ -1,17 +1,29 @@
 const {prisma} = require("../utils/prismaClient")
-const {ForbiddenError,BadRequestError, NotFoundError} = require("../errors/customErrors")
+const {ForbiddenError,BadRequestError, NotFoundError, InternalServerError} = require("../errors/customErrors")
+const imagekit = require("../utils/imagekit")
+const path = require("path")
+const {getAllCourseFilter} = require("../utils/searchFilters")
+const getPagination = require("../utils/pagination")
 
 module.exports = {
     createCourse : async (req,res,next) => {
         try {
             const role = req.user.profile.role
+
+            
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
-            let {
-                title,price,level,isPremium,description,courseCategory,mentorEmail,code,groupUrl
-            } = req.body
-            price = Number(price)
+            let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/download.jpeg?updatedAt=1701289170908" : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
 
+            let {
+                title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl
+            } = req.body
+            console.log(req.body);
+
+            price = Number(price)
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
             if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
@@ -80,6 +92,7 @@ module.exports = {
                     isPremium,
                     description,
                     groupUrl,
+                    thumbnailUrl,
                     courseCategory : {
                         create : categoryId
                     },
@@ -88,6 +101,7 @@ module.exports = {
                     }
                     
                 }
+                
             })
 
             newCourse.mentor = mentorValidEmail
@@ -105,16 +119,173 @@ module.exports = {
         }
     },
 
+    getAllCourse : async (req,res,next) => {
+      try {
+        let {category,level,ispremium,page,limit,se} = req.query
+        page = page ? Number(page) : 1
+        limit = limit ? Number(limit) : 2
+        console.log(category);
+
+        const filters = getAllCourseFilter(ispremium,level,category)
+        let coursesCount = await prisma.course.findMany({
+            orderBy : [
+                { id : 'asc'}
+            ]
+        ,
+          where : {
+            AND : filters
+          },
+          include : {
+            courseCategory : {
+                select : {
+                    category : {
+                        select : {
+                            name : true
+                        }
+                    }
+                }
+                
+            },
+            mentor : {
+                select : { 
+                    author : {
+                        select :{
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+          }
+        })
+
+        coursesCount = coursesCount.length
+
+        const courses = await prisma.course.findMany({
+            skip : (page - 1) * limit,
+            take : limit,
+            // TODO : buat sorting berdasarkan banyak popularity (enroll)
+            orderBy : [
+                { id : 'asc'}
+            ]
+        ,
+          where : {
+            title : {
+                contains : se,
+                mode : 'insensitive'
+            },
+            AND : filters
+          },
+          include : {
+            courseCategory : {
+                select : {
+                    category : {
+                        select : {
+                            name : true
+                        }
+                    }
+                }
+                
+            },
+            mentor : {
+                select : { 
+                    author : {
+                        select :{
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+          }
+        })
+
+        const pagination = getPagination(req,coursesCount,page,limit,category,level,ispremium)
+
+        const result = {
+            pagination,
+            courses
+        }
+        return res.status(200).json({
+            success : true,
+            message : "Sucessfully get all course",
+            data : result
+        })
+
+      } catch (err) {
+        next(err)
+      }
+    },
+
+    getCourseDetail : async (req,res,next) => {
+        try {
+            let {id} = req.params
+
+            if (!id) throw new BadRequestError("Id tidak valid")
+            if (isNaN(Number(id))) throw new BadRequestError("Id tidak valid")
+
+            id = Number(id)
+            // TODO : add chapters, videos, rating, progress etc.
+            const courseDetail = await prisma.course.findUnique({
+                where : {
+                    id
+                },
+                include : {
+                    mentor : {
+                        select : {
+                            author : {
+                                select : {
+                                    profile : {
+                                        select : {
+                                            name : true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    courseCategory : {
+                        select : {
+                            category : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+
+            if (!courseDetail) throw new NotFoundError("Course tidak ditemukan")
+
+            res.status(200).json({
+                success : true,
+                message : "succesfully view course detail",
+                data : courseDetail
+            })
+            
+        } catch (err) {
+            next(err)
+        }
+    },
+
     updateCourse: async (req, res, next) => {
         try {
             const role = req.user.profile.role
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
+            
             let courseId = req.params.id;
             let {
                 code, title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
             } = req.body;
-
+            console.log(req.body);
             price = Number(price);
             courseId = Number(courseId);
 
@@ -133,6 +304,12 @@ module.exports = {
                     id : courseId
                 }
             })
+
+            let thumbnailUrl = !(req.file) ? checkCourse.thumbnailUrl : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
+
             if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
 
             // category data
@@ -195,6 +372,7 @@ module.exports = {
                     isPremium,
                     description,
                     groupUrl,
+                    thumbnailUrl,
                     courseCategory : {
                         create : categoryId
                     },
