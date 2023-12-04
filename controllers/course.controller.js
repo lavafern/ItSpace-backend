@@ -133,6 +133,10 @@ module.exports = {
             ]
         ,
           where : {
+             title : {
+                contains : se,
+                mode : 'insensitive'
+            },
             AND : filters
           },
           include : {
