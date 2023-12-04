@@ -3,9 +3,6 @@ module.exports = (req, count, page, limit, category, level, ispremium) => {
     level = level ? '&level='+level : ''
     ispremium = ispremium ? '&ispremium='+ispremium : ''
 
-    console.log('ct : ',category);
-    console.log('lv', level);
-    console.log('lv', ispremium);
     let path = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}?${category}${level}${ispremium}`
     let links = {}
     if (count - page * limit < 1 ) {
