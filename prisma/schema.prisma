@@ -25,6 +25,7 @@ model User {
   mentor Mentor[]
   rating Rating[]
   progress Progress[]
+  notification Notification[]
 }
 
 model Course {
@@ -150,6 +151,18 @@ model Progress {
   authorId  Int
   video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
   videoId  Int 
+}
+
+model Notification {
+  id    Int     @id @default(autoincrement())
+  type String
+  message String
+  details String
+  created_at DateTime
+  is_read Boolean
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  
 }
 
 
