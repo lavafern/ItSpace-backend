@@ -7,8 +7,9 @@ info:
     email: rian.rafli@gmail.com
   version: 1.0.0
 servers:
+  - url: https://it-space-develop.up.railway.app/api/v1
   - url: http://localhost:8000/api/v1
-  - url: https://desert-sand-lovebird-kilt.cyclic.app/api/v1
+
 tags:
   - name: courses
     description: Everything about courses
@@ -670,6 +671,12 @@ paths:
       tags:
         - auth
       description: reset user password [DONE]
+      parameters:
+          - in: path
+            name: token
+            schema:
+              type: string
+            required: true
       requestBody:
        content:
         application/json:
@@ -1445,37 +1452,58 @@ components:
           type: string
           example: "www.url.com"
     getCoursesResponse:
-      title: course
       type: object
       properties:
-        id:
+        id :
           type: integer
           example: 1
-        code: 
+        code :
           type: string
-          example: "BEX12"
+          example: BE1
         title:
           type: string
-          example: "Backend dengan expressjs"
+          example: Backend dengan expressjs
         price:
-          type: string
-          example: 900000
+           type: integer
+           example: 1000
         level:
           type: string
-          example: "BEGINNER"
+          example: BEGINNER
         isPremium:
           type: boolean
           example: true
+        groupUrl:
+         type: string
+         example: www.url.com
+        thumbnailUrl:
+         type: string
+         example: www.url.com
+        courseCategory:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: backend
         mentor:
           type: array
           items:
-            type: string
-          example : ["john","doe"]
-        category:
-          type: array
-          items:
-            type: string
-          example : ["Backend","Database"]
+            type: object
+            properties:
+              author:
+                type: object
+                properties:
+                  profile:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: john doe
+                  
         rating:
           type: integer
           example: 4
@@ -1539,8 +1567,8 @@ components:
           type: string
           example: BEGINNER
         isPremium:
-          type: boolean
-          example: true
+          type: string
+          example: 1
         description:
           type: string
           example: "course ini akan mengejarkan kamu tentang API"

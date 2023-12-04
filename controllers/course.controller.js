@@ -21,17 +21,17 @@ module.exports = {
             let {
                 title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl
             } = req.body
-            console.log(req.body);
 
             price = Number(price)
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
             if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
-            if (!(isPremium === false || isPremium === true)) throw new BadRequestError("isPremium harus boolean")
+            if (!(isPremium === '1' || isPremium === '0')) throw new BadRequestError("isPremium harus 1 / 0")
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
             if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
             if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
 
+            isPremium = isPremium === '1' ? true : false
 
             //check if code is exist 
             checkCode = await prisma.course.findUnique({
@@ -124,7 +124,6 @@ module.exports = {
         let {category,level,ispremium,page,limit,se} = req.query
         page = page ? Number(page) : 1
         limit = limit ? Number(limit) : 10
-        console.log(category);
 
         const filters = getAllCourseFilter(ispremium,level,category)
         let coursesCount = await prisma.course.findMany({
@@ -289,7 +288,6 @@ module.exports = {
             let {
                 code, title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
             } = req.body;
-            console.log(req.body);
             price = Number(price);
             courseId = Number(courseId);
 
@@ -297,10 +295,12 @@ module.exports = {
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
             if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
-            if (!(isPremium === false || isPremium === true)) throw new BadRequestError("isPremium harus boolean")
+            if (!(isPremium === '1' || isPremium === '0')) throw new BadRequestError("isPremium harus 1 / 0")
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
             if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
             if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
+
+            isPremium = isPremium === '1' ? true : false
 
             //check course is exist
             const checkCourse = await prisma.course.findUnique({
