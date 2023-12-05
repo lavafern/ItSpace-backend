@@ -196,6 +196,7 @@ module.exports = {
                 select : {
                     email : true,
                     password : true,
+                    id : true,
                     profile : {
                         select : {
                             role : true

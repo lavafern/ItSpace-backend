@@ -108,6 +108,7 @@ model Video {
 
 model Transaction {
   id    Int     @id @default(autoincrement())
+  date DateTime
   expirationDate DateTime
   payDone  Boolean @default(false)
   payDate DateTime?
@@ -157,7 +158,7 @@ model Notification {
   id    Int     @id @default(autoincrement())
   type String
   message String
-  details String
+  details String?
   created_at DateTime
   is_read Boolean
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)

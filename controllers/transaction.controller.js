@@ -1,16 +1,17 @@
-const { BadRequestError } = require("../errors/customErrors")
+const { BadRequestError, ForbiddenError } = require("../errors/customErrors")
 const { prisma } = require("../utils/prismaClient")
-const {Prisma} = require("@prisma/client")
+const { getAllTransactionFilter } = require("../utils/searchFilters")
 
 module.exports = {
     createTransaction : async (req,res,next) => {
         try {
-            const id = 1
+            const authorId = req.user.id
             let {courseId,paymentMethod} = req.body
 
-            if (!courseId || !paymentMethod) throw new BadRequestError("Tolong masukan courseId")
-            if (isNaN(Number(courseId))) throw new BadRequestError("Tolong masukan courseId")
-            
+            if (!courseId || !paymentMethod) throw new BadRequestError("Tolong isi semua kolom")
+            if (isNaN(Number(courseId))) throw new BadRequestError("Tolong isi semua kolom")
+            courseId = Number(courseId)
+
             paymentMethod = paymentMethod.toLowerCase()
 
             // checks if courseId exist
@@ -20,16 +21,60 @@ module.exports = {
                 }
             })
             if (!checkCourse) throw new BadRequestError("CourseId tidak valid")
-            
-            const newTransaction = await prisma.transaction.create({
-                data : {
+            if (!checkCourse.isPremium) throw new BadRequestError("Course ini gratis")
+
+            // checks if transactions is done
+            const checkTransactionDone = await prisma.transaction.findMany({
+                where : {
+                    authorId,
+                    courseId,
+                    payDone : true
+                }
+            })
+            if (checkTransactionDone.length > 0) throw new BadRequestError("Course ini sudah anda beli")
+
+            //check unfinished transaction
+            const checkTransactionNotDone = await prisma.transaction.findMany({
+                where : {
+                    authorId,
+                    courseId,
+                    payDone : false
+                }
+            })
+
+            const transactionId = checkTransactionNotDone.length < 1 ? -1 :  checkTransactionNotDone[0].id
+
+
+
+            const newTransaction = await prisma.transaction.upsert({
+                where : {
+                    id : transactionId
+                },
+                update : {
                     expirationDate : new Date(new Date().getTime() + 24 * 60 * 60000),
                     paymentMethod,
-                    authorId : id,
+                },
+                create : {
+                    date: new Date(),
+                    expirationDate : new Date(new Date().getTime() + 24 * 60 * 60000),
+                    paymentMethod,
+                    authorId,
                     courseId
                 },
                 include : {
                     course : true
+                }
+            })
+
+            //menambahkan notifikasi telah melakukan pembelian
+            // TODO : tambahan url pembayaran front end
+            await prisma.notification.create({
+                data : {
+                    authorId,
+                    created_at : new Date(),
+                    is_read : false,
+                    type : "Transaksi",
+                    message : `Terima kasih telah melakukan pembelian kelas ${checkCourse.title}. Segera lakukan pembayaran untuk segera mengakses kursus.`,
                 }
             })
 
@@ -41,6 +86,7 @@ module.exports = {
             delete newTransaction.courseId
             delete newTransaction.payDate
             delete newTransaction.payDone
+
             res.status(201).json({
                 success : true,
                 message : "successfully create new transaction",
@@ -54,25 +100,29 @@ module.exports = {
     getAllTransaction : async (req,res,next) => {
         try {
             // TODO : finish this function , not completed
-            const prem = true
-            const level = ["BEGINNER", "INTERMEDIATE"]
-            const levelFilter = level.length > 0 ? level.map( i => {
-                    return {level : i}
-                }) : null
+            // filter : by userid, status bayar
+            //sort : tanggal bayar
 
-            const filters = [levelFilter,prem].map(i => {
-                if (Array.isArray(i)) {
-                    return {course : {
-                        OR : i
-                    }}
-                }else {
-                    return {course : {
-                        isPremium : i
-                    }}
-                }
-            })
+            let {status,courseCode,method,se,from,to} = req.query
+            to = to ? new Date(to) : new Date() 
+            from = from ? new Date(from) : new Date(new Date().getTime() - 24 * 60 * 60000)
+
+            const filters = getAllTransactionFilter(courseCode,status,method)
             const allTransactions = await prisma.transaction.findMany({
+                orderBy : [
+                    { id : 'desc'}
+                ],
                 where : {
+                    course : {
+                        title : {
+                            contains : se,
+                            mode : 'insensitive'
+                        }
+                    },
+                    date : {
+                        lte : to,
+                        gte : from
+                    },
                     AND : filters
                 },
                 include : {
@@ -80,10 +130,161 @@ module.exports = {
                 }
             })
 
+
             res.status(200).json({
                 success : true,
                 message : "Succesfully get all transactions",
                 data : allTransactions
+            })
+
+        } catch (err) {
+            next(err)
+        }
+    },
+    getTransactionDetail : async (req,res,next) => {
+        try {
+            const authorId = req.user.id
+            const role = req.user.profile.role
+            let {id} = req.params
+            if (!id) throw new BadRequestError("Tolong masukan Id transaksi")
+            if (isNaN(Number(id))) throw new BadRequestError("Id transaksi tidak valid")
+            id = Number(id)
+
+            ///checks if trainsaction valid 
+            //checks if transaction is valid
+            const transaction = await prisma.transaction.findUnique({
+                where : {
+                    id
+                },
+                include : {
+                    course : {
+                        select : {
+                            title : true,
+                            code : true,
+                            id : true,
+                            price : true
+                        }
+                    }
+                }
+            })
+
+            if (!transaction) throw new BadRequestError("Id transaksi tidak valid")
+            if (authorId !== transaction.authorId && role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+
+            res.status(200).json({
+                success : true,
+                message : "Succesfully get transaction detail",
+                data : transaction
+            })
+
+        } catch (err) {
+            next(err)
+        }
+    },
+
+    payTransaction : async (req,res,next) => {
+        try {
+            let {id} = req.params
+            const authorId = req.user.id
+
+            if (!id) throw new BadRequestError("Tolong masukan Id transaksi")
+            if (isNaN(Number(id))) throw new BadRequestError("Id transaksi tidak valid")
+            id = Number(id)
+
+            //checks if transaction is valid
+            const transaction = await prisma.transaction.findUnique({
+                where : {
+                    id
+                }
+            })
+            if (!transaction) throw new BadRequestError("Id transaksi tidak valid")
+            if (transaction.payDone) throw new BadRequestError("Transaksi telah dibayar")
+            if (transaction.authorId !== authorId)  throw new ForbiddenError("Anda tidak memiliki akses kesini")
+
+            // update database transaction done
+            const doneTransaction  = prisma.transaction.update({
+                where : {
+                    id  : transaction.id
+                },
+                data : {
+                    payDone : true,
+                    payDate : new Date()
+                },
+                include : {
+                    course : {
+                        select : {
+                            id : true,
+                            title : true
+                        }
+                    }
+                }
+            })
+
+            //directly enroll course when transaction is done
+            const enrollCourse = prisma.enrollment.create({
+                data : {
+                    date : new Date(),
+                    authorId : transaction.authorId,
+                    courseId : transaction.courseId
+                }
+            })
+
+            const pushNotification = prisma.notification.create({
+                data : {
+                    authorId,
+                    type : "Pembayaran selesai",
+                    message : `Terima kasih telah melakukan pembayaran kelas ${doneTransaction.course.title} sudah bisa kamu akses.`,
+                    created_at : new Date(),
+                    is_read : false
+                }
+            })
+
+
+            const payAndEnroll = await prisma.$transaction([doneTransaction,enrollCourse,pushNotification])
+
+            
+
+            res.status(201).json({
+                success : true,
+                message : "Transaction paid succesfully",
+                data : payAndEnroll
+            })
+
+        } catch (err) {
+            next(err)
+        }
+    },
+
+    deleteTransaction : async (req,res,next) => {
+        try {
+            let {id} = req.params
+            const role = req.user.profile.role
+            const authorId = req.user.id
+
+            if (!id) throw new BadRequestError("Tolong masukan Id transaksi")
+            if (isNaN(Number(id))) throw new BadRequestError("Id transaksi tidak valid")
+            id = Number(id)
+
+            /// checks if transaction is valid
+            const validTransaction = await prisma.transaction.findUnique({
+                where : {
+                    id
+                }
+            })
+            if (!validTransaction) throw new BadRequestError("Transaksi tidak ditemukan")
+            if (role !== "ADMIN" && validTransaction.payDone === true) throw new ForbiddenError("kamu tidak memiliki akses ksesini")
+            if (authorId !== validTransaction.authorId && role !== "ADMIN"  && validTransaction.payDone === false) throw new ForbiddenError("kamu tidak memiliki akses kesini")
+
+            const deleteTransaction = await prisma.transaction.delete({
+                where : {
+                    id
+                }
+            })
+
+            res.status(201).json({
+                success : true,
+                message : "Succesfully delete transaction",
+                data : deleteTransaction
             })
 
         } catch (err) {
