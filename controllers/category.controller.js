@@ -7,6 +7,7 @@ module.exports = {
     createCategory : async (req,res,next) => {
         try {
             const role = req.user.profile.role
+
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
             let {name} = req.body
 

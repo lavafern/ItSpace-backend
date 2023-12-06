@@ -25,6 +25,7 @@ model User {
   mentor Mentor[]
   rating Rating[]
   progress Progress[]
+  notification Notification[]
 }
 
 model Course {
@@ -36,6 +37,7 @@ model Course {
   isPremium Boolean
   description String
   groupUrl String?
+  thumbnailUrl String 
   courseCategory CourseCategory[]
   transaction Transaction[]
   enrollment Enrollment[]
@@ -48,7 +50,7 @@ model Profile {
   id        Int     @id @default(autoincrement())
   name     String
   phoneNumber   String?
-  profilePicture   String @default("empty")
+  profilePicture   String 
   role Role @default(USER)
   joinDate DateTime @default(now())
   location String?
@@ -149,6 +151,18 @@ model Progress {
   authorId  Int
   video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
   videoId  Int 
+}
+
+model Notification {
+  id    Int     @id @default(autoincrement())
+  type String
+  message String
+  details String
+  created_at DateTime
+  is_read Boolean
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  
 }
 
 
