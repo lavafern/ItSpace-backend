@@ -61,13 +61,28 @@ module.exports = {
                     authorId,
                     courseId
                 },
-                include : {
-                    course : true
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
+                    course : {
+                        select : {
+                            id : true,
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+
+                        }
+                    }
                 }
             })
 
             //menambahkan notifikasi telah melakukan pembelian
-            // TODO : tambahan url pembayaran front end
             await prisma.notification.create({
                 data : {
                     authorId,
@@ -77,15 +92,6 @@ module.exports = {
                     message : `Terima kasih telah melakukan pembelian kelas ${checkCourse.title}. Segera lakukan pembayaran untuk segera mengakses kursus.`,
                 }
             })
-
-            delete newTransaction.course.description
-            delete newTransaction.course.groupUrl
-            delete newTransaction.course.id
-            delete newTransaction.course.thumbnailUrl
-            delete newTransaction.authorId
-            delete newTransaction.courseId
-            delete newTransaction.payDate
-            delete newTransaction.payDone
 
             res.status(201).json({
                 success : true,
@@ -99,12 +105,9 @@ module.exports = {
     
     getAllTransaction : async (req,res,next) => {
         try {
-            // TODO : finish this function , not completed
-            // filter : by userid, status bayar
-            //sort : tanggal bayar
 
             let {status,courseCode,method,se,from,to} = req.query
-            to = to ? new Date(to) : new Date() 
+            to = to ? new Date(new Date(to).getTime() + (24 * 60 * 60 * 999)) : new Date() 
             from = from ? new Date(from) : new Date(new Date().getTime() - 24 * 60 * 60000)
 
             const filters = getAllTransactionFilter(courseCode,status,method)
@@ -125,8 +128,24 @@ module.exports = {
                     },
                     AND : filters
                 },
-                include : {
-                    course : true
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
+                    course : {
+                        select : {
+                            id : true,
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+
+                        }
+                    }
                 }
             })
 
@@ -156,13 +175,22 @@ module.exports = {
                 where : {
                     id
                 },
-                include : {
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
                     course : {
                         select : {
-                            title : true,
-                            code : true,
                             id : true,
-                            price : true
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+
                         }
                     }
                 }
@@ -210,11 +238,22 @@ module.exports = {
                     payDone : true,
                     payDate : new Date()
                 },
-                include : {
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
                     course : {
                         select : {
                             id : true,
-                            title : true
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+
                         }
                     }
                 }
@@ -247,7 +286,7 @@ module.exports = {
             res.status(201).json({
                 success : true,
                 message : "Transaction paid succesfully",
-                data : payAndEnroll
+                data : payAndEnroll[0]
             })
 
         } catch (err) {
@@ -278,6 +317,24 @@ module.exports = {
             const deleteTransaction = await prisma.transaction.delete({
                 where : {
                     id
+                },
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
+                    course : {
+                        select : {
+                            id : true,
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+                        }
+                    }
                 }
             })
 
