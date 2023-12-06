@@ -54,5 +54,47 @@ module.exports = {
         }).filter(Boolean)
 
 
+    },
+
+    getAllTransactionFilter : (courseCode,status,method) => {
+        courseCode = courseCode ? courseCode : []
+        status = status === '0' ? false :  status === '1' ? true : []
+        method = method ? method : []
+
+        const courseCodeFilter = {
+            type : 'courseCode',
+            data : courseCode
+        }
+        const statusFilter = {
+            type : 'status',
+            data : status
+        }
+        const methodFilter = {
+            type : 'method',
+            data : method
+        }
+
+
+        return [courseCodeFilter,statusFilter,methodFilter].map((e) => {
+            if (e.data.length < 1 || e.data === undefined) return false
+            
+            if (e.type === 'courseCode') {
+                const result =  {course : {
+                    code : e.data
+                }}
+                return result
+            }
+
+            if (e.type === 'status') {
+                const result = {payDone : e.data }
+                return result
+            }
+
+            if (e.type === 'method') {
+                const result =  {paymentMethod : e.data}
+                return result
+            }
+        }).filter(Boolean)
+
     }
 }

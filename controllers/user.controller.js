@@ -82,14 +82,9 @@ module.exports = {
             if (!id) throw new InternalServerError("Id tidak valid")
             id = Number(id)
             if (isNaN(id)) throw new InternalServerError("Id tidak valid")
-            const realId = await prisma.user.findUnique({
-                where : {
-                    email : req.user.email
-                }
-            })
 
 
-            if (id !== realId.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
             
            
            
@@ -204,13 +199,8 @@ module.exports = {
             if (!id) throw new InternalServerError("Id tidak valid")
             id = Number(id)
             if (isNaN(id)) throw new InternalServerError("Id tidak valid")
-            const realId = await prisma.user.findUnique({
-                where : {
-                    email : req.user.email
-                }
-            })
 
-            if (id !== realId.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
 
             const userDetail = await prisma.user.findUnique({
                 where : {

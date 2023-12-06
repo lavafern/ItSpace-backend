@@ -1299,6 +1299,487 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse500' 
 
+  /transactions:
+    post:
+      tags:
+        - transactions
+      description: create new course
+      requestBody:
+        content:
+          application/json:
+            schema:
+               type: object
+               properties:
+                courseId :
+                  type: integer  
+                  example : 1
+                paymentMethod: 
+                  type: string
+                  example: cc
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          date:
+                           type: string
+                           example: "2023-12-06T16:13:46.710Z"
+                          expirationDate:
+                           type: string
+                           example: "2023-12-07T16:13:46.710Z"
+                          payDone:
+                           type: boolean
+                           example: false
+                          payDate:
+                           type: string
+                           example: null
+                          paymentMethod:
+                           type: string
+                           example: "cc"
+                          course:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              code:
+                                type: string
+                                example: "BEJS"
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              price:
+                                type: string
+                                example: "100000"
+                              level:
+                                type: string
+                                example: "BEGINNER"
+                              ispremium:
+                                type: boolean
+                                example: true
+                             
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+    get:
+      tags:
+        - transactions
+      description: create new course
+      parameters:
+        - in: query
+          name: status
+          example: 1
+          schema:
+            type: string
+          description: 1 = already paid, 0 = not paid yet
+        - in: query
+          name: courseCode
+          example : BEJS
+          schema:
+            type: string
+          description: filter course by course code
+        - in: query
+          name: method
+          example: cc
+          schema:
+            type: string
+          description: filter course payment method
+        - in: query
+          name: se
+          schema:
+            type: string
+          description: search title of course
+        - in: query
+          name: from
+          example: 12/5/2023
+          schema:
+            type: string
+          description: filter transactions by the start date of 
+        - in: query
+          name: to
+          example: 12/6/2023
+          schema:
+            type: string
+          description: filter transactions by the end date of 
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: array
+                       items :
+                        type: object
+                        properties:
+                          id:
+                           type: integer
+                           example: 1
+                          date:
+                           type: string
+                           example: "2023-12-06T16:13:46.710Z"
+                          expirationDate:
+                           type: string
+                           example: "2023-12-07T16:13:46.710Z"
+                          payDone:
+                           type: boolean
+                           example: true
+                          
+                          payDate:
+                           type: boolean
+                           example: true
+                          
+                          paymentMethod:
+                           type: string
+                           example: "cc"
+                          course:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              code:
+                                type: string
+                                example: "BEJS"
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              price:
+                                type: string
+                                example: "100000"
+                              level:
+                                type: string
+                                example: "BEGINNER"
+                              ispremium:
+                                type: boolean
+                                example: true
+                            
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  /transactions/{id}: 
+    get:
+      tags:
+        - transactions
+      description: get transaction detail
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          id:
+                           type: integer
+                           example: 1
+                          date:
+                           type: string
+                           example: "2023-12-06T16:13:46.710Z"
+                          expirationDate:
+                           type: string
+                           example: "2023-12-07T16:13:46.710Z"
+                          payDone:
+                           type: boolean
+                           example: true
+                          
+                          payDate:
+                           type: boolean
+                           example: true
+                          
+                          paymentMethod:
+                           type: string
+                           example: "cc"
+                          course:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              code:
+                                type: string
+                                example: "BEJS"
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              price:
+                                type: string
+                                example: "100000"
+                              level:
+                                type: string
+                                example: "BEGINNER"
+                              ispremium:
+                                type: boolean
+                                example: true
+                            
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+    put:
+      tags:
+        - transactions
+      description: create new course
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                           type: integer
+                           example: 1
+                          date:
+                           type: string
+                           example: "2023-12-06T16:13:46.710Z"
+                          expirationDate:
+                           type: string
+                           example: "2023-12-07T16:13:46.710Z"
+                          payDone:
+                           type: boolean
+                           example: true
+                          payDate:
+                           type: string
+                           example: "2023-12-06T19:35:33.128Z"
+                          paymentMethod:
+                           type: string
+                           example: "cc"
+                          course:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              code:
+                                type: string
+                                example: "BEJS"
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              price:
+                                type: string
+                                example: "100000"
+                              level:
+                                type: string
+                                example: "BEGINNER"
+                              ispremium:
+                                type: boolean
+                                example: true
+    delete:
+      tags:
+        - transactions
+      description: create new course
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                           type: integer
+                           example: 1
+                          date:
+                           type: string
+                           example: "2023-12-06T16:13:46.710Z"
+                          expirationDate:
+                           type: string
+                           example: "2023-12-07T16:13:46.710Z"
+                          payDone:
+                           type: boolean
+                           example: true
+                          payDate:
+                           type: string
+                           example: "2023-12-06T19:35:33.128Z"
+                          paymentMethod:
+                           type: string
+                           example: "cc"
+                          course:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              code:
+                                type: string
+                                example: "BEJS"
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              price:
+                                type: string
+                                example: "100000"
+                              level:
+                                type: string
+                                example: "BEGINNER"
+                              ispremium:
+                                type: boolean
+                                example: true
+                           
+                           
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+    
+
 
 #---------------------------------------components--------------------------------------
 
