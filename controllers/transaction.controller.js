@@ -153,7 +153,12 @@ module.exports = {
             res.status(200).json({
                 success : true,
                 message : "Succesfully get all transactions",
-                data : allTransactions
+                data : {
+                    date : {
+                        from ,
+                        to
+                    },
+                    transactions : allTransactions}
             })
 
         } catch (err) {
@@ -343,6 +348,77 @@ module.exports = {
                 message : "Succesfully delete transaction",
                 data : deleteTransaction
             })
+
+        } catch (err) {
+            next(err)
+        }
+    },
+    myTransactions : async (req,res,next) => {
+        try {
+            userId = req.user.id
+
+
+            console.log(userId);
+
+            let {status,courseCode,method,se,from,to} = req.query
+            to = to ? new Date(new Date(to).getTime() + (24 * 60 * 60 * 999)) : new Date() 
+            from = from ? new Date(from) : new Date(new Date().getTime() - 24 * 60 * 60000)
+
+            console.log(from.toLocaleDateString());
+            const filters = getAllTransactionFilter(courseCode,status,method)
+            const allTransactions = await prisma.transaction.findMany({
+                orderBy : [
+                    { id : 'desc'}
+                ],
+                where : {
+                    authorId : userId,
+                    course : {
+                        title : {
+                            contains : se,
+                            mode : 'insensitive'
+                        }
+                    },
+                    date : {
+                        lte : to,
+                        gte : from
+                    },
+                    AND : filters
+                },
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
+                    course : {
+                        select : {
+                            id : true,
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+
+                        }
+                    }
+                }
+            })
+
+
+            res.status(200).json({
+                success : true,
+                message : "Succesfully get all transactions",
+                data : {
+                    date : {
+                        from ,
+                        to
+                    },
+                    transactions : allTransactions
+                }
+            })
+
+
 
         } catch (err) {
             next(err)

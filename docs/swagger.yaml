@@ -1450,51 +1450,63 @@ paths:
                   - type: object
                     properties:
                       data:
-                       type: array
-                       items :
                         type: object
                         properties:
-                          id:
-                           type: integer
-                           example: 1
-                          date:
-                           type: string
-                           example: "2023-12-06T16:13:46.710Z"
-                          expirationDate:
-                           type: string
-                           example: "2023-12-07T16:13:46.710Z"
-                          payDone:
-                           type: boolean
-                           example: true
-                          
-                          payDate:
-                           type: boolean
-                           example: true
-                          
-                          paymentMethod:
-                           type: string
-                           example: "cc"
-                          course:
+                          rangeDate:
                            type: object
                            properties:
+                             from:
+                              type: string
+                              example: 2023-12-04T17:00:00.000Z
+                             to:
+                              type: string
+                              example: 2023-12-07T17:59:47.297Z
+                          transactions :
+                           type: array
+                           items :
+                            type: object
+                            properties:
                               id:
                                type: integer
                                example: 1
-                              code:
-                                type: string
-                                example: "BEJS"
-                              title:
-                                type: string
-                                example: "Backend javascript"
-                              price:
-                                type: string
-                                example: "100000"
-                              level:
-                                type: string
-                                example: "BEGINNER"
-                              ispremium:
-                                type: boolean
-                                example: true
+                              date:
+                               type: string
+                               example: "2023-12-06T16:13:46.710Z"
+                              expirationDate:
+                               type: string
+                               example: "2023-12-07T16:13:46.710Z"
+                              payDone:
+                               type: boolean
+                               example: true
+
+                              payDate:
+                               type: boolean
+                               example: true
+
+                              paymentMethod:
+                               type: string
+                               example: "cc"
+                              course:
+                               type: object
+                               properties:
+                                  id:
+                                   type: integer
+                                   example: 1
+                                  code:
+                                    type: string
+                                    example: "BEJS"
+                                  title:
+                                    type: string
+                                    example: "Backend javascript"
+                                  price:
+                                    type: string
+                                    example: "100000"
+                                  level:
+                                    type: string
+                                    example: "BEGINNER"
+                                  ispremium:
+                                    type: boolean
+                                    example: true
                             
         '400':
           description: Bad request
@@ -1625,7 +1637,7 @@ paths:
     put:
       tags:
         - transactions
-      description: create new course
+      description: pay transaction
       parameters:
       - in: path
         name: id
@@ -1778,6 +1790,147 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse500' 
+  /my-transactions:
+    get:
+      tags:
+        - transactions
+      description: transactions of logged in user
+      parameters:
+        - in: query
+          name: status
+          example: 1
+          schema:
+            type: string
+          description: 1 = already paid, 0 = not paid yet
+        - in: query
+          name: courseCode
+          example : BEJS
+          schema:
+            type: string
+          description: filter course by course code
+        - in: query
+          name: method
+          example: cc
+          schema:
+            type: string
+          description: filter course payment method
+        - in: query
+          name: se
+          schema:
+            type: string
+          description: search title of course
+        - in: query
+          name: from
+          example: 12/5/2023
+          schema:
+            type: string
+          description: filter transactions by the start date of 
+        - in: query
+          name: to
+          example: 12/6/2023
+          schema:
+            type: string
+          description: filter transactions by the end date of 
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          rangeDate:
+                           type: object
+                           properties:
+                             from:
+                              type: string
+                              example: 2023-12-04T17:00:00.000Z
+                             to:
+                              type: string
+                              example: 2023-12-07T17:59:47.297Z
+                          transactions :
+                        
+                            type: array
+                            items :
+                             type: object
+                             properties:
+                               id:
+                                type: integer
+                                example: 1
+                               date:
+                                type: string
+                                example: "2023-12-06T16:13:46.710Z"
+                               expirationDate:
+                                type: string
+                                example: "2023-12-07T16:13:46.710Z"
+                               payDone:
+                                type: boolean
+                                example: true
+                               
+                               payDate:
+                                type: boolean
+                                example: true
+                               
+                               paymentMethod:
+                                type: string
+                                example: "cc"
+                               course:
+                                type: object
+                                properties:
+                                   id:
+                                    type: integer
+                                    example: 1
+                                   code:
+                                     type: string
+                                     example: "BEJS"
+                                   title:
+                                     type: string
+                                     example: "Backend javascript"
+                                   price:
+                                     type: string
+                                     example: "100000"
+                                   level:
+                                     type: string
+                                     example: "BEGINNER"
+                                   ispremium:
+                                     type: boolean
+                                     example: true
+                            
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
     
 
 
