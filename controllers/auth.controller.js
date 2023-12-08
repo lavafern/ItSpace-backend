@@ -280,13 +280,13 @@ module.exports = {
     resetPassword : async (req,res,next) => {
         try {
             const {token} = req.params 
-            const {newPassword,newPaswordValidation} = req.body
+            const {newPassword,newPasswordValidation} = req.body
             const decode = await decodeToken(token,JWT_RESETPASSWORD_SECRET)
             const {email} = decode
 
-            if (!newPassword || !newPaswordValidation ) throw new BadRequestError("Harap isi semua kolom")
+            if (!newPassword || !newPasswordValidation ) throw new BadRequestError("Harap isi semua kolom")
             if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
-            if (newPassword !== newPaswordValidation ) throw new BadRequestError("Validasi password salah")
+            if (newPassword !== newPasswordValidation ) throw new BadRequestError("Validasi password salah")
 
             const hashedPassword = await new Promise((resolve, reject) => {
                 bcrypt.hash(newPassword, 10, function(err, hash) {
@@ -327,7 +327,7 @@ module.exports = {
 
             if (!newPassword || !newPasswordValidation ) throw new BadRequestError("Harap isi semua kolom")
             if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
-            if (newPassword !== newPaswordValidation ) throw new BadRequestError("Validasi password salah")
+            if (newPassword !== newPasswordValidation ) throw new BadRequestError("Validasi password salah")
 
             const foundUser = await prisma.user.findUnique({
                 where : {
