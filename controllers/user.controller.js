@@ -3,11 +3,21 @@ const {BadRequestError,NotFoundError,UnauthorizedError, ForbiddenError, Internal
 const bcrypt = require("bcrypt")
 const imagekit = require("../utils/imagekit")
 const path = require("path")
+const {userPagination} = require("../utils/pagination")
 module.exports = {
     getAllUsers : async (req,res,next) => {
         try {
-            // TODO : add pagination
+            let {page,limit} = req.query
+            page = page ? Number(page) : 1
+            limit = limit ? Number(limit) : 10
+
+
+            const userCount = await prisma.user.count()
+
+
             let users = await prisma.user.findMany({
+                skip : (page - 1) * limit,
+                take : limit,
                 select : {
                     id : true,
                     email :true,
@@ -24,10 +34,16 @@ module.exports = {
                
             })
 
+            const pagination = userPagination(req,userCount,page,limit)
+
+            const result = {
+                pagination,
+                users
+            }
             res.status(200).json({
                 success : true,
                 message : "Succesfully get all users",
-                data : users
+                data : result
             })
         } catch (err) {
             next(err)
@@ -82,14 +98,9 @@ module.exports = {
             if (!id) throw new InternalServerError("Id tidak valid")
             id = Number(id)
             if (isNaN(id)) throw new InternalServerError("Id tidak valid")
-            const realId = await prisma.user.findUnique({
-                where : {
-                    email : req.user.email
-                }
-            })
 
 
-            if (id !== realId.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
             
            
            
@@ -204,13 +215,8 @@ module.exports = {
             if (!id) throw new InternalServerError("Id tidak valid")
             id = Number(id)
             if (isNaN(id)) throw new InternalServerError("Id tidak valid")
-            const realId = await prisma.user.findUnique({
-                where : {
-                    email : req.user.email
-                }
-            })
 
-            if (id !== realId.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
 
             const userDetail = await prisma.user.findUnique({
                 where : {
