@@ -3,7 +3,7 @@ const {ForbiddenError,BadRequestError, NotFoundError, InternalServerError} = req
 const imagekit = require("../utils/imagekit")
 const path = require("path")
 const {getAllCourseFilter} = require("../utils/searchFilters")
-const getPagination = require("../utils/pagination")
+const {coursePagination} = require("../utils/pagination")
 
 module.exports = {
     createCourse : async (req,res,next) => {
@@ -209,7 +209,7 @@ module.exports = {
           }
         })
 
-        const pagination = getPagination(req,coursesCount,page,limit,category,level,ispremium)
+        const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium)
 
         const result = {
             pagination,

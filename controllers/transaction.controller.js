@@ -1,4 +1,4 @@
-const { BadRequestError, ForbiddenError } = require("../errors/customErrors")
+const { BadRequestError, ForbiddenError, UserNotVerifiedError } = require("../errors/customErrors")
 const { prisma } = require("../utils/prismaClient")
 const { getAllTransactionFilter } = require("../utils/searchFilters")
 
@@ -6,6 +6,7 @@ module.exports = {
     createTransaction : async (req,res,next) => {
         try {
             const authorId = req.user.id
+           
             let {courseId,paymentMethod} = req.body
 
             if (!courseId || !paymentMethod) throw new BadRequestError("Tolong isi semua kolom")
@@ -13,6 +14,15 @@ module.exports = {
             courseId = Number(courseId)
 
             paymentMethod = paymentMethod.toLowerCase()
+
+            // checks if user is verified
+            const user = await prisma.user.findUnique({
+                where : {
+                    id : authorId
+                }
+            })
+
+            if (!(user.verified)) throw new UserNotVerifiedError("Akun belum di verifikasi")
 
             // checks if courseId exist
             const checkCourse = await prisma.course.findUnique({
@@ -277,7 +287,7 @@ module.exports = {
                 data : {
                     authorId,
                     type : "Pembayaran selesai",
-                    message : `Terima kasih telah melakukan pembayaran kelas ${doneTransaction.course.title} sudah bisa kamu akses.`,
+                    message : `Terima kasih telah melakukan pembayaran, kelas premium ${doneTransaction.course.title} sudah bisa kamu akses.`,
                     created_at : new Date(),
                     is_read : false
                 }

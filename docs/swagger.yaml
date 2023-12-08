@@ -20,13 +20,17 @@ tags:
   - name : categories
     description: Everything about categories
   - name : transactions
-    description: login,logout,register
-  - name : enrollment
-    description: login,logout,register
-  - name : rating
-    description: login,logout,register
+    description: Everything about transactions
+  - name : enrollments
+    description: Everything about enrollments
+  - name : ratings
+    description: Everything about ratings
+  - name : chapters
+    description: Everything about chapters
+  - name : videos
+    description: Everything about videos
   - name : progress
-    description: login,logout,register
+    description: Everything about progress
   
 paths:
   /courses:
@@ -827,31 +831,36 @@ paths:
                   - type: object
                     properties:
                       data: 
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            id :
-                              type: integer
-                              example: 1
-                            email :
-                              type: string
-                              example: example@gmail.com
-                            verified :
-                              type: boolean
-                              example: true
-                            profile:
+                        type: object
+                        properties:
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+                          users:
+                            type: array
+                            items:
                               type: object
                               properties:
-                                name :
+                                id :
+                                  type: integer
+                                  example: 1
+                                email :
                                   type: string
-                                  example: john doe
-                                phoneNumber :
-                                  type: string
-                                  example: 08888888
-                                role :
-                                  type: string
-                                  example: ADMIN
+                                  example: example@gmail.com
+                                verified :
+                                  type: boolean
+                                  example: true
+                                profile:
+                                  type: object
+                                  properties:
+                                    name :
+                                      type: string
+                                      example: john doe
+                                    phoneNumber :
+                                      type: string
+                                      example: 08888888
+                                    role :
+                                      type: string
+                                      example: ADMIN
   /users/{id}:
       get:
         tags:
@@ -1931,7 +1940,240 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse500'
-    
+  /enrollments:
+    post:
+      tags:
+        - enrollments
+      description: create new enrollment
+      requestBody:
+        content:
+          application/json:
+            schema:
+               type: object
+               properties:
+                courseId :
+                  type: integer  
+                  example : 1
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          date:
+                           type: string
+                           example: "2023-12-06T16:13:46.710Z"
+                          course:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              code:
+                                type: string
+                                example: "BEJS"
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              price:
+                                type: string
+                                example: "0"
+                              level:
+                                type: string
+                                example: "BEGINNER"
+                              ispremium:
+                                type: boolean
+                                example: false
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  /my-enrollments: 
+    get:
+      tags:
+        - enrollments
+      description: list of enrolled course of logged in user
+      parameters:
+      - in: query
+        name: ispremium
+        example: 1
+        schema:
+          type: string
+        description: 1 = premium, 0 = not premium
+      - in: query
+        name: category
+        example : backend,frontend
+        schema:
+          type: string
+        description: filter course by categories
+      - in: query
+        name: level
+        example: BEGINNER,INTERMEDIATE,ADVANCED
+        schema:
+          type: string
+        description: filter course by level
+      - in: query
+        name: se
+        schema:
+          type: string
+        description: search title of course
+      - in: query
+        name: page
+        example: 1
+        schema:
+          type: integer
+        description: the page you want to access
+      - in: query
+        name: limit
+        example: 10
+        schema:
+          type: integer
+        description: The numbers of items to return
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          id :
+                            type: integer
+                            example: 1
+                          code :
+                            type: string
+                            example: BE1
+                          title:
+                            type: string
+                            example: Backend dengan expressjs
+                          price:
+                             type: integer
+                             example: 1000
+                          level:
+                            type: string
+                            example: BEGINNER
+                          isPremium:
+                            type: boolean
+                            example: true
+                          groupUrl:
+                           type: string
+                           example: www.url.com
+                          thumbnailUrl:
+                           type: string
+                           example: www.url.com
+                          courseCategory:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                category:
+                                  type: object
+                                  properties:
+                                    name:
+                                      type: string
+                                      example: backend
+                          mentor:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                author:
+                                  type: object
+                                  properties:
+                                    profile:
+                                      type: object
+                                      properties:
+                                        name:
+                                          type: string
+                                          example: john doe
+                                        Pagination:
+                                          title: Pagination
+                                          type: object
+                                          properties:
+                                            links:
+                                              type: object
+                                              properties:
+                                                next:
+                                                  type: string
+                                                  example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=3&limit=10"
+                                                prev:
+                                                  type: string
+                                                  example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=1&limit=10"
+                                            total_items:
+                                              type: integer
+                                              example: 100      
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  
 
 
 #---------------------------------------components--------------------------------------
