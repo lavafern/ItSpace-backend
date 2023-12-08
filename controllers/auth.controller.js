@@ -146,9 +146,8 @@ module.exports = {
     verifyOtp : async (req,res,next) => {
         try {
 
-            const {email} = req.user
 
-            const {otp} = req.body
+            const {otp,email} = req.body
 
             if (!email || !otp) throw new BadRequestError("Harap isi semua kolom")
             if (isNaN(Number(otp))) throw new BadRequestError("Otp harus angka")
