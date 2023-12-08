@@ -323,9 +323,9 @@ module.exports = {
     changePassword : async (req,res,next) => {
         try {
             const {id} = req.user
-            const {oldPassword,newPassword,newPaswordValidation} = req.body
+            const {oldPassword,newPassword,newPasswordValidation} = req.body
 
-            if (!newPassword || !newPaswordValidation ) throw new BadRequestError("Harap isi semua kolom")
+            if (!newPassword || !newPasswordValidation ) throw new BadRequestError("Harap isi semua kolom")
             if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
             if (newPassword !== newPaswordValidation ) throw new BadRequestError("Validasi password salah")
 
