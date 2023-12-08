@@ -320,14 +320,20 @@ module.exports = {
             next(err)
         }
     },
-    changePassword : async () => {
+    changePassword : async (req,res,next) => {
         try {
-            const {email} = req.user
+            const {id} = req.user
             const {oldPassword,newPassword,newPaswordValidation} = req.body
 
             if (!newPassword || !newPaswordValidation ) throw new BadRequestError("Harap isi semua kolom")
             if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
             if (newPassword !== newPaswordValidation ) throw new BadRequestError("Validasi password salah")
+
+            const foundUser = await prisma.user.findUnique({
+                where : {
+                    id
+                }
+            })
 
             //checks if password correct
             const comparePassword = await new Promise((resolve,reject) => {
@@ -350,7 +356,7 @@ module.exports = {
 
             const updatePassword = await prisma.user.update({
                 where : {
-                    email
+                    id
                 },
                 data : {
                     password : newHashedPassword
