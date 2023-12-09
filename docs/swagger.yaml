@@ -871,7 +871,7 @@ paths:
             schema:
               type: integer
             required: true
-        description: get all user [DONE]
+        description: get user detail [DONE]
         responses:
           '201':
             description: Successful operation
