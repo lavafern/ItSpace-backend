@@ -18,8 +18,9 @@ const cookies = require("cookie-parser");
 
 app.use(cookies());
 app.use(cors({
-    origin : FRONTEND_URL,
-    credentials: true
+    origin : '*',
+    credentials: true,
+    methods : ['GET', 'PUT', 'POST','DELETE']
   }))
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }))
