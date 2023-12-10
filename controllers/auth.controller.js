@@ -1,16 +1,29 @@
 const bcrypt = require("bcrypt")
 const { prisma } = require("../utils/prismaClient")
-const {JWT_SECRET,JWT_REFRESH_SECRET,FRONTEND_URL,RESET_PASSWORD_URL} = process.env
+const {JWT_SECRET,JWT_REFRESH_SECRET,JWT_RESETPASSWORD_SECRET,FRONTEND_URL,RESET_PASSWORD_URL} = process.env
 const {sendEmail} = require("../utils/sendEmail")
 const {otpHtml} = require("../views/templates/emailVerification")
 const {resetPasswordHtml} = require("../views/templates/resetPassword")
-const {generateOtp,signToken} = require("../utils/authUtils")
+const {generateOtp,signToken, decodeToken} = require("../utils/authUtils")
 const {BadRequestError,UnauthorizedError,NotFoundError} = require("../errors/customErrors")
+const imagekit = require("../utils/imagekit")
 
 module.exports = {
-    LoginWithGoogle : (req,res,next) => {
+    LoginWithGoogle : async (req,res,next) => {
         try {
-            res.send(req.user)
+            const accesToken = await signToken('access',foundUser,JWT_SECRET)
+
+            const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET)
+            
+            res
+            .cookie("accesToken",accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+            .cookie("refreshToken",refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
+            .status(200).json({
+                success : true,
+                message : "successfully login with google",
+                data : req.user
+            })
+            
         } catch (err) {
             next(err)
         }
@@ -18,8 +31,12 @@ module.exports = {
 
     register : async (req,res,next) => {
         try {
-            let {email,password,passwordValidation,name,role} = req.body
-            role = role ?  "ADMIN" : "USER"
+            let {email,password,passwordValidation,name} = req.body
+            let profilePicture = !(req.file) ? "https://ik.imagekit.io/itspace/18b5b599bb873285bd4def283c0d3c09.jpg?updatedAt=1701289000673" : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
+
             if (!email || !password || !name || !passwordValidation) throw new BadRequestError("Harap isi semua kolom")
             if (password.length < 8 || password.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
             if (password !== passwordValidation ) throw new BadRequestError("Validasi password salah")
@@ -54,7 +71,7 @@ module.exports = {
                     profile : {
                         create : {
                             name,
-                            role
+                            profilePicture
                         }
                     },
                     otp : {
@@ -128,8 +145,9 @@ module.exports = {
 
     verifyOtp : async (req,res,next) => {
         try {
-            const {email} = req.params
-            const {otp} = req.body
+
+
+            const {otp,email} = req.body
 
             if (!email || !otp) throw new BadRequestError("Harap isi semua kolom")
             if (isNaN(Number(otp))) throw new BadRequestError("Otp harus angka")
@@ -149,7 +167,7 @@ module.exports = {
                 where : {
                     email
                 },
-                update : {
+                data : {
                     verified : true
                 }
             })
@@ -174,11 +192,17 @@ module.exports = {
                 where : {
                     email
                 },
-                include : {
-                    profile : true
+                select : {
+                    email : true,
+                    password : true,
+                    id : true,
+                    profile : {
+                        select : {
+                            role : true
+                        }
+                    }
                 }
             })
-
             if (! foundUser) throw new UnauthorizedError("Email / password salah")
 
             //checks if password correct
@@ -190,31 +214,21 @@ module.exports = {
             })
 
             delete foundUser.password
-            delete foundUser.googleId
-            delete foundUser.verified
-            delete foundUser.profile.authorId
-            delete foundUser.profile.name
-            delete foundUser.profile.phoneNumber
-            delete foundUser.profile.profilePicture
-            delete foundUser.profile.joinDate
-            delete foundUser.profile.location 
-            delete foundUser.profile.id 
-
-
 
             if (!comparePassword) throw new UnauthorizedError("Email / password salah")
+
+
 
             const accesToken = await signToken('access',foundUser,JWT_SECRET)
 
             const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET)
-            
             res
             .cookie("accesToken",accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
             .cookie("refreshToken",refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
             .status(200).json({
                 success : true,
                 message : "login success",
-                data : {role : foundUser.profile.role}
+                data : foundUser
             })
 
 
@@ -240,9 +254,9 @@ module.exports = {
         }
     },
     
-    resetPassword : async (req,res,next) => {
+    sendResetPassword : async (req,res,next) => {
         try {
-            const {email} = req.params
+            const {email} = req.body
             if (!email) throw new BadRequestError("Email harus di isi")
             const user = await prisma.user.findUnique({
                 where : {
@@ -250,7 +264,7 @@ module.exports = {
                 } 
             })
             if (!user) throw new NotFoundError("Email tidak terdaftar")
-            const token = await signToken('refresh',{email : user.email},JWT_REFRESH_SECRET)
+            const token = await signToken('resetPassword',{email : user.email},JWT_RESETPASSWORD_SECRET)
             const html = resetPasswordHtml(token,RESET_PASSWORD_URL)
             sendEmail(email,"Reset Your Password",html)
 
@@ -263,7 +277,106 @@ module.exports = {
             next(err)
         }
     },
+    resetPassword : async (req,res,next) => {
+        try {
+            const {token} = req.params 
+            const {newPassword,newPasswordValidation} = req.body
+            const decode = await decodeToken(token,JWT_RESETPASSWORD_SECRET)
+            const {email} = decode
 
+            if (!newPassword || !newPasswordValidation ) throw new BadRequestError("Harap isi semua kolom")
+            if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
+            if (newPassword !== newPasswordValidation ) throw new BadRequestError("Validasi password salah")
+
+            const hashedPassword = await new Promise((resolve, reject) => {
+                bcrypt.hash(newPassword, 10, function(err, hash) {
+                    if (err) reject(err)
+                    resolve(hash) 
+                });
+            })
+
+            if (!hashedPassword) throw new Error("Gagal mengenkripsi password")
+
+            const updatePassword = await prisma.user.update({
+                where : {
+                    email
+                },
+                data : {
+                    password : hashedPassword
+                }
+            })
+
+            delete updatePassword.password
+            delete updatePassword.verified
+            delete updatePassword.googleId
+
+            res.status(201).json({
+                success : true,
+                message  : "Succesfully reset password",
+                data : updatePassword
+            })
+
+        } catch (err) {
+            next(err)
+        }
+    },
+    changePassword : async (req,res,next) => {
+        try {
+            const {id} = req.user
+            const {oldPassword,newPassword,newPasswordValidation} = req.body
+
+            if (!newPassword || !newPasswordValidation ) throw new BadRequestError("Harap isi semua kolom")
+            if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
+            if (newPassword !== newPasswordValidation ) throw new BadRequestError("Validasi password salah")
+
+            const foundUser = await prisma.user.findUnique({
+                where : {
+                    id
+                }
+            })
+
+            //checks if password correct
+            const comparePassword = await new Promise((resolve,reject) => {
+                bcrypt.compare(oldPassword,foundUser.password,function (err,result) {
+                    if (err) reject(err)
+                    resolve(result)
+                })
+            })
+
+            if (!comparePassword) throw new UnauthorizedError("Email / password salah")
+
+            const newHashedPassword = await new Promise((resolve, reject) => {
+                bcrypt.hash(newPassword, 10, function(err, hash) {
+                    if (err) reject(err)
+                    resolve(hash) 
+                });
+            })
+
+            if (!newHashedPassword) throw new Error("Gagal mengenkripsi password")
+
+            const updatePassword = await prisma.user.update({
+                where : {
+                    id
+                },
+                data : {
+                    password : newHashedPassword
+                }
+            })
+
+            delete updatePassword.password
+            delete updatePassword.verified
+            delete updatePassword.googleId
+
+            res.status(201).json({
+                success : true,
+                message  : "Succesfully reset password",
+                data : updatePassword
+            })
+           
+        } catch (err) {
+            next(err)
+        }
+    },
 
     jwtDecode : async (req,res,next) => {
         try {

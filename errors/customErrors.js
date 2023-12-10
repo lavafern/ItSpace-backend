@@ -38,6 +38,19 @@ class InternalServerError extends Error {
     }
 }
 
+class CourseNotPurchasedError extends ForbiddenError{
+    constructor(message) {
+        super(message)
+        this.name = this.constructor.name
+    }
+}
+class UserNotVerifiedError extends ForbiddenError{
+    constructor(message) {
+        super(message)
+        this.name = this.constructor.name
+    }
+}
 
 
-module.exports = {BadRequestError,UnauthorizedError,ForbiddenError,NotFoundError,InternalServerError}
+
+module.exports = {BadRequestError,UnauthorizedError,ForbiddenError,NotFoundError,InternalServerError,CourseNotPurchasedError,UserNotVerifiedError}

@@ -2,7 +2,7 @@ const {NotFoundError} = require("../errors/customErrors")
 
 module.exports = {
     otherError : (err,req,res,next) => {
-
+           err.statusCode = err.statusCode || 500
            console.log(err);
             
            return res

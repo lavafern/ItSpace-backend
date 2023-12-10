@@ -1,16 +1,19 @@
 const passport = require("../../utils/passport")
 const router = require("express").Router()
 const {restrict} = require("../../middlewares/auth.middleware")
-const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, resetPassword} = require("../../controllers/auth.controller")
+const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, sendResetPassword, resetPassword, changePassword} = require("../../controllers/auth.controller")
+const {image} = require("../../utils/multer")
 
 
-router.post('/register',register)
+router.post('/register',image.single('image'),register)
 router.post('/login',login)
 router.get('/decode',restrict,jwtDecode)
 router.post('/logout',restrict,logout)
 router.post('/resend-otp/:email',resendOtp)
-router.put('/verify-otp/:email',verifyOtp)
-router.get('/reset-password/:email',resetPassword)
+router.put('/verify-otp',verifyOtp)
+router.get('/reset-password',sendResetPassword)
+router.put('/reset-password/:token',resetPassword)
+router.put('/change-password',restrict,changePassword)
 
 
 

@@ -1,61 +1,37 @@
-const { prisma } = require("../utils/prismaClient");
-const {
-  ForbiddenError,
-  BadRequestError,
-  NotFoundError,
-} = require("../errors/customErrors");
+const {prisma} = require("../utils/prismaClient")
+const {ForbiddenError,BadRequestError, NotFoundError, InternalServerError} = require("../errors/customErrors")
+const imagekit = require("../utils/imagekit")
+const path = require("path")
+const {getAllCourseFilter} = require("../utils/searchFilters")
+const {coursePagination} = require("../utils/pagination")
 
 module.exports = {
-  createCourse: async (req, res, next) => {
-    try {
-      const role = req.user.profile.role;
-      if (role !== "ADMIN")
-        throw new ForbiddenError("Kamu tidak memiliki akses kesini");
+    createCourse : async (req,res,next) => {
+        try {
+            const role = req.user.profile.role
 
-      let {
-        title,
-        price,
-        level,
-        isPremium,
-        description,
-        courseCategory,
-        mentorEmail,
-        code,
-        groupUrl,
-      } = req.body;
-      price = Number(price);
+            
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
-      if (isNaN(price))
-        throw new BadRequestError("Kolom harga harus diisi dengan angka");
-      if (
-        !title ||
-        !price ||
-        !level ||
-        !description ||
-        !code ||
-        !groupUrl ||
-        !mentorEmail ||
-        !courseCategory
-      )
-        throw new BadRequestError("Tolong isi semua kolom");
-      if (!Array.isArray(courseCategory) || !Array.isArray(mentorEmail))
-        throw new BadRequestError("category dan email mentor harus array");
-      if (!(isPremium === false || isPremium === true))
-        throw new BadRequestError("isPremium harus boolean");
-      if (
-        !(
-          level === "BEGINNER" ||
-          level === "INTERMEDIATE" ||
-          level === "ADVANCED"
-        )
-      )
-        throw new BadRequestError("level tidak valid");
-      if (description.length > 1024)
-        throw new BadRequestError(
-          "Deskripsi harus tidak lebih dari 1024 karakter"
-        );
-      if (title.length > 60)
-        throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter");
+            let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/download.jpeg?updatedAt=1701289170908" : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
+
+            let {
+                title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl
+            } = req.body
+
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
+            price = Number(price)
+            if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
+            if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
+            if (!(isPremium === '1' || isPremium === '0')) throw new BadRequestError("isPremium harus 1 / 0")
+            if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
+            if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
+            if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
+
+            isPremium = isPremium === '1' ? true : false
 
       //check if code is exist
       checkCode = await prisma.course.findUnique({
@@ -97,161 +73,245 @@ module.exports = {
         return i.email;
       });
 
-      mentorId = mentorId.map((i) => {
-        return { authorId: i.id };
-      });
+            mentorId = mentorId.map((i) => {
+                return {authorId : i.id}
+            })
 
-      // create new course
-      const newCourse = await prisma.course.create({
-        data: {
-          code,
-          title,
-          price,
-          level,
-          isPremium,
-          description,
-          groupUrl,
-          courseCategory: {
-            create: categoryId,
+
+            
+            // create new course
+            const newCourse = await prisma.course.create({
+                data : {
+                    code,
+                    title,
+                    price,
+                    level,
+                    isPremium,
+                    description,
+                    groupUrl,
+                    thumbnailUrl,
+                    courseCategory : {
+                        create : categoryId
+                    },
+                    mentor : {
+                        create : mentorId
+                    }
+                    
+                }
+                
+            })
+
+            newCourse.mentor = mentorValidEmail
+            newCourse.category = validCategory
+            
+
+            res.status(201).json({
+                success : true,
+                message : "succesfully create new course",
+                data : newCourse
+            })
+
+        } catch (err) {
+            next(err)
+        }
+    },
+
+    getAllCourse : async (req,res,next) => {
+      try {
+        let {category,level,ispremium,page,limit,se} = req.query
+        page = page ? Number(page) : 1
+        limit = limit ? Number(limit) : 10
+
+        const filters = getAllCourseFilter(ispremium,level,category)
+        let coursesCount = await prisma.course.findMany({
+            orderBy : [
+                { id : 'asc'}
+            ]
+        ,
+          where : {
+             title : {
+                contains : se,
+                mode : 'insensitive'
+            },
+            AND : filters
           },
-          mentor: {
-            create: mentorId,
+          include : {
+            courseCategory : {
+                select : {
+                    category : {
+                        select : {
+                            name : true
+                        }
+                    }
+                }
+                
+            },
+            mentor : {
+                select : { 
+                    author : {
+                        select :{
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+          }
+        })
+
+        coursesCount = coursesCount.length
+
+        const courses = await prisma.course.findMany({
+            skip : (page - 1) * limit,
+            take : limit,
+            // TODO : buat sorting berdasarkan banyak popularity (enroll)
+            orderBy : [
+                { id : 'asc'}
+            ]
+        ,
+          where : {
+            title : {
+                contains : se,
+                mode : 'insensitive'
+            },
+            AND : filters
           },
-        },
-      });
+          include : {
+            courseCategory : {
+                select : {
+                    category : {
+                        select : {
+                            name : true
+                        }
+                    }
+                }
+                
+            },
+            mentor : {
+                select : { 
+                    author : {
+                        select :{
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+          }
+        })
 
-      newCourse.mentor = mentorValidEmail;
-      newCourse.category = validCategory;
+        const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium)
 
-      res.status(201).json({
-        success: true,
-        message: "succesfully create new course",
-        data: newCourse,
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
+        const result = {
+            pagination,
+            courses
+        }
+        return res.status(200).json({
+            success : true,
+            message : "Sucessfully get all course",
+            data : result
+        })
 
-  getAllCourse: async (req, res, next) => {
-    try {
-      const { page = 1, pageSize = 3 } = req.query;
-
-      const offset = (page - 1) * pageSize;
-
-      const courses = await prisma.course.findMany({
-        skip: offset,
-        take: parseInt(pageSize),
-      });
-
-      if (courses.length === 0) {
-        res.status(200).json({
-          success: false,
-          message: "No courses found",
-          data: [],
-        });
-      } else {
-        res.status(200).json({
-          success: true,
-          message: "Successfully get all courses",
-          data: courses,
-        });
+      } catch (err) {
+        next(err)
       }
-    } catch (err) {
-      next(err);
-    }
-  },
+    },
 
-  getCourseDetail: async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const courseId = Number(id);
+    getCourseDetail : async (req,res,next) => {
+        try {
+            let {id} = req.params
 
-      if (isNaN(courseId))
-        throw new BadRequestError("Id harus diisi dengan angka");
-      if (!courseId) throw new BadRequestError("Id harus diisi");
+            if (!id) throw new BadRequestError("Id tidak valid")
+            if (isNaN(Number(id))) throw new BadRequestError("Id tidak valid")
 
-      const courseDetail = await prisma.course.findUnique({
-        where: {
-          id: courseId,
-        },
-      });
+            id = Number(id)
+            // TODO : add chapters, videos, rating, progress etc.
+            const courseDetail = await prisma.course.findUnique({
+                where : {
+                    id
+                },
+                include : {
+                    mentor : {
+                        select : {
+                            author : {
+                                select : {
+                                    profile : {
+                                        select : {
+                                            name : true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    courseCategory : {
+                        select : {
+                            category : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
+                }
+            })
 
-      if (!courseDetail) throw new NotFoundError("Course tidak ditemukan");
+            if (!courseDetail) throw new NotFoundError("Course tidak ditemukan")
 
-      res.status(200).json({
-        success: true,
-        message: "Successfully get course detail",
-        data: courseDetail,
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
+            res.status(200).json({
+                success : true,
+                message : "succesfully view course detail",
+                data : courseDetail
+            })
+            
+        } catch (err) {
+            next(err)
+        }
+    },
 
-  updateCourse: async (req, res, next) => {
-    try {
-      const role = req.user.profile.role;
-      if (role !== "ADMIN")
-        throw new ForbiddenError("Kamu tidak memiliki akses kesini");
+    updateCourse: async (req, res, next) => {
+        try {
+            const role = req.user.profile.role
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
-      let courseId = req.params.id;
-      let {
-        code,
-        title,
-        price,
-        level,
-        isPremium,
-        description,
-        courseCategory,
-        mentorEmail,
-        groupUrl,
-      } = req.body;
+            
+            let courseId = req.params.id;
+            let {
+                code, title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
+            } = req.body;
+            price = Number(price);
+            courseId = Number(courseId);
 
-      price = Number(price);
-      courseId = Number(courseId);
+            if (isNaN(courseId)) throw new BadRequestError("Id harus diisi dengan angka")
+            if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
+            if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
+            if (!(isPremium === '1' || isPremium === '0')) throw new BadRequestError("isPremium harus 1 / 0")
+            if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
+            if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
+            if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
 
-      if (isNaN(courseId))
-        throw new BadRequestError("Id harus diisi dengan angka");
-      if (isNaN(price))
-        throw new BadRequestError("Kolom harga harus diisi dengan angka");
-      if (
-        !title ||
-        !price ||
-        !level ||
-        !description ||
-        !code ||
-        !groupUrl ||
-        !mentorEmail ||
-        !courseCategory
-      )
-        throw new BadRequestError("Tolong isi semua kolom");
-      if (!Array.isArray(courseCategory) || !Array.isArray(mentorEmail))
-        throw new BadRequestError("category dan email mentor harus array");
-      if (!(isPremium === false || isPremium === true))
-        throw new BadRequestError("isPremium harus boolean");
-      if (
-        !(
-          level === "BEGINNER" ||
-          level === "INTERMEDIATE" ||
-          level === "ADVANCED"
-        )
-      )
-        throw new BadRequestError("level tidak valid");
-      if (description.length > 1024)
-        throw new BadRequestError(
-          "Deskripsi harus tidak lebih dari 1024 karakter"
-        );
-      if (title.length > 60)
-        throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter");
+            isPremium = isPremium === '1' ? true : false
 
-      //check course is exist
-      const checkCourse = await prisma.course.findUnique({
-        where: {
-          id: courseId,
-        },
-      });
-      if (!checkCourse) throw new NotFoundError("Course tidak ditemukan");
+            //check course is exist
+            const checkCourse = await prisma.course.findUnique({
+                where : {
+                    id : courseId
+                }
+            })
+
+            let thumbnailUrl = !(req.file) ? checkCourse.thumbnailUrl : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
+
+            if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
 
       // category data
       const courseCategoryForPrisma = courseCategory.map((c) => {
@@ -301,26 +361,28 @@ module.exports = {
         },
       });
 
-      // update course
-      const updatedCourse = await prisma.course.update({
-        where: {
-          id: courseId,
-        },
-        data: {
-          title,
-          price,
-          level,
-          isPremium,
-          description,
-          groupUrl,
-          courseCategory: {
-            create: categoryId,
-          },
-          mentor: {
-            create: mentorId,
-          },
-        },
-      });
+            // update course
+            const updatedCourse = await prisma.course.update({
+                where: {
+                    id: courseId,
+                },
+                data: {
+                    title,
+                    price,
+                    level,
+                    isPremium,
+                    description,
+                    groupUrl,
+                    thumbnailUrl,
+                    courseCategory : {
+                        create : categoryId
+                    },
+                    mentor : {
+                        create : mentorId
+                    }
+
+                },
+            });
 
       updatedCourse.mentor = mentorValidEmail;
       updatedCourse.category = validCategory;

@@ -6,7 +6,7 @@ module.exports = {
 
             let otp = ''
 
-            for (let index = 0; index < 4; index++) {
+            for (let index = 0; index < 6; index++) {
                 otp += Math.floor(Math.random() * 10)
 
             }
@@ -26,8 +26,8 @@ module.exports = {
         })
     },
     signToken : (type,payload,secret) => {
-        if (type !== 'access' && type !== 'refresh') throw new InternalServerError("wrong token type")
-        const expiresIn = type === 'access' ? '5s' : '30d'
+        if (type !== 'access' && type !== 'refresh' && type !== 'resetPassword') throw new InternalServerError("wrong token type")
+        const expiresIn = type === 'access' ? '5s' :  type === 'refresh' ?'30d' : '600s'
         return new Promise((resolve,reject) => {
             jwt.sign(payload, secret,  {expiresIn : expiresIn}, function(err, token) {
                 if (err) reject(err)
