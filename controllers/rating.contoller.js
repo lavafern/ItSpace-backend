@@ -3,14 +3,19 @@ const { prisma } = require("../utils/prismaClient");
 
 module.exports = {
     createRating : async (req,res,next) => {
+        try {
+            
         const userId = req.user.id
-        const {courseId,rating} = req.body
-        
+        let {courseId,rating} = req.body
+
+
         if (!courseId) throw new BadRequestError("Tolong isi courseId")
         if (isNaN(Number(courseId))) throw new BadRequestError("CourseId tidak valid")
-        if (isNaN(Number(rating))) throw new BadRequestError("CourseId tidak valid")
+        if (isNaN(Number(rating))) throw new BadRequestError("Rating tidak valid")
+        if (!Number.isInteger(Number(rating))) throw new BadRequestError("Rating tidak valid")
         if (rating < 1 || rating > 5) throw new BadRequestError("Rating harus dari 1 - 5")
         courseId = Number(courseId)
+        rating = Number(rating)
 
         const checkEnrollment = await prisma.enrollment.findMany({
             where : {
@@ -62,5 +67,65 @@ module.exports = {
             }
         })
 
+        res.status(201).json({
+            success : true,
+            message : "Successfully give rating",
+            data : newRating
+        })
+
+
+        } catch (err) {
+            next(err)
+        }
+
+    },
+    deleteRating : async (req,res,next) => {
+        try {
+            const userId = req.user.id
+            let {courseId} = req.body
+
+            if (!courseId) throw new BadRequestError("Tolong isi courseId")
+            if (isNaN(Number(courseId))) throw new BadRequestError("CourseId tidak valid")
+            courseId = Number(courseId)
+
+            ///checks if rating is exist
+            const ratingData = await prisma.rating.findMany({
+                where : {
+                    courseId : courseId,
+                    authorId : userId
+                }
+            })
+
+            if (ratingData.length < 1) throw new Error("Rating tidak ada")
+
+            const deleteRating = await prisma.rating.delete ({
+                where : {
+                    id : ratingData[0].id
+                },
+                select : {
+                    id : true,
+                    rate : true,
+                    course : {
+                        select : {
+                            id : true,
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+                        }
+                    }
+                }
+            })
+
+            res.status(200).json({
+                success : true,
+                message : "Succesfully delete rating",
+                data : deleteRating
+            })
+
+        } catch (err) {
+            next(err)
+        }
     }
 }

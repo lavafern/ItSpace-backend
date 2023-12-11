@@ -11,6 +11,7 @@ const chaptersRoute = require('./routes/v1/chapters.routes')
 const usersRoute = require('./routes/v1/user.routes')
 const transactionsRoute = require('./routes/v1/transaction.routes')
 const enrollmentsRoute = require('./routes/v1/enrollment.routes')
+const ratingsRoute = require('./routes/v1/rating.routes')
 const bodyParser = require('body-parser')
 const cookies = require("cookie-parser");
 
@@ -40,6 +41,7 @@ app.use('/api/v1',chaptersRoute)
 app.use('/api/v1',usersRoute)
 app.use('/api/v1',transactionsRoute)
 app.use('/api/v1',enrollmentsRoute)
+app.use('/api/v1',ratingsRoute)
 
 /// error handling middleware
 app.use(otherError)
