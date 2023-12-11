@@ -111,6 +111,40 @@ module.exports = {
     }
   },
 
+  getAllChaptersForCourse: async (req, res, next) => {
+    try {
+      let { courseId } = req.params;
+      courseId = Number(courseId);
+
+      if (!Number.isInteger(courseId)) {
+        throw new BadRequestError("Course ID harus berupa angka");
+      }
+
+      const checkCourse = await prisma.course.findUnique({
+        where: {
+          id: courseId,
+        },
+      });
+
+      if (!checkCourse)
+        throw new NotFoundError("Course dengan id tersebut tidak ada");
+
+      const chapters = await prisma.chapter.findMany({
+        where: {
+          courseId,
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Berhasil mendapatkan daftar chapters",
+        data: chapters,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
    updateChapter: async (req, res, next) => {
     try {
       let { courseId, id } = req.params;
@@ -203,40 +237,5 @@ module.exports = {
         } catch (err) {
           next(err);
         }
-      },
-};
-
-  getAllChaptersForCourse: async (req, res, next) => {
-    try {
-      let { courseId } = req.params;
-      courseId = Number(courseId);
-
-      if (!Number.isInteger(courseId)) {
-        throw new BadRequestError("Course ID harus berupa angka");
       }
-
-      const checkCourse = await prisma.course.findUnique({
-        where: {
-          id: courseId,
-        },
-      });
-
-      if (!checkCourse)
-        throw new NotFoundError("Course dengan id tersebut tidak ada");
-
-      const chapters = await prisma.chapter.findMany({
-        where: {
-          courseId,
-        },
-      });
-
-      res.status(200).json({
-        success: true,
-        message: "Berhasil mendapatkan daftar chapters",
-        data: chapters,
-      });
-    } catch (err) {
-      next(err);
-    }
-  };
-
+    };
