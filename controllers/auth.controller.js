@@ -90,7 +90,7 @@ module.exports = {
             delete newUser.password
 
             res
-            .cookie("otpEmail",accesToken, {httpOnly : false, sameSite: 'none', secure: true})
+            .cookie("otpEmail",email, {sameSite: 'none'})
             .status(201).json({
                 success : true,
                 message : "success create new account",
