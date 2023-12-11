@@ -69,7 +69,7 @@ model Otp {
 
 model CourseCategory {
   id    Int     @id @default(autoincrement())
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId  Int?
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId  Int
