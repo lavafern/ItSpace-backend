@@ -8,8 +8,8 @@ const {
 module.exports = {
   createChapter: async (req, res, next) => {
     try {
-      //const role = req.user.profile.role
-      //if (role !== "ADMIN") throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+      const role = req.user.profile.role
+      if (role !== "ADMIN") throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
       let { title, number, isPremium } = req.body;
       if (!title || !number) throw new BadRequestError("Harap isi semua kolom");
@@ -147,6 +147,9 @@ module.exports = {
 
    updateChapter: async (req, res, next) => {
     try {
+      const role = req.user.profile.role
+      if (role !== "ADMIN") throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+
       let { courseId, id } = req.params;
       console.log (id)
       courseId = Number(courseId);
@@ -189,7 +192,7 @@ module.exports = {
         },
       });
 
-      res.status(200).json({
+      res.status(201).json({
         success: true,
         message: "Berhasil update chapter",
         data: updatedChapter,
@@ -200,6 +203,9 @@ module.exports = {
   },
     deleteChapter: async (req, res, next) => {
         try {
+          const role = req.user.profile.role
+          if (role !== "ADMIN") throw new ForbiddenError("Kamu tidak memiliki akses kesini")
+
           let { courseId, id } = req.params;
           courseId = Number(courseId);
           id = Number(id);
@@ -224,7 +230,7 @@ module.exports = {
             throw new NotFoundError("Chapter dengan id tersebut tidak ada di dalam course");
           }
 
-          await prisma.chapter.delete({
+          const deletedChapter = await prisma.chapter.delete({
             where: {
               id,
             },
@@ -233,6 +239,7 @@ module.exports = {
           res.status(200).json({
             success: true,
             message: "Berhasil menghapus chapter",
+            data : deletedChapter
           });
         } catch (err) {
           next(err);
