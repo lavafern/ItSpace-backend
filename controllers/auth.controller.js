@@ -89,7 +89,9 @@ module.exports = {
             delete newUser.googleId
             delete newUser.password
 
-            res.status(201).json({
+            res
+            .cookie("otpEmail",accesToken, {httpOnly : false, sameSite: 'none', secure: true})
+            .status(201).json({
                 success : true,
                 message : "success create new account",
                 data : newUser
