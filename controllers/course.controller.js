@@ -139,6 +139,7 @@ module.exports = {
             AND : filters
           },
           include : {
+           
             courseCategory : {
                 select : {
                     category : {
@@ -167,7 +168,7 @@ module.exports = {
 
         coursesCount = coursesCount.length
 
-        const courses = await prisma.course.findMany({
+        let courses = await prisma.course.findMany({
             skip : (page - 1) * limit,
             take : limit,
             // TODO : buat sorting berdasarkan banyak popularity (enroll)
@@ -205,9 +206,30 @@ module.exports = {
                         }
                     }
                 }
-            },
+            }
           }
         })
+
+        const aggregation = await prisma.rating.groupBy({
+            by : 'courseId',
+            _avg : {
+                rate : true
+            }
+        })
+
+
+        courses = courses.map((course) => {
+            aggregation.forEach(aggergate => {
+                if ( course.id === aggergate.courseId) {
+                    course.rate = aggergate._avg.rate
+                    return
+                }
+            })
+
+            course.rate = course.rate ? course.rate : null
+            return course
+        })
+
 
         const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium)
 
