@@ -1,7 +1,7 @@
 require('dotenv').config()
 const {app,express} = require('./app')
-const {PORT,FRONTEND_URL} = process.env
-const cors = require("cors")
+const {PORT} = process.env
+const corsMiddleware = require("./middlewares/cors.middleware")
 const {otherError,notFoundError} = require('./middlewares/errorHandling.middleware')
 const docsRoute = require('./routes/v1/docs.routes')
 const authRoute = require('./routes/v1/auth.routes')
@@ -18,13 +18,9 @@ const cookies = require("cookie-parser");
 
 
 app.use(cookies());
-app.use(cors({
-    origin : FRONTEND_URL,
-    credentials: true
-  }))
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }))
-
+app.use(corsMiddleware)
 app.get('/',(req,res,next) => {
     try {
         res.json({
