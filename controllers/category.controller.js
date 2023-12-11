@@ -37,6 +37,8 @@ module.exports = {
         }
     },
 
+    
+
     getAllCategory : async (req,res,next) => {
         try {
             const categories = await prisma.category.findMany()
@@ -49,6 +51,7 @@ module.exports = {
             next(err)
         }
     },
+ 
 
     updateCategory : async (req,res,next) => {
         try {

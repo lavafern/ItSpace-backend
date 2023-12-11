@@ -33,48 +33,45 @@ module.exports = {
 
             isPremium = isPremium === '1' ? true : false
 
-            //check if code is exist 
-            checkCode = await prisma.course.findUnique({
-                where : {
-                    code
-                }
-            })
-            if (checkCode) throw new BadRequestError("Gunakan kode lain")
+      //check if code is exist
+      checkCode = await prisma.course.findUnique({
+        where: {
+          code,
+        },
+      });
+      if (checkCode) throw new BadRequestError("Gunakan kode lain");
 
-            
-            // category data
-            const courseCategoryForPrisma = courseCategory.map((c) => {
-                return {name : c}
-            })
+      // category data
+      const courseCategoryForPrisma = courseCategory.map((c) => {
+        return { name: c };
+      });
 
-            let categoryId = await prisma.category.findMany({
-                where : {
-                    OR : courseCategoryForPrisma
-                }
-            })
+      let categoryId = await prisma.category.findMany({
+        where: {
+          OR: courseCategoryForPrisma,
+        },
+      });
 
-            const validCategory = categoryId.map((i) => {
-                return i.name
-            })
-            categoryId = categoryId.map((i) => {
-                return {categoryId : i.id}
-            })
+      const validCategory = categoryId.map((i) => {
+        return i.name;
+      });
+      categoryId = categoryId.map((i) => {
+        return { categoryId: i.id };
+      });
 
+      // mentor data
+      const mentorEmailForPrisma = mentorEmail.map((e) => {
+        return { email: e };
+      });
 
-
-            // mentor data
-            const mentorEmailForPrisma = mentorEmail.map((e) => {
-                return {email : e}
-            })
-
-            let mentorId = await prisma.user.findMany({
-                where : {
-                    OR : mentorEmailForPrisma
-                }
-            })
-            const mentorValidEmail = mentorId.map((i) => {
-                return i.email
-            })
+      let mentorId = await prisma.user.findMany({
+        where: {
+          OR: mentorEmailForPrisma,
+        },
+      });
+      const mentorValidEmail = mentorId.map((i) => {
+        return i.email;
+      });
 
             mentorId = mentorId.map((i) => {
                 return {authorId : i.id}
@@ -338,53 +335,53 @@ module.exports = {
 
             if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
 
-            // category data
-            const courseCategoryForPrisma = courseCategory.map((c) => {
-                return { name: c };
-            });
+      // category data
+      const courseCategoryForPrisma = courseCategory.map((c) => {
+        return { name: c };
+      });
 
-            let categoryId = await prisma.category.findMany({
-                where: {
-                    OR: courseCategoryForPrisma,
-                },
-            });
+      let categoryId = await prisma.category.findMany({
+        where: {
+          OR: courseCategoryForPrisma,
+        },
+      });
 
-            const validCategory = categoryId.map((i) => {
-                return i.name;
-            });
-            categoryId = categoryId.map((i) => {
-                return { categoryId: i.id };
-            });
+      const validCategory = categoryId.map((i) => {
+        return i.name;
+      });
+      categoryId = categoryId.map((i) => {
+        return { categoryId: i.id };
+      });
 
-            // mentor data
-            const mentorEmailForPrisma = mentorEmail.map((e) => {
-                return { email: e };
-            });
+      // mentor data
+      const mentorEmailForPrisma = mentorEmail.map((e) => {
+        return { email: e };
+      });
 
-            let mentorId = await prisma.user.findMany({
-                where: {
-                    OR: mentorEmailForPrisma,
-                },
-            });
-            const mentorValidEmail = mentorId.map((i) => {
-                return i.email;
-            });
+      let mentorId = await prisma.user.findMany({
+        where: {
+          OR: mentorEmailForPrisma,
+        },
+      });
+      const mentorValidEmail = mentorId.map((i) => {
+        return i.email;
+      });
 
-            mentorId = mentorId.map((i) => {
-                return { authorId: i.id };
-            });
-            //delete category
-            await prisma.courseCategory.deleteMany({
-                 where: {
-                    courseId: courseId
-                }
-            })
-             //delete mentor
-            await prisma.mentor.deleteMany({
-                where: {
-                   courseId: courseId
-               }
-            })
+      mentorId = mentorId.map((i) => {
+        return { authorId: i.id };
+      });
+      //delete category
+      await prisma.courseCategory.deleteMany({
+        where: {
+          courseId: courseId,
+        },
+      });
+      //delete mentor
+      await prisma.mentor.deleteMany({
+        where: {
+          courseId: courseId,
+        },
+      });
 
             // update course
             const updatedCourse = await prisma.course.update({
@@ -409,55 +406,52 @@ module.exports = {
                 },
             });
 
-            updatedCourse.mentor = mentorValidEmail;
-            updatedCourse.category = validCategory;
+      updatedCourse.mentor = mentorValidEmail;
+      updatedCourse.category = validCategory;
 
-            res.status(201).json({
-                success: true,
-                message: "Successfully update course",
-                data: updatedCourse,
-            });
-        } catch (err) {
-            next(err);
-        }
-    },
-    
-    deleteCourse: async (req, res, next) => {
-        try {
-            const role = req.user.profile.role
-            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
-            
-            let { id } = req.params
-            if (!id) throw new BadRequestError("Id tidak boleh kosong")
+      res.status(201).json({
+        success: true,
+        message: "Successfully update course",
+        data: updatedCourse,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 
-            id = Number(id)
-            if (isNaN(id)) throw new BadRequestError("Id harus angka")
+  deleteCourse: async (req, res, next) => {
+    try {
+      const role = req.user.profile.role;
+      if (role !== "ADMIN")
+        throw new ForbiddenError("Kamu tidak memiliki akses kesini");
 
-            //check course is exist
-            const checkCourse = await prisma.course.findUnique({
-                where : {
-                    id 
-                }
-            })
-            if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
+      let { id } = req.params;
+      if (!id) throw new BadRequestError("Id tidak boleh kosong");
 
+      id = Number(id);
+      if (isNaN(id)) throw new BadRequestError("Id harus angka");
 
-            let deleteCourse = await prisma.course.delete({
-                where: { 
-                    id
-                 }
-            });
+      //check course is exist
+      const checkCourse = await prisma.course.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!checkCourse) throw new NotFoundError("Course tidak ditemukan");
 
-            res.status(200).json({
-                status: true,
-                message: 'Successfully delete course',
-                data: deleteCourse
-            });
+      let deleteCourse = await prisma.course.delete({
+        where: {
+          id,
+        },
+      });
 
-        } catch (err) {
-            next(err);
-        }
-    },
-
+      res.status(200).json({
+        status: true,
+        message: "Successfully delete course",
+        data: deleteCourse,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
-
