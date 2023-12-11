@@ -13,7 +13,7 @@ module.exports = {
             
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
-            let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/download.jpeg?updatedAt=1701289170908" : (await imagekit.upload({
+            let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370" : (await imagekit.upload({
                 fileName: + Date.now() + path.extname(req.file.originalname),
                 file: req.file.buffer.toString('base64')
             })).url
