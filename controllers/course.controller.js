@@ -13,7 +13,7 @@ module.exports = {
             
             if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
-            let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/download.jpeg?updatedAt=1701289170908" : (await imagekit.upload({
+            let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370" : (await imagekit.upload({
                 fileName: + Date.now() + path.extname(req.file.originalname),
                 file: req.file.buffer.toString('base64')
             })).url
@@ -136,6 +136,7 @@ module.exports = {
             AND : filters
           },
           include : {
+           
             courseCategory : {
                 select : {
                     category : {
@@ -164,7 +165,7 @@ module.exports = {
 
         coursesCount = coursesCount.length
 
-        const courses = await prisma.course.findMany({
+        let courses = await prisma.course.findMany({
             skip : (page - 1) * limit,
             take : limit,
             // TODO : buat sorting berdasarkan banyak popularity (enroll)
@@ -202,9 +203,30 @@ module.exports = {
                         }
                     }
                 }
-            },
+            }
           }
         })
+
+        const aggregation = await prisma.rating.groupBy({
+            by : 'courseId',
+            _avg : {
+                rate : true
+            }
+        })
+
+
+        courses = courses.map((course) => {
+            aggregation.forEach(aggergate => {
+                if ( course.id === aggergate.courseId) {
+                    course.rate = aggergate._avg.rate
+                    return
+                }
+            })
+
+            course.rate = course.rate ? course.rate : null
+            return course
+        })
+
 
         const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium)
 
