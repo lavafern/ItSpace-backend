@@ -111,6 +111,101 @@ module.exports = {
     }
   },
 
+   updateChapter: async (req, res, next) => {
+    try {
+      let { courseId, id } = req.params;
+      console.log (id)
+      courseId = Number(courseId);
+      id = Number(id);
+
+      // Validasi courseId dan chapterId harus berupa angka
+      if (isNaN(courseId) || isNaN(id)) {
+        throw new BadRequestError("Course ID dan Chapter ID harus berupa angka");
+      }
+
+      // Cek apakah course dengan id tersebut ada
+      const checkCourse = await prisma.course.findUnique({
+        where: {
+          id: courseId,
+        },
+      });
+      if (!checkCourse) throw new NotFoundError("Course dengan id tersebut tidak ada");
+
+      // Cek apakah chapter dengan id tersebut ada di dalam course
+      const checkChapter = await prisma.chapter.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!checkChapter || checkChapter.courseId !== courseId) {
+        throw new NotFoundError("Chapter dengan id tersebut tidak ada di dalam course");
+      }
+
+      // Dapatkan data update dari body request
+      const { title, isPremium } = req.body;
+
+      // Update chapter berdasarkan chapterId
+      const updatedChapter = await prisma.chapter.update({
+        where: {
+          id,
+        },
+        data: {
+          title: title || checkChapter.title,
+          isPremium: isPremium !== undefined ? isPremium : checkChapter.isPremium,
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Berhasil update chapter",
+        data: updatedChapter,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+    deleteChapter: async (req, res, next) => {
+        try {
+          let { courseId, id } = req.params;
+          courseId = Number(courseId);
+          id = Number(id);
+
+          if (isNaN(courseId) || isNaN(id)) {
+            throw new BadRequestError("Course ID dan Chapter ID harus berupa angka");
+          }
+
+          const checkCourse = await prisma.course.findUnique({
+            where: {
+              id: courseId,
+            },
+          });
+          if (!checkCourse) throw new NotFoundError("Course dengan id tersebut tidak ada");
+
+          const checkChapter = await prisma.chapter.findUnique({
+            where: {
+              id,
+            },
+          });
+          if (!checkChapter || checkChapter.courseId !== courseId) {
+            throw new NotFoundError("Chapter dengan id tersebut tidak ada di dalam course");
+          }
+
+          await prisma.chapter.delete({
+            where: {
+              id,
+            },
+          });
+
+          res.status(200).json({
+            success: true,
+            message: "Berhasil menghapus chapter",
+          });
+        } catch (err) {
+          next(err);
+        }
+      },
+};
+
   getAllChaptersForCourse: async (req, res, next) => {
     try {
       let { courseId } = req.params;
@@ -143,5 +238,5 @@ module.exports = {
     } catch (err) {
       next(err);
     }
-  },
-};
+  };
+
