@@ -281,7 +281,8 @@ module.exports = {
                             }
                         }
                     }
-                }
+                },
+              
             })
 
             if (!courseDetail) throw new NotFoundError("Course tidak ditemukan")

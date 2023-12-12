@@ -13,11 +13,12 @@ module.exports = {
 
       let { title, number, isPremium } = req.body;
       if (!title || !number) throw new BadRequestError("Harap isi semua kolom");
-      if (!(isPremium === false || isPremium === true))
-        throw new BadRequestError("isPremium harus boolean");
+      if (!(isPremium === '1' || isPremium === '0'))
+        throw new BadRequestError("isPremium harus 1 / 0");
       let { courseId } = req.params;
       courseId = Number(courseId);
       number = Number(number);
+      isPremium = isPremium === '1' ? true : false
 
       //validasi courseId harus berupa angka
       if (!Number.isInteger(courseId)) {
@@ -45,7 +46,7 @@ module.exports = {
           courseId,
         },
       });
-      if (checkChapter.length > 1)
+      if (checkChapter.length > 0)
         throw new BadRequestError(
           "Chapter dengan nomor tersebut sudah digunakan"
         );
@@ -58,6 +59,23 @@ module.exports = {
           isPremium,
           courseId,
         },
+        select : {
+          id : true,
+          title : true,
+          number : true,
+          isPremium : true,
+          course : {
+            select : {
+              id : true,
+              code : true,
+              title : true,
+              price : true,
+              level : true,
+              isPremium : true,
+            }
+          }
+
+        }
       });
 
       res.status(201).json({
@@ -96,6 +114,22 @@ module.exports = {
         where: {
           id: chapterId,
         },
+        select : {
+          id : true,
+          title : true,
+          number : true,
+          isPremium : true,
+          course : {
+            select : {
+              id : true,
+              code : true,
+              title : true,
+              price : true,
+              level : true,
+              isPremium : true,
+            }
+          }
+        }
       });
 
       if (!chapter)
@@ -123,7 +157,7 @@ module.exports = {
       const checkCourse = await prisma.course.findUnique({
         where: {
           id: courseId,
-        },
+        }
       });
 
       if (!checkCourse)
@@ -133,6 +167,22 @@ module.exports = {
         where: {
           courseId,
         },
+        select : {
+          id : true,
+          title : true,
+          number : true,
+          isPremium : true,
+          course : {
+            select : {
+              id : true,
+              code : true,
+              title : true,
+              price : true,
+              level : true,
+              isPremium : true,
+            }
+          }
+        }
       });
 
       res.status(200).json({
@@ -151,7 +201,6 @@ module.exports = {
       if (role !== "ADMIN") throw new ForbiddenError("Kamu tidak memiliki akses kesini")
 
       let { courseId, id } = req.params;
-      console.log (id)
       courseId = Number(courseId);
       id = Number(id);
 
@@ -164,7 +213,7 @@ module.exports = {
       const checkCourse = await prisma.course.findUnique({
         where: {
           id: courseId,
-        },
+        }
       });
       if (!checkCourse) throw new NotFoundError("Course dengan id tersebut tidak ada");
 
@@ -173,13 +222,54 @@ module.exports = {
         where: {
           id,
         },
+        select : {
+          id : true,
+          title : true,
+          number : true,
+          isPremium : true,
+          course : {
+            select : {
+              id : true,
+              code : true,
+              title : true,
+              price : true,
+              level : true,
+              isPremium : true,
+            }
+          }
+        }
       });
-      if (!checkChapter || checkChapter.courseId !== courseId) {
-        throw new NotFoundError("Chapter dengan id tersebut tidak ada di dalam course");
+      if (!checkChapter) {
+        throw new NotFoundError("Chapter dengan id tersebut tidak ada");
+      }
+      
+      if (checkChapter.course.id !== courseId) {
+        throw new BadRequestError("Chapter dengan id tersebut berasal dari course yang berbeda");
       }
 
       // Dapatkan data update dari body request
-      const { title, isPremium } = req.body;
+      let { title, isPremium, number } = req.body;
+
+      if (!title || !isPremium || !number) throw new BadRequestError("isi semua kolom")
+      if (isNaN(Number(number))) throw new BadRequestError("number harus berupa angka")
+      number = Number(number)
+      if (!(isPremium === '1' || isPremium === '0'))
+      throw new BadRequestError("isPremium harus 1 / 0");
+
+      isPremium = isPremium === '1' ? true : false
+
+      // validasi number apabila sudah digunakan
+      const checkChapterNumber = await prisma.chapter.findMany({
+        where: {
+          number,
+          courseId,
+        },
+      });
+      if (checkChapterNumber.length > 0 && checkChapter.number !== number)
+        throw new BadRequestError(
+          "Chapter dengan nomor tersebut sudah digunakan"
+        );
+
 
       // Update chapter berdasarkan chapterId
       const updatedChapter = await prisma.chapter.update({
@@ -187,9 +277,27 @@ module.exports = {
           id,
         },
         data: {
-          title: title || checkChapter.title,
-          isPremium: isPremium !== undefined ? isPremium : checkChapter.isPremium,
+          title: title ,
+          isPremium: isPremium,
+          number : number
         },
+        select : {
+          id : true,
+          title : true,
+          number : true,
+          isPremium : true,
+          course : {
+            select : {
+              id : true,
+              code : true,
+              title : true,
+              price : true,
+              level : true,
+              isPremium : true,
+            }
+          }
+        }
+
       });
 
       res.status(201).json({
@@ -225,15 +333,50 @@ module.exports = {
             where: {
               id,
             },
+            select : {
+              id : true,
+              title : true,
+              number : true,
+              isPremium : true,
+              course : {
+                select : {
+                  id : true,
+                  code : true,
+                  title : true,
+                  price : true,
+                  level : true,
+                  isPremium : true,
+                }
+              }
+            }
           });
-          if (!checkChapter || checkChapter.courseId !== courseId) {
-            throw new NotFoundError("Chapter dengan id tersebut tidak ada di dalam course");
+          if (!checkChapter) {
+            throw new NotFoundError("Chapter dengan id tersebut tidak ada");
           }
-
+          
+          if (checkChapter.course.id !== courseId) {
+            throw new BadRequestError("Chapter dengan id tersebut berasal dari course yang berbeda");
+          }
           const deletedChapter = await prisma.chapter.delete({
             where: {
               id,
             },
+            select : {
+              id : true,
+              title : true,
+              number : true,
+              isPremium : true,
+              course : {
+                select : {
+                  id : true,
+                  code : true,
+                  title : true,
+                  price : true,
+                  level : true,
+                  isPremium : true,
+                }
+              }
+            }
           });
 
           res.status(200).json({

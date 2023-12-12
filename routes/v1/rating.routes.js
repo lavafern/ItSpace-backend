@@ -3,6 +3,6 @@ const {restrict} = require("../../middlewares/auth.middleware")
 const router = require('express').Router()
 
 router.post('/ratings',restrict,createRating)
-router.delete('/ratings',restrict,deleteRating)
+router.delete('/ratings/:id',restrict,deleteRating)
 
 module.exports = router
