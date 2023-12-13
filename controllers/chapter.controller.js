@@ -13,12 +13,12 @@ module.exports = {
 
       let { title, number, isPremium } = req.body;
       if (!title || !number) throw new BadRequestError("Harap isi semua kolom");
-      if (!(isPremium === '1' || isPremium === '0'))
+      if (!(isPremium == '1' || isPremium == '0'))
         throw new BadRequestError("isPremium harus 1 / 0");
       let { courseId } = req.params;
       courseId = Number(courseId);
       number = Number(number);
-      isPremium = isPremium === '1' ? true : false
+      isPremium = isPremium == '1' ? true : false
 
       //validasi courseId harus berupa angka
       if (!Number.isInteger(courseId)) {
@@ -253,10 +253,10 @@ module.exports = {
       if (!title || !isPremium || !number) throw new BadRequestError("isi semua kolom")
       if (isNaN(Number(number))) throw new BadRequestError("number harus berupa angka")
       number = Number(number)
-      if (!(isPremium === '1' || isPremium === '0'))
+      if (!(isPremium == '1' || isPremium == '0'))
       throw new BadRequestError("isPremium harus 1 / 0");
 
-      isPremium = isPremium === '1' ? true : false
+      isPremium = isPremium == '1' ? true : false
 
       // validasi number apabila sudah digunakan
       const checkChapterNumber = await prisma.chapter.findMany({

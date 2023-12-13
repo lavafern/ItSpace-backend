@@ -26,12 +26,12 @@ module.exports = {
             price = Number(price)
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
-            if (!(isPremium === '1' || isPremium === '0')) throw new BadRequestError("isPremium harus 1 / 0")
+            if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError("isPremium harus 1 / 0")
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
             if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
             if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
 
-            isPremium = isPremium === '1' ? true : false
+            isPremium = isPremium == '1' ? true : false
 
       //check if code is exist
       checkCode = await prisma.course.findUnique({
@@ -315,12 +315,12 @@ module.exports = {
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
             if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
-            if (!(isPremium === '1' || isPremium === '0')) throw new BadRequestError("isPremium harus 1 / 0")
+            if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError("isPremium harus 1 / 0")
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
             if (description.length > 1024)  throw new BadRequestError("Deskripsi harus tidak lebih dari 1024 karakter")
             if (title.length > 60) throw new BadRequestError("Judul tidak boleh lebih dari 60 karakter")
 
-            isPremium = isPremium === '1' ? true : false
+            isPremium = isPremium == '1' ? true : false
 
             //check course is exist
             const checkCourse = await prisma.course.findUnique({
