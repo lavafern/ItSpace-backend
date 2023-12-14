@@ -19,10 +19,10 @@ module.exports = {
             })).url
 
             let {
-                title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl
+                title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl,
             } = req.body
 
-            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory || !isPremium) throw new BadRequestError("Tolong isi semua kolom")
             price = Number(price)
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
@@ -125,7 +125,7 @@ module.exports = {
         const filters = getAllCourseFilter(ispremium,level,category)
         let coursesCount = await prisma.course.findMany({
             orderBy : [
-                { id : 'asc'}
+                { id : 'desc'}
             ]
         ,
           where : {
@@ -170,7 +170,7 @@ module.exports = {
             take : limit,
             // TODO : buat sorting berdasarkan banyak popularity (enroll)
             orderBy : [
-                { id : 'asc'}
+                { id : 'desc'}
             ]
         ,
           where : {
@@ -313,7 +313,7 @@ module.exports = {
 
             if (isNaN(courseId)) throw new BadRequestError("Id harus diisi dengan angka")
             if (isNaN(price)) throw new BadRequestError("Kolom harga harus diisi dengan angka")
-            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory) throw new BadRequestError("Tolong isi semua kolom")
+            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory || !isPremium) throw new BadRequestError("Tolong isi semua kolom")
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError("category dan email mentor harus array")
             if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError("isPremium harus 1 / 0")
             if (!(level === "BEGINNER" || level === "INTERMEDIATE" || level === "ADVANCED")) throw new BadRequestError("level tidak valid")
@@ -336,85 +336,85 @@ module.exports = {
 
             if (!checkCourse)throw new NotFoundError("Course tidak ditemukan")
 
-      // category data
-      const courseCategoryForPrisma = courseCategory.map((c) => {
-        return { name: c };
-      });
-
-      let categoryId = await prisma.category.findMany({
-        where: {
-          OR: courseCategoryForPrisma,
-        },
-      });
-
-      const validCategory = categoryId.map((i) => {
-        return i.name;
-      });
-      categoryId = categoryId.map((i) => {
-        return { categoryId: i.id };
-      });
-
-      // mentor data
-      const mentorEmailForPrisma = mentorEmail.map((e) => {
-        return { email: e };
-      });
-
-      let mentorId = await prisma.user.findMany({
-        where: {
-          OR: mentorEmailForPrisma,
-        },
-      });
-      const mentorValidEmail = mentorId.map((i) => {
-        return i.email;
-      });
-
-      mentorId = mentorId.map((i) => {
-        return { authorId: i.id };
-      });
-      //delete category
-      await prisma.courseCategory.deleteMany({
-        where: {
-          courseId: courseId,
-        },
-      });
-      //delete mentor
-      await prisma.mentor.deleteMany({
-        where: {
-          courseId: courseId,
-        },
-      });
-
-            // update course
-            const updatedCourse = await prisma.course.update({
-                where: {
-                    id: courseId,
-                },
-                data: {
-                    title,
-                    price,
-                    level,
-                    isPremium,
-                    description,
-                    groupUrl,
-                    thumbnailUrl,
-                    courseCategory : {
-                        create : categoryId
-                    },
-                    mentor : {
-                        create : mentorId
-                    }
-
-                },
+            // category data
+            const courseCategoryForPrisma = courseCategory.map((c) => {
+              return { name: c };
             });
-
-      updatedCourse.mentor = mentorValidEmail;
-      updatedCourse.category = validCategory;
-
-      res.status(201).json({
-        success: true,
-        message: "Successfully update course",
-        data: updatedCourse,
-      });
+          
+            let categoryId = await prisma.category.findMany({
+              where: {
+                OR: courseCategoryForPrisma,
+              },
+            });
+          
+            const validCategory = categoryId.map((i) => {
+              return i.name;
+            });
+            categoryId = categoryId.map((i) => {
+              return { categoryId: i.id };
+            });
+          
+            // mentor data
+            const mentorEmailForPrisma = mentorEmail.map((e) => {
+              return { email: e };
+            });
+          
+            let mentorId = await prisma.user.findMany({
+              where: {
+                OR: mentorEmailForPrisma,
+              },
+            });
+            const mentorValidEmail = mentorId.map((i) => {
+              return i.email;
+            });
+          
+            mentorId = mentorId.map((i) => {
+              return { authorId: i.id };
+            });
+            //delete category
+            await prisma.courseCategory.deleteMany({
+              where: {
+                courseId: courseId,
+              },
+            });
+            //delete mentor
+            await prisma.mentor.deleteMany({
+              where: {
+                courseId: courseId,
+              },
+            });
+          
+                  // update course
+                  const updatedCourse = await prisma.course.update({
+                      where: {
+                          id: courseId,
+                      },
+                      data: {
+                          title,
+                          price,
+                          level,
+                          isPremium,
+                          description,
+                          groupUrl,
+                          thumbnailUrl,
+                          courseCategory : {
+                              create : categoryId
+                          },
+                          mentor : {
+                              create : mentorId
+                          }
+                        
+                      },
+                  });
+                
+            updatedCourse.mentor = mentorValidEmail;
+            updatedCourse.category = validCategory;
+                
+            res.status(201).json({
+              success: true,
+              message: "Successfully update course",
+              data: updatedCourse,
+            });
     } catch (err) {
       next(err);
     }
