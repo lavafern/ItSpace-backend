@@ -80,4 +80,47 @@ module.exports = {
                     next(err);
                     }
                 },
+  
+  getVideoDetails: async (req, res, next) => {
+    try {
+      const { videoId } = req.params;
+
+      if (!videoId || isNaN(Number(videoId))) {
+        throw new BadRequestError("ID Video harus diisi dan berupa angka");
+      }
+
+      const videoDetails = await prisma.video.findUnique({
+        where: {
+          id: Number(videoId),
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          url: true,
+          duration: true,
+          chapter: {
+            select: {
+              id: true,
+              number: true,
+              title: true,
+              isPremium: true,
+            },
+          },
+        },
+      });
+
+      if (!videoDetails) {
+        throw new NotFoundError("Video dengan ID tersebut tidak ditemukan");
+      }
+
+      res.status(200).json({
+        success: true,
+        data: videoDetails,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
 };
