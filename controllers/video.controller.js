@@ -80,4 +80,71 @@ module.exports = {
                     next(err);
                     }
                 },
+    updateVideo: async (req, res, next) => {
+        try {
+          let { title, description, url, duration } = req.body;
+          let { id } = req.params;
+
+          if (!title || !description || !url || !duration) {
+            throw new BadRequestError("Harap isi semua kolom");
+          }
+          if (isNaN(Number(duration))) {
+            throw new BadRequestError("Duration harus berupa Angka");
+          }
+
+          if (!id) {
+            throw new BadRequestError("Video ID harus diisi");
+          }
+          if (isNaN(Number(id))) {
+            throw new BadRequestError("ID Harus Berupa Angka");
+          }
+
+          id = Number(id);
+
+          const checkVideo = await prisma.video.findUnique({
+            where: {
+              id: id,
+            },
+          });
+
+          if (!checkVideo) {
+            throw new BadRequestError("Video dengan id tersebut tidak ada");
+          }
+
+          const updatedVideo = await prisma.video.update({
+            where: {
+              id: id,
+            },
+            data: {
+              title,
+              description,
+              url,
+              duration,
+            },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              url: true,
+              duration: true,
+              chapter: {
+                select: {
+                  id: true,
+                  number: true,
+                  title: true,
+                  isPremium: true,
+                },
+              },
+            },
+          });
+
+          res.status(200).json({
+            success: true,
+            message: "Berhasil memperbarui video",
+            data: updatedVideo,
+          });
+        } catch (err) {
+          next(err);
+        }
+      },
 };
