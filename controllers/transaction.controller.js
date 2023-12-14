@@ -190,7 +190,7 @@ module.exports = {
                 where : {
                     course : {
                         title : {
-                            contains : '',
+                            contains : se,
                             mode : 'insensitive'
                         }
                     },
@@ -232,7 +232,7 @@ module.exports = {
                         from ,
                         to
                     },
-                    transactions : allTransactions}
+                    transactions : allTransactions.length}
             })
 
         } catch (err) {
