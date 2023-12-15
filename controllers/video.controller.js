@@ -83,15 +83,15 @@ module.exports = {
   
   getVideoDetails: async (req, res, next) => {
     try {
-      const { videoId } = req.params;
+      let { id } = req.params;
 
-      if (!videoId || isNaN(Number(videoId))) {
+      if (!id || isNaN(Number(id))) {
         throw new BadRequestError("ID Video harus diisi dan berupa angka");
       }
 
       const videoDetails = await prisma.video.findUnique({
         where: {
-          id: Number(videoId),
+          id,
         },
         select: {
           id: true,
@@ -185,6 +185,74 @@ module.exports = {
             success: true,
             message: "Berhasil memperbarui video",
             data: updatedVideo,
+          });
+        } catch (err) {
+          next(err);
+        }
+      },
+
+      deleteVideo: async (req, res, next) => {
+        try {
+          let { title, description, url, duration } = req.body;
+          let { id } = req.params;
+
+          if (!title || !description || !url || !duration) {
+            throw new BadRequestError("Harap isi semua kolom");
+          }
+          if (isNaN(Number(duration))) {
+            throw new BadRequestError("Duration harus berupa Angka");
+          }
+
+          if (!id) {
+            throw new BadRequestError("Video ID harus diisi");
+          }
+          if (isNaN(Number(id))) {
+            throw new BadRequestError("ID Harus Berupa Angka");
+          }
+
+          id = Number(id);
+    
+          const checkVideo = await prisma.video.findUnique({
+            where: {
+              id: id,
+            },
+          });
+    
+          if (!checkVideo) {
+            throw new NotFoundError("Video dengan ID tersebut tidak ditemukan");
+          }
+    
+          const deletedVideo = await prisma.video.delete({
+            where: {
+              id: Number(videoId),
+            },
+            data: {
+              title,
+              description,
+              url,
+              duration,
+            },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              url: true,
+              duration: true,
+              chapter: {
+                select: {
+                  id: true,
+                  number: true,
+                  title: true,
+                  isPremium: true,
+                },
+              },
+            },
+          });
+    
+          res.status(200).json({
+            success: true,
+            message: "Berhasil menghapus video",
+            data: deletedVideo,
           });
         } catch (err) {
           next(err);
