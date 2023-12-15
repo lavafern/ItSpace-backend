@@ -90,11 +90,11 @@ module.exports = {
 
   getChapter: async (req, res, next) => {
     try {
-      let { courseId, chapterId } = req.params;
+      let { courseId, id } = req.params;
       courseId = Number(courseId);
-      chapterId = Number(chapterId);
+      id = Number(id);
 
-      if (!Number.isInteger(courseId) || !Number.isInteger(chapterId)) {
+      if (!Number.isInteger(courseId) || !Number.isInteger(id)) {
         throw new BadRequestError(
           "Course ID dan Chapter ID harus berupa angka"
         );
@@ -109,10 +109,10 @@ module.exports = {
       if (!checkCourse)
         throw new NotFoundError("Course dengan id tersebut tidak ada");
 
-      // Ambil chapter berdasarkan courseId dan chapterId
+      // Ambil chapter berdasarkan courseId dan id
       const chapter = await prisma.chapter.findUnique({
         where: {
-          id: chapterId,
+          id: id,
         },
         select : {
           id : true,
@@ -147,12 +147,19 @@ module.exports = {
 
   getAllChaptersForCourse: async (req, res, next) => {
     try {
+      // masukan userid -1 jika tidak login sebagai user
+      let {userId} = req.body
       let { courseId } = req.params;
-      courseId = Number(courseId);
 
-      if (!Number.isInteger(courseId)) {
-        throw new BadRequestError("Course ID harus berupa angka");
-      }
+      if (!courseId) throw new BadRequestError("Tolong masukan courseId")
+      if (!userId) throw new BadRequestError("Tolong masukan courseId")
+      
+      if (isNaN(Number(courseId))) throw new BadRequestError("Course ID harus berupa angka");
+      
+      if (isNaN(Number(courseId))) throw new BadRequestError("User ID harus berupa angka")
+
+      courseId = Number(courseId);
+      userId = Number(userId);
 
       const checkCourse = await prisma.course.findUnique({
         where: {
@@ -167,11 +174,29 @@ module.exports = {
         where: {
           courseId,
         },
+        orderBy : [
+          {number : 'asc'}
+        ],
         select : {
           id : true,
           title : true,
           number : true,
           isPremium : true,
+          video : {
+            select : {
+              id : true,
+              title : true,
+              duration : true,
+              progress : {
+                where : {
+                  authorId : userId
+                },
+                select : {
+                  completed : true
+                }
+              }
+            }
+          },
           course : {
             select : {
               id : true,
