@@ -147,12 +147,19 @@ module.exports = {
 
   getAllChaptersForCourse: async (req, res, next) => {
     try {
+      // masukan userid -1 jika tidak login sebagai user
+      let {userId} = req.body
       let { courseId } = req.params;
-      courseId = Number(courseId);
 
-      if (!Number.isInteger(courseId)) {
-        throw new BadRequestError("Course ID harus berupa angka");
-      }
+      if (!courseId) throw new BadRequestError("Tolong masukan courseId")
+      if (!userId) throw new BadRequestError("Tolong masukan courseId")
+      
+      if (isNaN(Number(courseId))) throw new BadRequestError("Course ID harus berupa angka");
+      
+      if (isNaN(Number(courseId))) throw new BadRequestError("User ID harus berupa angka")
+
+      courseId = Number(courseId);
+      userId = Number(userId);
 
       const checkCourse = await prisma.course.findUnique({
         where: {
@@ -167,11 +174,29 @@ module.exports = {
         where: {
           courseId,
         },
+        orderBy : [
+          {number : 'asc'}
+        ],
         select : {
           id : true,
           title : true,
           number : true,
           isPremium : true,
+          video : {
+            select : {
+              id : true,
+              title : true,
+              duration : true,
+              progress : {
+                where : {
+                  authorId : userId
+                },
+                select : {
+                  completed : true
+                }
+              }
+            }
+          },
           course : {
             select : {
               id : true,

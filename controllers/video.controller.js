@@ -1,5 +1,5 @@
 const { prisma } = require("../utils/prismaClient");
-const { ForbiddenError, BadRequestError, NotFoundError } = require("../errors/customErrors");
+const { ForbiddenError, BadRequestError, NotFoundError, CourseNotPurchasedError } = require("../errors/customErrors");
 
 module.exports = {
   createVideo: async (req, res, next) => {
@@ -88,13 +88,51 @@ module.exports = {
   
   getVideoDetails: async (req, res, next) => {
     try {
-      let { id } = req.params;
 
-      if (!id || isNaN(Number(id))) {
-        throw new BadRequestError("ID Video harus diisi dan berupa angka");
+      const userId = req.user.profile.id;
+      
+      let { courseId, chapterId, id } = req.params;
+
+      if (!id) {
+        throw new BadRequestError("Video ID harus diisi");
+      }
+      if (isNaN(Number(id))) {
+        throw new BadRequestError("ID Harus Berupa Angka");
       }
 
-      id = Number(id)
+      if (!courseId || !chapterId){
+        throw new BadRequestError('Course dan Chapter harus diisi');
+      }
+
+      if (isNaN(Number(courseId)) || isNaN(Number(chapterId))){
+        throw new BadRequestError("ID Harus Berupa Angka")
+      }
+
+      id = Number(id);
+      courseId = Number(courseId);
+      chapterId = Number(chapterId);
+
+
+      
+      const checkCourse = await prisma.course.findUnique({
+            where: {
+              id: courseId,
+              },
+            });
+
+          if (!checkCourse) throw new BadRequestError("Course dengan id tersebut tidak ada");
+          
+
+          const checkChapter = await prisma.chapter.findUnique({
+            where: {
+              id: chapterId,
+            },
+          });
+    
+        if (!checkChapter)  throw new BadRequestError("Chapter dengan id tersebut tidak ada");
+    
+
+      
 
       const videoDetails = await prisma.video.findUnique({
         where: {
@@ -112,6 +150,16 @@ module.exports = {
               number: true,
               title: true,
               isPremium: true,
+              course : {
+                select : {
+                  id : true,
+                  code : true,
+                  title : true,
+                  price : true,
+                  level : true,
+                  isPremium : true,
+                }
+              }
             },
           },
         },
@@ -120,6 +168,27 @@ module.exports = {
       if (!videoDetails) {
         throw new NotFoundError("Video dengan ID tersebut tidak ditemukan");
       }
+
+      if (videoDetails.chapter.id !== chapterId) {
+        throw new BadRequestError("Video dengan id tersebut bukan berasal dari chapter ini")
+      }
+
+      if (videoDetails.chapter.course.id !== courseId) {
+        throw new BadRequestError("Video dengan id tersebut bukan berasal dari courser ini")
+      }
+
+      /// cek apakah user boleh mengakses ini
+      if (checkChapter.isPremium) {
+        const userEnrollment = await prisma.enrollment.findMany({
+          where : {
+            authorId : userId,
+            courseId : courseId
+          }
+        })
+
+        if (userEnrollment.length < 1) throw new CourseNotPurchasedError("Anda harus daftar kelas ini untuk mengkases ini")
+      }
+
 
       res.status(200).json({
         success: true,
@@ -202,7 +271,12 @@ module.exports = {
                   isPremium: true,
                   course : {
                     select : {
-                      id : true
+                      id : true,
+                      code : true,
+                      title : true,
+                      price : true,
+                      level : true,
+                      isPremium : true,
                     }
                   }
                 },
@@ -211,7 +285,7 @@ module.exports = {
           });
 
           if (!checkVideo) {
-            throw new BadRequestError("Video dengan id tersebut tidak ada");
+            throw new NotFoundError("Video dengan id tersebut tidak ada");
           }
 
           if (checkVideo.chapter.id !== chapterId) {
@@ -324,7 +398,12 @@ module.exports = {
                   isPremium: true,
                   course : {
                     select : {
-                      id : true
+                      id : true,
+                      code : true,
+                      title : true,
+                      price : true,
+                      level : true,
+                      isPremium : true,
                     }
                   }
                 },
