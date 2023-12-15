@@ -117,10 +117,72 @@ module.exports = {
         try {
 
             let {status,courseCode,method,se,from,to} = req.query
-            to = to ? new Date(new Date(to).getTime() + (24 * 60 * 60 * 999)) : new Date() 
-            from = from ? new Date(from) : new Date(new Date().getTime() - 24 * 60 * 60000)
+            to = to ? {type : 'to', data: new Date(new Date(to).getTime() + (24 * 60 * 60 * 999))} : undefined
+            from = from ? {type :'from', data : new Date(from)} : undefined
+// 
+            // const dateFilterdata = {} 
+// 
+            // const dateValue = [to,from].map((i) => {
+                // if (i.type === 'to') {
+                    // dateFilterdata.lte = i.data
+                // }
+                // if (i.type === 'from') {
+                    // dateFilterdata.gte = i.data
+                // }
+            // })
+// 
+            // const dateFilter = Object.keys(dateFilterdata).length === 2 ? {
+                // 
+            // }
+// 
+
+
 
             const filters = getAllTransactionFilter(courseCode,status,method)
+
+            let allTransactionsCount = await prisma.transaction.findMany({
+                orderBy : [
+                    { id : 'desc'}
+                ],
+                where : {
+                    course : {
+                        title : {
+                            contains : se,
+                            mode : 'insensitive'
+                        }
+                    },
+                    date : {
+                        lte : undefined,
+                        gte : undefined
+                    },
+                    AND : filters
+                },
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
+                    course : {
+                        select : {
+                            id : true,
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+
+                        }
+                    }
+                }
+            })
+
+            allTransactionsCount = allTransactionsCount.length
+
+            console.log(allTransactionsCount);
+            console.log(se);
+// 
             const allTransactions = await prisma.transaction.findMany({
                 orderBy : [
                     { id : 'desc'}
@@ -158,6 +220,8 @@ module.exports = {
                     }
                 }
             })
+// 
+            // const allTransactions = await prisma.transaction.findMany()
 
 
             res.status(200).json({
@@ -168,7 +232,7 @@ module.exports = {
                         from ,
                         to
                     },
-                    transactions : allTransactions}
+                    transactions : allTransactions.length}
             })
 
         } catch (err) {
@@ -286,7 +350,7 @@ module.exports = {
             const pushNotification = prisma.notification.create({
                 data : {
                     authorId,
-                    type : "Pembayaran selesai",
+                    type : "Pembayaran dan pendaftaran kelas premium berhasil",
                     message : `Terima kasih telah melakukan pembayaran, kelas premium ${doneTransaction.course.title} sudah bisa kamu akses.`,
                     created_at : new Date(),
                     is_read : false
