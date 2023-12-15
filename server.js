@@ -27,7 +27,7 @@ app.get('/',(req,res,next) => {
     try {
         res.json({
             success : true,
-            message : "hello",
+            message : "hello 2",
             data : "welcome to itSpace"
         })
     } catch (err) {
