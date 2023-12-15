@@ -53,7 +53,8 @@ model Profile {
   profilePicture   String 
   role Role @default(USER)
   joinDate DateTime @default(now())
-  location String?
+  city String?
+  country String?
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int @unique
 }
