@@ -90,11 +90,11 @@ module.exports = {
 
   getChapter: async (req, res, next) => {
     try {
-      let { courseId, chapterId } = req.params;
+      let { courseId, id } = req.params;
       courseId = Number(courseId);
-      chapterId = Number(chapterId);
+      id = Number(id);
 
-      if (!Number.isInteger(courseId) || !Number.isInteger(chapterId)) {
+      if (!Number.isInteger(courseId) || !Number.isInteger(id)) {
         throw new BadRequestError(
           "Course ID dan Chapter ID harus berupa angka"
         );
@@ -109,10 +109,10 @@ module.exports = {
       if (!checkCourse)
         throw new NotFoundError("Course dengan id tersebut tidak ada");
 
-      // Ambil chapter berdasarkan courseId dan chapterId
+      // Ambil chapter berdasarkan courseId dan id
       const chapter = await prisma.chapter.findUnique({
         where: {
-          id: chapterId,
+          id: id,
         },
         select : {
           id : true,
