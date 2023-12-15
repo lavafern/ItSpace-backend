@@ -1,9 +1,10 @@
-const {createVideo, getVideoDetails, updateVideo, deleteVideo} = require('../../controllers/video.controller')
+const {createVideo, getVideoDetails, updateVideo, deleteVideo} = require('../../controllers/video.controller');
+const { restrict } = require('../../middlewares/auth.middleware');
 const router = require('express').Router()
 
-router.post('/courses/:courseId/chapters/:chapterId/videos',createVideo)
-router.get('/courses/:courseId/chapters/:chapterId/videos/:id', getVideoDetails);
-router.put('/courses/:courseId/chapters/:chapterId/videos/:id',updateVideo)
-router.put('/courses/:courseId/chapters/:chapterId/videos/:id',deleteVideo)
+router.post('/courses/:courseId/chapters/:chapterId/videos',restrict,createVideo)
+router.get('/courses/:courseId/chapters/:chapterId/videos/:id',restrict, getVideoDetails);
+router.put('/courses/:courseId/chapters/:chapterId/videos/:id',restrict,updateVideo)
+router.delete('/courses/:courseId/chapters/:chapterId/videos/:id',restrict,deleteVideo)
 
 module.exports = router
