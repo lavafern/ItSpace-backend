@@ -116,6 +116,49 @@ module.exports = {
         }
     },
 
+    uploadImageCourse : async (req,res,next) => {
+      try {
+        let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370" : (await imagekit.upload({
+                fileName: + Date.now() + path.extname(req.file.originalname),
+                file: req.file.buffer.toString('base64')
+            })).url
+
+        let {id} = req.params
+
+        if (!id)  throw new BadRequestError("Masukan courseId")
+        if (isNaN(Number(id)))  throw new BadRequestError("Id harus berupa integer")
+
+        const checkCourse = await prisma.course.findUnique({
+          where : {
+            id
+          }
+        })
+
+        thumbnailUrl = checkCourse.thumbnailUrl === 'https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370' ? thumbnailUrl : checkCourse.thumbnailUrl
+
+        if (!checkCourse) throw new NotFoundError("Course dengan id ini tidak ada")
+
+        const updateCourseImage = await prisma.course.update({
+          where : {
+            id
+          },
+          data : {
+            thumbnailUrl 
+          }
+        })
+
+        res.status(201).json({
+          success : true,
+          message : "Succesfully upload course Image",
+          data : updateCourseImage
+        })
+
+
+      } catch (err) {
+        next(err)
+      }
+    },
+
     getAllCourse : async (req,res,next) => {
       try {
         let {category,level,ispremium,page,limit,se} = req.query
