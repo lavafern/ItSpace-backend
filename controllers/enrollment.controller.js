@@ -206,6 +206,18 @@ module.exports = {
                         }
                     }
                 },
+                chapter : {
+                    select : {
+                        id : true,
+                        title : true,
+                        video : {
+                            select : {
+                                id : true,
+                                title : true
+                            }
+                        }
+                    }
+                }
               }
             })
         
