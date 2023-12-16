@@ -961,9 +961,12 @@ paths:
                                   joinDate :
                                     type: string
                                     example: 2023-11-29T18:11:00.927Z
-                                  location :
+                                  city :
                                     type: string
-                                    example: Bandung
+                                    example : "Bandung"
+                                  country :
+                                    type: string
+                                    example: "Indonesia"
           '400':
             description: Bad request
             content:
@@ -1015,9 +1018,12 @@ paths:
                  phoneNumber:
                    type: string
                    example: 0000000
-                 location:
+                 city :
                    type: string
-                   example: Jakarta
+                   example : "Bandung"
+                 country :
+                   type: string
+                   example: "Indonesia"
                  image:
                     type: string
                     example: upload profile picture here
@@ -1050,9 +1056,12 @@ paths:
                                   joinDate :
                                     type: string
                                     example: 2023-11-29T18:11:00.927Z
-                                  location :
+                                  city :
                                     type: string
-                                    example: Bandung
+                                    example : "Bandung"
+                                  country :
+                                    type: string
+                                    example: "Indonesia"
           '400':
             description: Bad request
             content:
