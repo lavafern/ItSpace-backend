@@ -1463,15 +1463,22 @@ paths:
                       data:
                         type: object
                         properties:
-                          rangeDate:
-                           type: object
-                           properties:
-                             from:
-                              type: string
-                              example: 2023-12-04T17:00:00.000Z
-                             to:
-                              type: string
-                              example: 2023-12-07T17:59:47.297Z
+                          Pagination:
+                            title: Pagination
+                            type: object
+                            properties:
+                              links:
+                                type: object
+                                properties:
+                                  next:
+                                    type: string
+                                    example: "https://domain.com/transactions?method=cc&page=3&limit=10"
+                                  prev:
+                                    type: string
+                                    example: "https://domain.com/transactions?method=cc&page=1&limit=10"
+                              total_items:
+                                type: integer
+                                example: 100      
                           transactions :
                            type: array
                            items :

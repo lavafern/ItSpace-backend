@@ -1,4 +1,5 @@
 const { BadRequestError, ForbiddenError, UserNotVerifiedError } = require("../errors/customErrors")
+const { transactionsPagination } = require("../utils/pagination")
 const { prisma } = require("../utils/prismaClient")
 const { getAllTransactionFilter } = require("../utils/searchFilters")
 
@@ -116,74 +117,19 @@ module.exports = {
     getAllTransaction : async (req,res,next) => {
         try {
 
-            let {status,courseCode,method,se,from,to} = req.query
-            to = to ? {type : 'to', data: new Date(new Date(to).getTime() + (24 * 60 * 60 * 999))} : undefined
-            from = from ? {type :'from', data : new Date(from)} : undefined
-// 
-            // const dateFilterdata = {} 
-// 
-            // const dateValue = [to,from].map((i) => {
-                // if (i.type === 'to') {
-                    // dateFilterdata.lte = i.data
-                // }
-                // if (i.type === 'from') {
-                    // dateFilterdata.gte = i.data
-                // }
-            // })
-// 
-            // const dateFilter = Object.keys(dateFilterdata).length === 2 ? {
-                // 
-            // }
-// 
+            let {status,courseCode,method,se,from,to,page,limit} = req.query
 
+            page = page ? Number(page) : 1
+            limit = limit ? Number(limit) : 10
 
+            to = to ? new Date(new Date(to).getTime() + (24 * 60 * 60 * 999)) : undefined
+            from = from ? new Date(from) : undefined
+
+            if ((to === undefined && from) || (to && from === undefined)) throw new BadRequestError("Jika menggunakan filter tanggal, gunakan kedua parameter (to & from)")
 
             const filters = getAllTransactionFilter(courseCode,status,method)
 
             let allTransactionsCount = await prisma.transaction.findMany({
-                orderBy : [
-                    { id : 'desc'}
-                ],
-                where : {
-                    course : {
-                        title : {
-                            contains : se,
-                            mode : 'insensitive'
-                        }
-                    },
-                    date : {
-                        lte : undefined,
-                        gte : undefined
-                    },
-                    AND : filters
-                },
-                select : {
-                    id : true,
-                    date : true,
-                    expirationDate : true,
-                    payDone : true,
-                    payDate : true,
-                    paymentMethod : true,
-                    course : {
-                        select : {
-                            id : true,
-                            code : true,
-                            title : true,
-                            price : true,
-                            level : true,
-                            isPremium : true,
-
-                        }
-                    }
-                }
-            })
-
-            allTransactionsCount = allTransactionsCount.length
-
-            console.log(allTransactionsCount);
-            console.log(se);
-// 
-            const allTransactions = await prisma.transaction.findMany({
                 orderBy : [
                     { id : 'desc'}
                 ],
@@ -220,19 +166,62 @@ module.exports = {
                     }
                 }
             })
-// 
-            // const allTransactions = await prisma.transaction.findMany()
 
+            allTransactionsCount = allTransactionsCount.length
+
+// 
+            const transactions = await prisma.transaction.findMany({
+                orderBy : [
+                    { id : 'desc'}
+                ],
+                skip : (page - 1) * limit,
+                take : limit,
+                where : {
+                    course : {
+                        title : {
+                            contains : se,
+                            mode : 'insensitive'
+                        }
+                    },
+                    date : {
+                        lte : to,
+                        gte : from
+                    },
+                    AND : filters
+                },
+                select : {
+                    id : true,
+                    date : true,
+                    expirationDate : true,
+                    payDone : true,
+                    payDate : true,
+                    paymentMethod : true,
+                    course : {
+                        select : {
+                            id : true,
+                            code : true,
+                            title : true,
+                            price : true,
+                            level : true,
+                            isPremium : true,
+
+                        }
+                    }
+                }
+            })
+// 
+
+            const pagination = transactionsPagination(req,allTransactionsCount,page,limit,status,courseCode,method,from,to)
+
+            const result = {
+                pagination,
+                transactions
+            }
 
             res.status(200).json({
                 success : true,
                 message : "Succesfully get all transactions",
-                data : {
-                    date : {
-                        from ,
-                        to
-                    },
-                    transactions : allTransactions.length}
+                data : result
             })
 
         } catch (err) {
