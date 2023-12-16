@@ -134,7 +134,7 @@ module.exports = {
           }
         })
 
-        thumbnailUrl = checkCourse.thumbnailUrl === 'https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370' ? thumbnailUrl : checkCourse.thumbnailUrl
+        thumbnailUrl = thumbnailUrl !== "https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370" ? thumbnailUrl : checkCourse.thumbnailUrl
 
         if (!checkCourse) throw new NotFoundError("Course dengan id ini tidak ada")
 
