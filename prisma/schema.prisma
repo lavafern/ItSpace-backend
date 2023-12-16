@@ -148,7 +148,7 @@ model Rating {
 
 model Progress {
   id    Int     @id @default(autoincrement())
-  completed Boolean @default(false)
+  completedDate DateTime
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int
   video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
