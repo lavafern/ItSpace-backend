@@ -192,7 +192,8 @@ module.exports = {
                   authorId : userId
                 },
                 select : {
-                  completed : true
+                  id : true,
+                  completedDate : true
                 }
               }
             }
