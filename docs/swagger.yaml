@@ -2922,7 +2922,575 @@ paths:
                            authorId:
                              type: string
                              example: 1
+  /courses/{courseId}/chapters/{chapterId}/videos:
+    post:
+      tags:
+        - videos
+      description: make chapter
+      parameters:
+        - in: path
+          name: courseId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course of the video to create.
+      
+        - in: path
+          name: chapterId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+      requestBody:
+        content:
+          application/json:
+            schema:
+               type: object
+               properties:
+                title :
+                  type: string  
+                  example : introducion
+                  description: '1 for premium 0 for not premium'
+                description :
+                  type: string  
+                  example : welcome to first video...
+                url :
+                  type: string  
+                  example : www.com
+                duration :
+                  type: integer  
+                  example : 5
+
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          title:
+                            type: string
+                            example: 'introduction'
+                          description :
+                            type: integer
+                            example: 1
+                          url:
+                            type: string
+                            example: www.com
+                          duration:
+                            type: integer
+                            example: 5
+                          chapter:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              number:
+                                type: integer
+                                example: 3
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              isPremium:
+                                type: boolean
+                                example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  /courses/{courseId}/chapters/{chapterId}/videos/{videoId}:
+    put:
+      tags:
+        - videos
+      description: make chapter
+      parameters:
+        - in: path
+          name: courseId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course of the video to create.
+        - in: path
+          name: chapterId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+        - in: path
+          name: videoId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+      requestBody:
+        content:
+          application/json:
+            schema:
+               type: object
+               properties:
+                title :
+                  type: string  
+                  example : introducion
+                  description: '1 for premium 0 for not premium'
+                description :
+                  type: string  
+                  example : welcome to first video...
+                url :
+                  type: string  
+                  example : www.com
+                duration :
+                  type: integer  
+                  example : 5
+
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          title:
+                            type: string
+                            example: 'introduction'
+                          description :
+                            type: integer
+                            example: 1
+                          url:
+                            type: string
+                            example: www.com
+                          duration:
+                            type: integer
+                            example: 5
+                          chapter:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              number:
+                                type: integer
+                                example: 3
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              isPremium:
+                                type: boolean
+                                example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+    get:
+      tags:
+        - videos
+      description: make chapter
+      parameters:
+        - in: path
+          name: courseId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course of the video to create.
+        - in: path
+          name: chapterId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+        - in: path
+          name: videoId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          title:
+                            type: string
+                            example: 'introduction'
+                          description :
+                            type: integer
+                            example: 1
+                          url:
+                            type: string
+                            example: www.com
+                          duration:
+                            type: integer
+                            example: 5
+                          chapter:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              number:
+                                type: integer
+                                example: 3
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              isPremium:
+                                type: boolean
+                                example: true
+                              course:
+                               type: object
+                               properties:
+                                  id:
+                                   type: integer
+                                   example: 1
+                                  code:
+                                    type: string
+                                    example: "BE!"
+                                  title:
+                                    type: string
+                                    example: "Backend javascript"
+                                  price:
+                                    type: integer
+                                    example: 1
+                                  level:
+                                    type: string
+                                    example: "BEGINNER"
+                                  ispremium:
+                                    type: boolean
+                                    example: false
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
                            
+    delete:
+      tags:
+        - videos
+      description: delete video
+      parameters:
+        - in: path
+          name: courseId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course of the video to create.
+        - in: path
+          name: chapterId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+        - in: path
+          name: videoId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          title:
+                            type: string
+                            example: 'introduction'
+                          description :
+                            type: integer
+                            example: 1
+                          url:
+                            type: string
+                            example: www.com
+                          duration:
+                            type: integer
+                            example: 5
+                          chapter:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              number:
+                                type: integer
+                                example: 3
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              isPremium:
+                                type: boolean
+                                example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  /progress:
+    post:
+      tags:
+        - progress
+      description: make chapter
+      requestBody:
+        content:
+          application/json:
+            schema:
+               type: object
+               properties:
+                videoId :
+                  type: integer  
+                  example : 1
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                             id:
+                               type: integer
+                               example: 1
+                             completedDate:
+                               type: string
+                               example: '2023-12-17T12:45:03.889Z'
+                             video:
+                              type: object
+                              properties:
+                                 id:
+                                  type: integer
+                                  example: 1
+                                 title:
+                                   type: string
+                                   example: "Backend javascript 1"
+                             author:
+                              type: object
+                              properties:
+                                 id:
+                                  type: integer
+                                  example: 1
+                                 profile:
+                                   type: object
+                                   properties:
+                                     name: 
+                                       type: string
+                                       example: jhon doe
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          completedDate:
+                            type: string
+                            example: '2023-12-17T12:45:03.889Z'
+                          video:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              title:
+                                type: string
+                                example: "Backend javascript 1"
+                          author:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              profile:
+                                type: object
+                                properties:
+                                  name: 
+                                    type: string
+                                    example: jhon doe
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'                         
 
 #---------------------------------------components--------------------------------------
 

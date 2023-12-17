@@ -8,6 +8,4 @@ router.delete('/courses/:courseId/chapters/:id',restrict,deleteChapter)
 router.get('/courses/:courseId/chapters/:id',getChapter)
 router.get('/courses/:courseId/chapters',getAllChaptersForCourse)
 
-
-
 module.exports = router

@@ -29,6 +29,7 @@ module.exports = {
                 },
                 select : {
                     id : true,
+                    completedDate : true,
                     video : {
                         select : {
                             id : true,
@@ -37,6 +38,7 @@ module.exports = {
                     },
                     author : {
                         select : {
+                            id : true,
                             profile : {
                                 select : {
                                     name : true
@@ -60,6 +62,26 @@ module.exports = {
                     videoId,
                     authorId : userId,
                     completedDate : new Date()
+                },
+                select : {
+                    id : true,
+                    completedDate : true,
+                    video : {
+                        select : {
+                            id : true,
+                            title : true,
+                        }
+                    },
+                    author : {
+                        select : {
+                            id : true,
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    }
                 }
             })
 
