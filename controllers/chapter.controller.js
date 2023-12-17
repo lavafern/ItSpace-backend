@@ -152,7 +152,7 @@ module.exports = {
       let { courseId } = req.params;
 
       if (!courseId) throw new BadRequestError("Tolong masukan courseId")
-      if (!userId) throw new BadRequestError("Tolong masukan courseId")
+      if (!userId) throw new BadRequestError("Tolong masukan userId")
       
       if (isNaN(Number(courseId))) throw new BadRequestError("Course ID harus berupa angka");
       
