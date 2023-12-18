@@ -38,9 +38,4 @@ router.get('/redirect', (req,res,next) => {
     }
 })
 
-
-
-
-
-
 module.exports = router

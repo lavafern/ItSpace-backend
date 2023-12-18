@@ -20,7 +20,8 @@ passport.use(new GoogleStrategy({
 
             },
             update : {
-                googleId : profile.id
+                googleId : profile.id,
+                verified : true
             },
             create : {
                 email : profile.emails[0].value,
@@ -28,9 +29,11 @@ passport.use(new GoogleStrategy({
                 profile : {
                     create : {
                         name : profile.displayName,
-                        role : "USER"
+                        role : "USER",
+                        profilePicture : "https://ik.imagekit.io/itspace/18b5b599bb873285bd4def283c0d3c09.jpg?updatedAt=1701289000673"
                     }
-                }
+                },
+                verified : true
 
             },
             include : {

@@ -8,11 +8,13 @@ const authRoute = require('./routes/v1/auth.routes')
 const coursesRoute = require('./routes/v1/course.routes')
 const categoriesRoute = require('./routes/v1/category.routes')
 const chaptersRoute = require('./routes/v1/chapters.routes')
+const videoRoute = require('./routes/v1/video.routes')
 const usersRoute = require('./routes/v1/user.routes')
 const transactionsRoute = require('./routes/v1/transaction.routes')
 const enrollmentsRoute = require('./routes/v1/enrollment.routes')
 const ratingsRoute = require('./routes/v1/rating.routes')
 const notificationsRoute = require('./routes/v1/notification.routes')
+const progressRoute = require('./routes/v1/progress.routes')
 const bodyParser = require('body-parser')
 const cookies = require("cookie-parser");
 
@@ -27,7 +29,7 @@ app.get('/',(req,res,next) => {
     try {
         res.json({
             success : true,
-            message : "hello",
+            message : "hello 2",
             data : "welcome to itSpace"
         })
     } catch (err) {
@@ -39,11 +41,13 @@ app.use('/api/v1/auth',authRoute)
 app.use('/api/v1',coursesRoute)
 app.use('/api/v1',categoriesRoute)
 app.use('/api/v1',chaptersRoute)
+app.use('/api/v1',videoRoute)
 app.use('/api/v1',usersRoute)
 app.use('/api/v1',transactionsRoute)
 app.use('/api/v1',enrollmentsRoute)
 app.use('/api/v1',ratingsRoute)
 app.use('/api/v1',notificationsRoute)
+app.use('/api/v1',progressRoute)
 
 /// error handling middleware
 app.use(otherError)

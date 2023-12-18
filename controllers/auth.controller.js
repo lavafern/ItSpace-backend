@@ -11,9 +11,20 @@ const imagekit = require("../utils/imagekit")
 module.exports = {
     LoginWithGoogle : async (req,res,next) => {
         try {
-            const accesToken = await signToken('access',foundUser,JWT_SECRET)
+            console.log(req.user);
 
-            const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET)
+            const userConstruct = {
+                id : req.user.id,
+                email : req.user.email,
+                profile : req.user.profile
+                }
+
+            delete userConstruct.profile.city
+            delete userConstruct.profile.country
+
+            const accesToken = await signToken('access',userConstruct,JWT_SECRET)
+
+            const refreshToken = await signToken('refresh',userConstruct,JWT_REFRESH_SECRET)
             
             res
             .cookie("accesToken",accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
@@ -195,9 +206,9 @@ module.exports = {
                     email
                 },
                 select : {
+                    id : true,
                     email : true,
                     password : true,
-                    id : true,
                     profile : {
                         select : {
                             role : true

@@ -32,7 +32,7 @@ module.exports = {
         total_items : count
     }
 },
-    transactionPagination : (req, count, page, limit, status, courseCode, method, from, to ) => {
+    transactionsPagination : (req, count, page, limit, status,courseCode,method,from,to) => {
     status = status ? 'status='+status : ''
     courseCode = courseCode ? '&courseCode='+courseCode : ''
     method = method ? '&method='+method : ''

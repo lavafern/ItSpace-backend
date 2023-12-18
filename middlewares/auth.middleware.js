@@ -8,13 +8,15 @@ module.exports = {
 
             const accesToken = req.cookies.accesToken
 
-            if (!(accesToken) && !(refreshToken)) throw new UnauthorizedError("Unauthorized")
+            if (!accesToken ) throw new UnauthorizedError("Unauthorized")
             const user = await decodeToken(accesToken,JWT_SECRET)
             req.user = user
             next()
 
         } catch (err) {
             const refreshToken = req.cookies.refreshToken
+
+            if (!refreshToken ) throw new UnauthorizedError("Unauthorized")
 
             try {
                 const userData = await decodeToken(refreshToken,JWT_REFRESH_SECRET)
@@ -32,5 +34,52 @@ module.exports = {
             }
             
         }
-    }
+    },
+    restrictGuest : async (req,res,next) => {
+        try {
+
+            const accesToken = req.cookies.accesToken
+
+            if (!accesToken) {
+                req.user= {
+                    id : -1
+                }
+                return next()
+            }
+
+            const user = await decodeToken(accesToken,JWT_SECRET)
+            req.user = user
+            next()
+
+        } catch (err) {
+            const refreshToken = req.cookies.refreshToken
+
+            if (!refreshToken) {
+                req.user= {
+                    id : -1
+                }
+                return next()
+            }
+
+            try {
+                const userData = await decodeToken(refreshToken,JWT_REFRESH_SECRET)
+                const userConstruct = {
+                    id : userData.id,
+                    email : userData.email,
+                    profile : userData.profile
+                    }
+                const accesToken = await signToken('access',userConstruct,JWT_SECRET)
+                req.user = userConstruct
+                req.accesToken = accesToken
+                next()
+            } catch (err) {
+                req.user= {
+                    id : -1
+                }
+                next()
+            }
+            
+        }
+    },
+    
 }

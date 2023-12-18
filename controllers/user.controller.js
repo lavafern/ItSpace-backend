@@ -73,7 +73,8 @@ module.exports = {
                             profilePicture : true,
                             role : true,
                             joinDate : true,
-                            location : true
+                            country : true,
+                            city : true
                         }
                     }
                 }
@@ -104,10 +105,13 @@ module.exports = {
             
            
            
-            let {name,phoneNumber,location} = req.body
+            let {email,name,phoneNumber,country,city} = req.body
 
+            if (!email)  throw new BadRequestError("Email wajib di isi")
             if (!name)  throw new BadRequestError("Nama wajib di isi")
-            if (isNaN(phoneNumber)) throw new BadRequestError("Nomor telepon harus angka")
+            if (phoneNumber) {
+                if (isNaN(phoneNumber)) throw new BadRequestError("Nomor telepon harus angka")
+            }
 
             //check user exist
             const user = await prisma.profile.findUnique({
@@ -131,7 +135,8 @@ module.exports = {
                     name,
                     phoneNumber,
                     profilePicture,
-                    location
+                    city,
+                    country
                 }
             })
            
