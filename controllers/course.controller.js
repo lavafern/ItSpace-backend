@@ -166,47 +166,47 @@ module.exports = {
         limit = limit ? Number(limit) : 10
 
         const filters = getAllCourseFilter(ispremium,level,category)
-        let coursesCount = await prisma.course.findMany({
-            orderBy : [
-                { id : 'desc'}
-            ]
-        ,
-          where : {
-             title : {
-                contains : se,
-                mode : 'insensitive'
-            },
-            AND : filters
-          },
-          include : {
-           
-            courseCategory : {
-                select : {
-                    category : {
-                        select : {
-                            name : true
-                        }
-                    }
-                }
-                
-            },
-            mentor : {
-                select : { 
-                    author : {
-                        select :{
-                            profile : {
-                                select : {
-                                    name : true
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-          }
-        })
-
-        coursesCount = coursesCount.length
+        // let coursesCount = await prisma.course.findMany({
+            // orderBy : [
+                // { id : 'desc'}
+            // ]
+        // ,
+          // where : {
+            //  title : {
+                // contains : se,
+                // mode : 'insensitive'
+            // },
+            // AND : filters
+          // },
+          // include : {
+          //  
+            // courseCategory : {
+                // select : {
+                    // category : {
+                        // select : {
+                            // name : true
+                        // }
+                    // }
+                // }
+                // 
+            // },
+            // mentor : {
+                // select : { 
+                    // author : {
+                        // select :{
+                            // profile : {
+                                // select : {
+                                    // name : true
+                                // }
+                            // }
+                        // }
+                    // }
+                // }
+            // },
+          // }
+        // })
+// 
+        // coursesCount = coursesCount.length
 
         let courses = await prisma.course.findMany({
             skip : (page - 1) * limit,
@@ -271,7 +271,7 @@ module.exports = {
         })
 
 
-        const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium)
+        const pagination = coursePagination(req,-1,page,limit,category,level,ispremium)
 
         const result = {
             pagination,
