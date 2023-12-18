@@ -1,9 +1,5 @@
 const { prisma } = require("../utils/prismaClient");
-const {
-  ForbiddenError,
-  BadRequestError,
-  NotFoundError,
-} = require("../errors/customErrors");
+const { ForbiddenError,BadRequestError,NotFoundError } = require("../errors/customErrors");
 
 module.exports = {
 
