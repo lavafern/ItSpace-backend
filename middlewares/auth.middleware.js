@@ -37,9 +37,8 @@ module.exports = {
         try {
 
             const accesToken = req.cookies.accesToken
-            const refreshToken = req.cookies.refreshToken
 
-            if (!accesToken && !refreshToken) {
+            if (!accesToken) {
                 req.user= {
                     id : -1
                 }
