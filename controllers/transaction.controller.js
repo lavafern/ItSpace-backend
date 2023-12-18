@@ -11,10 +11,9 @@ module.exports = {
             let {courseId,paymentMethod} = req.body
 
             if (!courseId || !paymentMethod) throw new BadRequestError("Tolong isi semua kolom")
+            if (!(paymentMethod === "VIRTUAL_ACCOUNT" || paymentMethod === "E_WALLET" || paymentMethod === "GERAI_RETAIL") ) throw new BadRequestError("PaymentMethod harus VIRTUAL_ACCOUNT / GERAI_RETAIL / E_WALLET")
             if (isNaN(Number(courseId))) throw new BadRequestError("Tolong isi semua kolom")
             courseId = Number(courseId)
-
-            paymentMethod = paymentMethod.toLowerCase()
 
             // checks if user is verified
             const user = await prisma.user.findUnique({
@@ -68,9 +67,9 @@ module.exports = {
                 create : {
                     date: new Date(),
                     expirationDate : new Date(new Date().getTime() + 24 * 60 * 60000),
-                    paymentMethod,
+                    paymentMethod : paymentMethod,
                     authorId,
-                    courseId
+                    courseId,
                 },
                 select : {
                     id : true,
@@ -130,45 +129,45 @@ module.exports = {
 
             const filters = getAllTransactionFilter(courseCode,status,method)
 
-            let allTransactionsCount = await prisma.transaction.findMany({
-                orderBy : [
-                    { id : 'desc'}
-                ],
-                where : {
-                    course : {
-                        title : {
-                            contains : se,
-                            mode : 'insensitive'
-                        }
-                    },
-                    date : {
-                        lte : to,
-                        gte : from
-                    },
-                    AND : filters
-                },
-                select : {
-                    id : true,
-                    date : true,
-                    expirationDate : true,
-                    payDone : true,
-                    payDate : true,
-                    paymentMethod : true,
-                    course : {
-                        select : {
-                            id : true,
-                            code : true,
-                            title : true,
-                            price : true,
-                            level : true,
-                            isPremium : true,
-
-                        }
-                    }
-                }
-            })
-
-            allTransactionsCount = allTransactionsCount.length
+            // let allTransactionsCount = await prisma.transaction.findMany({
+                // orderBy : [
+                    // { id : 'desc'}
+                // ],
+                // where : {
+                    // course : {
+                        // title : {
+                            // contains : se,
+                            // mode : 'insensitive'
+                        // }
+                    // },
+                    // date : {
+                        // lte : to,
+                        // gte : from
+                    // },
+                    // AND : filters
+                // },
+                // select : {
+                    // id : true,
+                    // date : true,
+                    // expirationDate : true,
+                    // payDone : true,
+                    // payDate : true,
+                    // paymentMethod : true,
+                    // course : {
+                        // select : {
+                            // id : true,
+                            // code : true,
+                            // title : true,
+                            // price : true,
+                            // level : true,
+                            // isPremium : true,
+// 
+                        // }
+                    // }
+                // }
+            // })
+// 
+            // allTransactionsCount = allTransactionsCount.length
 
 // 
             const transactions = await prisma.transaction.findMany({
@@ -212,7 +211,7 @@ module.exports = {
             })
 // 
 
-            const pagination = transactionsPagination(req,allTransactionsCount,page,limit,status,courseCode,method,from,to)
+            const pagination = transactionsPagination(req,null,page,limit,status,courseCode,method,from,to)
 
             const result = {
                 pagination,
@@ -351,12 +350,10 @@ module.exports = {
 
             const payAndEnroll = await prisma.$transaction([doneTransaction,enrollCourse,pushNotification])
 
-            
-
             res.status(201).json({
                 success : true,
                 message : "Transaction paid succesfully",
-                data : payAndEnroll[2]
+                data : payAndEnroll
             })
 
         } catch (err) {

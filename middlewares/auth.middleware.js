@@ -16,6 +16,8 @@ module.exports = {
         } catch (err) {
             const refreshToken = req.cookies.refreshToken
 
+            if (!refreshToken ) throw new UnauthorizedError("Unauthorized")
+
             try {
                 const userData = await decodeToken(refreshToken,JWT_REFRESH_SECRET)
                 const userConstruct = {
@@ -33,7 +35,7 @@ module.exports = {
             
         }
     },
-    restrictChapters : async (req,res,next) => {
+    restrictGuest : async (req,res,next) => {
         try {
 
             const accesToken = req.cookies.accesToken
@@ -50,8 +52,15 @@ module.exports = {
             next()
 
         } catch (err) {
-            console.log('getiner',err);
             const refreshToken = req.cookies.refreshToken
+
+            if (!refreshToken) {
+                req.user= {
+                    id : -1
+                }
+                return next()
+            }
+
 
             try {
                 const userData = await decodeToken(refreshToken,JWT_REFRESH_SECRET)
@@ -65,9 +74,13 @@ module.exports = {
                 req.accesToken = accesToken
                 next()
             } catch (err) {
-                next(err)
+                req.user= {
+                    id : -1
+                }
+                next()
             }
             
         }
-    }
+    },
+    
 }
