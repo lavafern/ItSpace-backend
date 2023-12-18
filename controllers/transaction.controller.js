@@ -420,9 +420,6 @@ module.exports = {
         try {
             userId = req.user.id
 
-
-            console.log(userId);
-
             let {status,courseCode,method,se,from,to,page,limit} = req.query
             
             page = page ? Number(page) : 1
@@ -436,7 +433,7 @@ module.exports = {
 
             const filters = getAllTransactionFilter(courseCode,status,method)
 
-            const allTransactionsCount = await prisma.transaction.findMany({
+            let allTransactionsCount = await prisma.transaction.findMany({
                 orderBy : [
                     { id : 'desc'}
                 ],
@@ -512,7 +509,7 @@ module.exports = {
                             price : true,
                             level : true,
                             isPremium : true,
-
+                            thumbnailUrl: true
                         }
                     }
                 }
