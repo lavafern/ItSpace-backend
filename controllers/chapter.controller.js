@@ -138,19 +138,16 @@ module.exports = {
 
     getAllChaptersForCourse: async (req, res, next) => {
         try {
-
             // masukan userid -1 jika tidak login sebagai user
-            let {userId} = req.body
+            let userId = req.user.id
             let { courseId } = req.params;
+            console.log(userId);
 
-            if (!courseId || !userId) throw new BadRequestError("CourseId dan userId tidak boleh kosong");
+            if (!courseId ) throw new BadRequestError("CourseId tidak boleh kosong");
 
             if (isNaN(Number(courseId))) throw new BadRequestError("Course ID harus berupa angka");
-        
-            if (isNaN(Number(courseId))) throw new BadRequestError("User ID harus berupa angka")
 
             courseId = Number(courseId);
-            userId = Number(userId);
 
             const checkCourse = await prisma.course.findUnique({
                 where: {
