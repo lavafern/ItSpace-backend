@@ -93,6 +93,7 @@ module.exports = {
                 }
             })
 
+
             //menambahkan notifikasi telah melakukan pembelian
             await prisma.notification.create({
                 data : {
@@ -336,11 +337,12 @@ module.exports = {
                 }
             })
 
+
             const pushNotification = prisma.notification.create({
                 data : {
-                    authorId,
+                    authorId ,
                     type : "Pembayaran dan pendaftaran kelas premium berhasil",
-                    message : `Terima kasih telah melakukan pembayaran, kelas premium ${doneTransaction.course.title} sudah bisa kamu akses.`,
+                    message : `Terima kasih telah melakukan pembayaran, kelas premium ${(await doneTransaction).course.title} sudah bisa kamu akses.`,
                     created_at : new Date(),
                     is_read : false
                 }
@@ -354,7 +356,7 @@ module.exports = {
             res.status(201).json({
                 success : true,
                 message : "Transaction paid succesfully",
-                data : payAndEnroll[0]
+                data : payAndEnroll[2]
             })
 
         } catch (err) {
