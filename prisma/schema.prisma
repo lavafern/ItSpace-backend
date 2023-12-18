@@ -44,6 +44,7 @@ model Course {
   mentor Mentor[]
   rating Rating[]
   chapter Chapter[]
+  coursePromo CoursePromo[]
 }
 
 model Profile {
@@ -113,7 +114,7 @@ model Transaction {
   expirationDate DateTime
   payDone  Boolean @default(false)
   payDate DateTime?
-  paymentMethod String?
+  paymentMethod PaymentMethod
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  Int
   course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
@@ -167,6 +168,22 @@ model Notification {
   
 }
 
+model Promo {
+  id Int @id @default(autoincrement())
+  name String
+  description String
+  discountValue Decimal
+  coursePromo CoursePromo[]
+}
+
+model CoursePromo {
+  id Int @id @default(autoincrement())
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  Int?
+  promo    Promo    @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  promoId  Int
+}
+
 
 enum Role {
   USER
@@ -177,6 +194,12 @@ enum CourseLevel {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+}
+
+enum PaymentMethod {
+  VIRTUAL_ACCOUNT
+  GERAI_RETAIL
+  E_WALLET
 }
 
 

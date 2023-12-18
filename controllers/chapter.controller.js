@@ -141,7 +141,6 @@ module.exports = {
             // masukan userid -1 jika tidak login sebagai user
             let userId = req.user.id
             let { courseId } = req.params;
-            console.log(userId);
 
             if (!courseId ) throw new BadRequestError("CourseId tidak boleh kosong");
 

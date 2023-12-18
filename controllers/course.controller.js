@@ -1,5 +1,5 @@
 const {prisma} = require("../utils/prismaClient")
-const {ForbiddenError,BadRequestError, NotFoundError, InternalServerError} = require("../errors/customErrors")
+const {ForbiddenError,BadRequestError, NotFoundError} = require("../errors/customErrors")
 const imagekit = require("../utils/imagekit")
 const path = require("path")
 const {getAllCourseFilter} = require("../utils/searchFilters")
@@ -18,8 +18,7 @@ module.exports = {
                 file: req.file.buffer.toString('base64')
             })).url
 
-            let {
-                title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl,
+            let {title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl,
             } = req.body
 
             if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory || !isPremium) throw new BadRequestError("Tolong isi semua kolom")
@@ -33,45 +32,46 @@ module.exports = {
 
             isPremium = isPremium == '1' ? true : false
 
-      //check if code is exist
-      checkCode = await prisma.course.findUnique({
-        where: {
-          code,
-        },
-      });
-      if (checkCode) throw new BadRequestError("Gunakan kode lain");
+            //check if code is exist
+            checkCode = await prisma.course.findUnique({
+                where: {
+                    code,
+                },
+            });
+            if (checkCode) throw new BadRequestError("Gunakan kode lain");
+          
+            // category data
+            const courseCategoryForPrisma = courseCategory.map((c) => {
+                return { name: c };
+            });
+          
+            let categoryId = await prisma.category.findMany({
+                where: {
+                    OR: courseCategoryForPrisma,
+                },
+            });
+          
+            const validCategory = categoryId.map((i) => {
+                return i.name;
+            });
 
-      // category data
-      const courseCategoryForPrisma = courseCategory.map((c) => {
-        return { name: c };
-      });
-
-      let categoryId = await prisma.category.findMany({
-        where: {
-          OR: courseCategoryForPrisma,
-        },
-      });
-
-      const validCategory = categoryId.map((i) => {
-        return i.name;
-      });
-      categoryId = categoryId.map((i) => {
-        return { categoryId: i.id };
-      });
-
-      // mentor data
-      const mentorEmailForPrisma = mentorEmail.map((e) => {
-        return { email: e };
-      });
-
-      let mentorId = await prisma.user.findMany({
-        where: {
-          OR: mentorEmailForPrisma,
-        },
-      });
-      const mentorValidEmail = mentorId.map((i) => {
-        return i.email;
-      });
+            categoryId = categoryId.map((i) => {
+                return { categoryId: i.id };
+            });
+          
+            // mentor data
+            const mentorEmailForPrisma = mentorEmail.map((e) => {
+                return { email: e };
+            });
+          
+            let mentorId = await prisma.user.findMany({
+                where: {
+                    OR: mentorEmailForPrisma,
+                },
+            });
+            const mentorValidEmail = mentorId.map((i) => {
+                return i.email;
+            });
 
             mentorId = mentorId.map((i) => {
                 return {authorId : i.id}
@@ -116,48 +116,6 @@ module.exports = {
         }
     },
 
-    uploadImageCourse : async (req,res,next) => {
-      try {
-        let thumbnailUrl = !(req.file) ? "https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370" : (await imagekit.upload({
-                fileName: + Date.now() + path.extname(req.file.originalname),
-                file: req.file.buffer.toString('base64')
-            })).url
-
-        let {id} = req.params
-
-        if (!id)  throw new BadRequestError("Masukan courseId")
-        if (isNaN(Number(id)))  throw new BadRequestError("Id harus berupa integer")
-
-        const checkCourse = await prisma.course.findUnique({
-          where : {
-            id
-          }
-        })
-
-        thumbnailUrl = thumbnailUrl !== "https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370" ? thumbnailUrl : checkCourse.thumbnailUrl
-
-        if (!checkCourse) throw new NotFoundError("Course dengan id ini tidak ada")
-
-        const updateCourseImage = await prisma.course.update({
-          where : {
-            id
-          },
-          data : {
-            thumbnailUrl 
-          }
-        })
-
-        res.status(201).json({
-          success : true,
-          message : "Succesfully upload course Image",
-          data : updateCourseImage
-        })
-
-
-      } catch (err) {
-        next(err)
-      }
-    },
 
     getAllCourse : async (req,res,next) => {
       try {
@@ -223,30 +181,38 @@ module.exports = {
             },
             AND : filters
           },
-          include : {
+          select : {
+            id : true,
+            code : true,
+            title: true,
+            price: true,
+            level: true,
+            isPremium: true,
+            description: true,
+            thumbnailUrl: true,
             courseCategory : {
-                select : {
-                    category : {
-                        select : {
-                            name : true
-                        }
+              select : {
+                category : {
+                    select : {
+                        name : true
                     }
                 }
-                
+              }
             },
             mentor : {
-                select : { 
-                    author : {
-                        select :{
-                            profile : {
-                                select : {
-                                    name : true
-                                }
-                            }
-                        }
-                    }
-                }
+              select : { 
+                  author : {
+                      select :{
+                          profile : {
+                              select : {
+                                  name : true
+                              }
+                          }
+                      }
+                  }
+              }
             }
+
           }
         })
 
@@ -271,7 +237,7 @@ module.exports = {
         })
 
 
-        const pagination = coursePagination(req,-1,page,limit,category,level,ispremium)
+        const pagination = coursePagination(req,null,page,limit,category,level,ispremium)
 
         const result = {
             pagination,
@@ -290,29 +256,48 @@ module.exports = {
 
     getCourseDetail : async (req,res,next) => {
         try {
+            const userId = req.user.id
             let {id} = req.params
 
             if (!id) throw new BadRequestError("Id tidak valid")
             if (isNaN(Number(id))) throw new BadRequestError("Id tidak valid")
-
             id = Number(id)
+
+            const checkEnrollment = await prisma.enrollment.findMany({
+                where : {
+                  authorId : userId,
+                  courseId : id
+                  }
+            })
+
+            const viewGroup = checkEnrollment.length > 0 ? true : false
+
             // TODO : add chapters, videos, rating, progress etc.
             const courseDetail = await prisma.course.findUnique({
                 where : {
                     id
                 },
-                include : {
+                select : {
+                    id: true,
+                    code: true,
+                    title: true,
+                    price: true,
+                    level: true,
+                    isPremium: true,
+                    description: true,
+                    groupUrl: viewGroup,
+                    thumbnailUrl : true,
                     mentor : {
                         select : {
-                            author : {
-                                select : {
-                                    profile : {
-                                        select : {
-                                            name : true
-                                        }
-                                    }
-                                }
-                            }
+                          author : {
+                              select : {
+                                  profile : {
+                                      select : {
+                                          name : true
+                                      }
+                                  }
+                              }
+                          }
                         }
                     },
                     courseCategory : {
@@ -324,8 +309,7 @@ module.exports = {
                             }
                         }
                     }
-                },
-              
+                }
             })
 
             if (!courseDetail) throw new NotFoundError("Course tidak ditemukan")
@@ -381,121 +365,126 @@ module.exports = {
 
             // category data
             const courseCategoryForPrisma = courseCategory.map((c) => {
-              return { name: c };
+                return { name: c };
             });
           
             let categoryId = await prisma.category.findMany({
-              where: {
-                OR: courseCategoryForPrisma,
-              },
+                where: {
+                    OR: courseCategoryForPrisma,
+                },
             });
           
             const validCategory = categoryId.map((i) => {
-              return i.name;
+                return i.name;
             });
+
             categoryId = categoryId.map((i) => {
-              return { categoryId: i.id };
+                return { categoryId: i.id };
             });
           
             // mentor data
             const mentorEmailForPrisma = mentorEmail.map((e) => {
-              return { email: e };
+                return { email: e };
             });
           
             let mentorId = await prisma.user.findMany({
-              where: {
-                OR: mentorEmailForPrisma,
-              },
+                where: {
+                    OR: mentorEmailForPrisma,
+                },
             });
             const mentorValidEmail = mentorId.map((i) => {
-              return i.email;
+                return i.email;
             });
           
             mentorId = mentorId.map((i) => {
-              return { authorId: i.id };
+                return { authorId: i.id };
             });
+
             //delete category
             await prisma.courseCategory.deleteMany({
-              where: {
-                courseId: courseId,
-              },
+                where: {
+                    courseId: courseId,
+                },
             });
+
             //delete mentor
             await prisma.mentor.deleteMany({
-              where: {
-                courseId: courseId,
-              },
+                where: {
+                    courseId: courseId,
+                },
             });
           
-                  // update course
-                  const updatedCourse = await prisma.course.update({
-                      where: {
-                          id: courseId,
-                      },
-                      data: {
-                          title,
-                          price,
-                          level,
-                          isPremium,
-                          description,
-                          groupUrl,
-                          thumbnailUrl,
-                          courseCategory : {
-                              create : categoryId
-                          },
-                          mentor : {
-                              create : mentorId
-                          }
-                        
-                      },
-                  });
+            // update course
+            const updatedCourse = await prisma.course.update({
+                where: {
+                    id: courseId,
+                },
+                data: {
+                    title,
+                    price,
+                    level,
+                    isPremium,
+                    description,
+                    groupUrl,
+                    thumbnailUrl,
+                    courseCategory : {
+                        create : categoryId
+                    },
+                    mentor : {
+                        create : mentorId
+                    }
+                  
+                },
+            });
                 
             updatedCourse.mentor = mentorValidEmail;
             updatedCourse.category = validCategory;
                 
             res.status(201).json({
-              success: true,
-              message: "Successfully update course",
-              data: updatedCourse,
+                success: true,
+                message: "Successfully update course",
+                data: updatedCourse,
             });
-    } catch (err) {
-      next(err);
-    }
-  },
+            
+        } catch (err) {
+            next(err);
+        }
+    },
 
   deleteCourse: async (req, res, next) => {
     try {
-      const role = req.user.profile.role;
-      if (role !== "ADMIN")
-        throw new ForbiddenError("Kamu tidak memiliki akses kesini");
+        const role = req.user.profile.role;
 
-      let { id } = req.params;
-      if (!id) throw new BadRequestError("Id tidak boleh kosong");
+        if (role !== "ADMIN") throw new ForbiddenError("Kamu tidak memiliki akses kesini");
 
-      id = Number(id);
-      if (isNaN(id)) throw new BadRequestError("Id harus angka");
+        let { id } = req.params;
+        if (!id) throw new BadRequestError("Id tidak boleh kosong");
 
-      //check course is exist
-      const checkCourse = await prisma.course.findUnique({
-        where: {
-          id,
-        },
-      });
-      if (!checkCourse) throw new NotFoundError("Course tidak ditemukan");
+        id = Number(id);
+        if (isNaN(id)) throw new BadRequestError("Id harus angka");
 
-      let deleteCourse = await prisma.course.delete({
-        where: {
-          id,
-        },
-      });
+        //check course is exist
+        const checkCourse = await prisma.course.findUnique({
+            where: {
+                id,
+            },
+        });
 
-      res.status(200).json({
-        status: true,
-        message: "Successfully delete course",
-        data: deleteCourse,
-      });
+        if (!checkCourse) throw new NotFoundError("Course tidak ditemukan");
+
+        let deleteCourse = await prisma.course.delete({
+            where: {
+                id,
+            },
+        });
+
+        res.status(200).json({
+            status: true,
+            message: "Successfully delete course",
+            data: deleteCourse,
+        });
     } catch (err) {
-      next(err);
+        next(err);
     }
   },
 };
