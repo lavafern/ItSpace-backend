@@ -436,7 +436,7 @@ module.exports = {
 
             const filters = getAllTransactionFilter(courseCode,status,method)
 
-            const allTransactions = await prisma.transaction.findMany({
+            const allTransactionsCount = await prisma.transaction.findMany({
                 orderBy : [
                     { id : 'desc'}
                 ],
