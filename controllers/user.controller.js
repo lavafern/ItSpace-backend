@@ -1,7 +1,7 @@
-const { prisma } = require("../utils/prismaClient")
+const { prisma } = require("../libs/prismaClient")
 const {BadRequestError,NotFoundError,UnauthorizedError, ForbiddenError, InternalServerError} = require("../errors/customErrors")
 const bcrypt = require("bcrypt")
-const imagekit = require("../utils/imagekit")
+const imagekit = require("../libs/imagekit")
 const path = require("path")
 const {userPagination} = require("../utils/pagination")
 module.exports = {

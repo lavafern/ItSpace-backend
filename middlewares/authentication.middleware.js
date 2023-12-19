@@ -53,15 +53,7 @@ module.exports = {
 
         } catch (err) {
             const refreshToken = req.cookies.refreshToken
-
-            if (!refreshToken) {
-                req.user= {
-                    id : -1
-                }
-                return next()
-            }
-
-
+            
             try {
                 const userData = await decodeToken(refreshToken,JWT_REFRESH_SECRET)
                 const userConstruct = {

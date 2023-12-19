@@ -1,5 +1,5 @@
 const { BadRequestError, CourseNotPurchasedError,UserNotVerifiedError } = require("../errors/customErrors")
-const { prisma } = require("../utils/prismaClient")
+const { prisma } = require("../libs/prismaClient")
 const {getAllCourseFilter} = require("../utils/searchFilters")
 const {coursePagination} = require("../utils/pagination")
 

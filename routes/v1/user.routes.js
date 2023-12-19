@@ -1,7 +1,7 @@
 const router = require('express').Router()
-const {restrict} = require("../../middlewares/auth.middleware")
+const {restrict} = require("../../middlewares/authentication.middleware")
 const {getAllUsers,getUserDetail,updateProfile,deleteUser,changePassword} = require("../../controllers/user.controller")
-const {image} = require("../../utils/multer")
+const {image} = require("../../libs/multer")
 
 router.get('/users',getAllUsers)
 router.get('/users/:id',getUserDetail)

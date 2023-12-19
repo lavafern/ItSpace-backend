@@ -1,6 +1,6 @@
 const {createCourse, updateCourse, deleteCourse,getAllCourse,getCourseDetail} = require('../../controllers/course.controller')
-const {restrict, restrictGuest} = require("../../middlewares/auth.middleware")
-const {image} = require("../../utils/multer")
+const {restrict, restrictGuest} = require("../../middlewares/authentication.middleware")
+const {image} = require("../../libs/multer")
 const router = require('express').Router()
 
 router.post('/courses',restrict,image.single("image"),createCourse)
