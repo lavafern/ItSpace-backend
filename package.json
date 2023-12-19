@@ -29,6 +29,8 @@
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-plugin-no-comments": "^1.1.10",
     "nodemon": "^3.0.1"
   },
   "directories": {

@@ -1,4 +1,4 @@
-const {prisma} = require("../libs/prismaClient")
+const {prisma} = require('../libs/prismaClient');
 
 module.exports = {
     sumDuration : async () => {
@@ -8,7 +8,7 @@ module.exports = {
             _sum : {
                 duration : true
             },
-        })
+        });
 
 
         const sumDurationMapCourse = await Promise.all( sumDurationByChapter.map(async (chapter) => {
@@ -23,31 +23,29 @@ module.exports = {
                         }
                     }
                 }
-            })
+            });
 
-            const courseId = findChapter.course.id
+            const courseId = findChapter.course.id;
+            chapter.courseId = courseId;
+            return chapter;
 
-            chapter.courseId = courseId
-            return chapter
-        }))
-
+        }));
 
         ///group by course
-        const sumDurationByCourse = {}
+        const sumDurationByCourse = {};
 
         sumDurationMapCourse.forEach(sum => {
             if (!(sum.courseId in sumDurationByCourse)) {
             
-                sumDurationByCourse[sum.courseId] = 0
+                sumDurationByCourse[sum.courseId] = 0;
 
-            } 
-                sumDurationByCourse[sum.courseId] += sum._sum.duration
+            }
 
-            
-        })
+            sumDurationByCourse[sum.courseId] += sum._sum.duration;
 
+        });
 
-        return sumDurationByCourse
+        return sumDurationByCourse;
 
     }
-}
+};

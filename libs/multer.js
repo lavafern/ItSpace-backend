@@ -1,4 +1,4 @@
-const multer  = require('multer')
+const multer  = require('multer');
 
 function generateFilter(props) {
     let { allowedMimeTypes } = props;
@@ -19,6 +19,6 @@ function generateFilter(props) {
 
 module.exports = {
     image: generateFilter({
-    allowedMimeTypes: ['image/png', 'image/jpeg']
+        allowedMimeTypes: ['image/png', 'image/jpeg']
     })
-}
+};

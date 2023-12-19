@@ -1,4 +1,4 @@
-const {FRONTEND_URL} = process.env
+const {FRONTEND_URL} = process.env;
 
 module.exports =  (req, res, next) => {
 
@@ -17,4 +17,4 @@ module.exports =  (req, res, next) => {
 
     // Pass to next layer of middleware
     next();
-}
+};
