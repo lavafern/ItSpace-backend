@@ -1,189 +1,179 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  password  String?
-  googleId String?
-  profile Profile?
-  otp Otp?
-  verified Boolean @default(false)
-  transaction Transaction[]
-  enrollment Enrollment[]
-  mentor Mentor[]
-  rating Rating[]
-  progress Progress[]
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  password     String?
+  googleId     String?
+  verified     Boolean        @default(false)
+  enrollment   Enrollment[]
+  mentor       Mentor[]
   notification Notification[]
+  otp          Otp?
+  profile      Profile?
+  progress     Progress[]
+  rating       Rating[]
+  transaction  Transaction[]
 }
 
 model Course {
-  id    Int     @id @default(autoincrement())
-  code String @unique
-  title String  
-  price Decimal
-  level  CourseLevel
-  isPremium Boolean
-  description String
-  groupUrl String?
-  thumbnailUrl String 
+  id             Int              @id @default(autoincrement())
+  title          String
+  price          Decimal
+  level          CourseLevel
+  description    String
+  isPremium      Boolean
+  code           String           @unique
+  groupUrl       String?
+  thumbnailUrl   String
+  chapter        Chapter[]
   courseCategory CourseCategory[]
-  transaction Transaction[]
-  enrollment Enrollment[]
-  mentor Mentor[]
-  rating Rating[]
-  chapter Chapter[]
-  coursePromo CoursePromo[]
+  coursePromo    CoursePromo[]
+  enrollment     Enrollment[]
+  mentor         Mentor[]
+  rating         Rating[]
+  transaction    Transaction[]
 }
 
 model Profile {
-  id        Int     @id @default(autoincrement())
-  name     String
-  phoneNumber   String?
-  profilePicture   String 
-  role Role @default(USER)
-  joinDate DateTime @default(now())
-  city String?
-  country String?
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int @unique
+  id             Int      @id @default(autoincrement())
+  name           String
+  phoneNumber    String?
+  profilePicture String
+  authorId       Int      @unique
+  joinDate       DateTime @default(now())
+  role           Role     @default(USER)
+  city           String?
+  country        String?
+  author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model Otp {
-  id        Int     @id @default(autoincrement())
-  otp     String
+  id         Int      @id @default(autoincrement())
+  otp        String
   expiration DateTime
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int @unique
+  authorId   Int      @unique
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
-
 
 model CourseCategory {
-  id    Int     @id @default(autoincrement())
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  Int?
-  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId  Int
+  id         Int      @id @default(autoincrement())
+  courseId   Int?
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  course     Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
-
 model Category {
-  id    Int     @id @default(autoincrement())
-  name String @unique
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
   courseCategory CourseCategory[]
 }
 
 model Chapter {
-  id    Int     @id @default(autoincrement())
-  title String
-  number Int 
+  id        Int     @id @default(autoincrement())
+  title     String
+  number    Int
   isPremium Boolean
-  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  Int 
-  video Video[]
+  courseId  Int
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  video     Video[]
 }
-
- 
 
 model Video {
-  id    Int     @id @default(autoincrement())
-  title String
+  id          Int        @id @default(autoincrement())
+  title       String
   description String
-  duration Int 
-  url String
-  chapter    Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  chapterId  Int 
-  progress Progress[]
+  chapterId   Int
+  duration    Int
+  url         String
+  progress    Progress[]
+  chapter     Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 }
 
-
 model Transaction {
-  id    Int     @id @default(autoincrement())
-  date DateTime
+  id             Int           @id @default(autoincrement())
   expirationDate DateTime
-  payDone  Boolean @default(false)
-  payDate DateTime?
-  paymentMethod PaymentMethod
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  courseId  Int? 
+  payDone        Boolean       @default(false)
+  payDate        DateTime?
+  authorId       Int
+  courseId       Int?
+  date           DateTime
+  paymentMethod  PaymentMethod
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  course         Course?       @relation(fields: [courseId], references: [id])
 }
 
 model Enrollment {
-  id    Int     @id @default(autoincrement())
-  date DateTime @default(now())
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int
-  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  Int 
+  id       Int      @id @default(autoincrement())
+  date     DateTime @default(now())
+  authorId Int
+  courseId Int
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Mentor {
-  id    Int     @id @default(autoincrement())
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int
-  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  Int 
+  id       Int    @id @default(autoincrement())
+  authorId Int
+  courseId Int
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Rating {
-  id    Int     @id @default(autoincrement())
-  rate Int
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int
-  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  Int 
+  id       Int    @id @default(autoincrement())
+  rate     Int
+  authorId Int
+  courseId Int
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Progress {
-  id    Int     @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
+  authorId      Int
+  videoId       Int
   completedDate DateTime
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int
-  video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  videoId  Int 
+  author        User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  video         Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
-  id    Int     @id @default(autoincrement())
-  type String
-  message String
-  details String?
+  id         Int      @id @default(autoincrement())
+  type       String
+  message    String
+  details    String?
   created_at DateTime
-  is_read Boolean
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  Int
-  
+  is_read    Boolean
+  authorId   Int
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model Promo {
-  id Int @id @default(autoincrement())
-  name String
-  description String
+  id            Int           @id @default(autoincrement())
+  name          String
+  description   String
   discountValue Decimal
-  coursePromo CoursePromo[]
+  coursePromo   CoursePromo[]
 }
 
 model CoursePromo {
-  id Int @id @default(autoincrement())
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  Int?
-  promo    Promo    @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  id       Int     @id @default(autoincrement())
+  courseId Int?
   promoId  Int
+  course   Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  promo    Promo   @relation(fields: [promoId], references: [id], onDelete: Cascade)
 }
-
 
 enum Role {
   USER
@@ -201,6 +191,3 @@ enum PaymentMethod {
   GERAI_RETAIL
   E_WALLET
 }
-
-
-
