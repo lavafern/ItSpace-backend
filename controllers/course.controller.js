@@ -1,9 +1,10 @@
-const {prisma} = require("../utils/prismaClient")
+const {prisma} = require("../libs/prismaClient")
 const {ForbiddenError,BadRequestError, NotFoundError} = require("../errors/customErrors")
-const imagekit = require("../utils/imagekit")
+const imagekit = require("../libs/imagekit")
 const path = require("path")
 const {getAllCourseFilter} = require("../utils/searchFilters")
 const {coursePagination} = require("../utils/pagination")
+const {sumDuration} = require("../utils/sumDuration")
 
 module.exports = {
     createCourse : async (req,res,next) => {
@@ -190,6 +191,11 @@ module.exports = {
             isPremium: true,
             description: true,
             thumbnailUrl: true,
+            _count : {
+                select : {
+                    chapter : true
+                }
+            },
             courseCategory : {
               select : {
                 category : {
@@ -223,8 +229,14 @@ module.exports = {
             }
         })
 
+        const sumDurationByCourse = await sumDuration()
 
+        /// map rating into course
         courses = courses.map((course) => {
+            if ( (course.id).toString() in sumDurationByCourse) {
+                course.duration = sumDurationByCourse[course.id]
+            }
+
             aggregation.forEach(aggergate => {
                 if ( course.id === aggergate.courseId) {
                     course.rate = aggergate._avg.rate
@@ -232,10 +244,10 @@ module.exports = {
                 }
             })
 
+            course.duration = course.duration ? course.duration : null
             course.rate = course.rate ? course.rate : null
             return course
         })
-
 
         const pagination = coursePagination(req,null,page,limit,category,level,ispremium)
 
@@ -243,6 +255,7 @@ module.exports = {
             pagination,
             courses
         }
+
         return res.status(200).json({
             success : true,
             message : "Sucessfully get all course",

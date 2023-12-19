@@ -1,5 +1,5 @@
 const {createVideo, getVideoDetails, updateVideo, deleteVideo} = require('../../controllers/video.controller');
-const { restrict } = require('../../middlewares/auth.middleware');
+const { restrict } = require("../../middlewares/authentication.middleware")
 const router = require('express').Router()
 
 router.post('/courses/:courseId/chapters/:chapterId/videos',restrict,createVideo)

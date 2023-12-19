@@ -1,5 +1,5 @@
-const { CourseNotPurchasedError, BadRequestError } = require("../errors/customErrors");
-const { prisma } = require("../utils/prismaClient");
+const { CourseNotPurchasedError, BadRequestError, ForbiddenError } = require("../errors/customErrors");
+const { prisma } = require("../libs/prismaClient");
 
 module.exports = {
     createRating : async (req,res,next) => {
@@ -82,25 +82,26 @@ module.exports = {
     deleteRating : async (req,res,next) => {
         try {
             const userId = req.user.id
-            let {courseId} = req.body
+            let {id} = req.params
 
-            if (!courseId) throw new BadRequestError("Tolong isi courseId")
-            if (isNaN(Number(courseId))) throw new BadRequestError("CourseId tidak valid")
-            courseId = Number(courseId)
+            if (!id) throw new BadRequestError("Tolong masukan rating id")
+            if (isNaN(Number(id))) throw new BadRequestError("rating id tidak valid")
+            id = Number(id)
 
             ///checks if rating is exist
             const ratingData = await prisma.rating.findMany({
                 where : {
-                    courseId : courseId,
-                    authorId : userId
+                    id
                 }
             })
 
-            if (ratingData.length < 1) throw new Error("Rating tidak ada")
+
+            if (!ratingData) throw new BadRequestError("Rating tidak ada")
+            if (userId !== ratingData.authorId) throw new ForbiddenError("Anda tidka memiliki akses kesini")
 
             const deleteRating = await prisma.rating.delete ({
                 where : {
-                    id : ratingData[0].id
+                    id
                 },
                 select : {
                     id : true,

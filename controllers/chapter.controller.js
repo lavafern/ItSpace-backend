@@ -1,4 +1,4 @@
-const { prisma } = require("../utils/prismaClient");
+const { prisma } = require("../libs/prismaClient");
 const { ForbiddenError,BadRequestError,NotFoundError } = require("../errors/customErrors");
 
 module.exports = {
@@ -173,15 +173,6 @@ module.exports = {
                             id : true,
                             title : true,
                             duration : true,
-                            progress : {
-                                where : {
-                                    authorId : userId
-                                },
-                                select : {
-                                    id : true,
-                                    completedDate : true
-                                }
-                            }
                         }
                     },
                     course : {
@@ -192,6 +183,11 @@ module.exports = {
                             price : true,
                             level : true,
                             isPremium : true,
+                            _count : {
+                                select : {
+                                    chapter : true
+                                }
+                            },
                         }
                     }
                 }

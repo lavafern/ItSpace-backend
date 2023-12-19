@@ -1,8 +1,10 @@
 const { BadRequestError, ForbiddenError, UserNotVerifiedError } = require("../errors/customErrors")
 const { transactionsPagination } = require("../utils/pagination")
-const { prisma } = require("../utils/prismaClient")
+const { prisma } = require("../libs/prismaClient")
 const { getAllTransactionFilter } = require("../utils/searchFilters")
 const {transactionPagination} = require("../utils/pagination")
+const {sumDuration} = require("../utils/sumDuration")
+
 module.exports = {
     createTransaction : async (req,res,next) => {
         try {
@@ -432,48 +434,48 @@ module.exports = {
 
             const filters = getAllTransactionFilter(courseCode,status,method)
 
-            let allTransactionsCount = await prisma.transaction.findMany({
-                orderBy : [
-                    { id : 'desc'}
-                ],
-                where : {
-                    authorId : userId,
-                    course : {
-                        title : {
-                            contains : se,
-                            mode : 'insensitive'
-                        }
-                    },
-                    date : {
-                        lte : to,
-                        gte : from
-                    },
-                    AND : filters
-                },
-                select : {
-                    id : true,
-                    date : true,
-                    expirationDate : true,
-                    payDone : true,
-                    payDate : true,
-                    paymentMethod : true,
-                    course : {
-                        select : {
-                            id : true,
-                            code : true,
-                            title : true,
-                            price : true,
-                            level : true,
-                            isPremium : true,
+            // let allTransactionsCount = await prisma.transaction.findMany({
+                // orderBy : [
+                    // { id : 'desc'}
+                // ],
+                // where : {
+                    // authorId : userId,
+                    // course : {
+                        // title : {
+                            // contains : se,
+                            // mode : 'insensitive'
+                        // }
+                    // },
+                    // date : {
+                        // lte : to,
+                        // gte : from
+                    // },
+                    // AND : filters
+                // },
+                // select : {
+                    // id : true,
+                    // date : true,
+                    // expirationDate : true,
+                    // payDone : true,
+                    // payDate : true,
+                    // paymentMethod : true,
+                    // course : {
+                        // select : {
+                            // id : true,
+                            // code : true,
+                            // title : true,
+                            // price : true,
+                            // level : true,
+                            // isPremium : true,
+// 
+                        // }
+                    // }
+                // }
+            // })
+// 
+            // allTransactionsCount = allTransactionsCount.length
 
-                        }
-                    }
-                }
-            })
-
-            allTransactionsCount = allTransactionsCount.length
-
-            const transactions = await prisma.transaction.findMany({
+            let transactions = await prisma.transaction.findMany({
                 orderBy : [
                     { id : 'desc'}
                 ],
@@ -500,6 +502,7 @@ module.exports = {
                     payDone : true,
                     payDate : true,
                     paymentMethod : true,
+                    courseId : true,
                     course : {
                         select : {
                             id : true,
@@ -508,13 +511,74 @@ module.exports = {
                             price : true,
                             level : true,
                             isPremium : true,
-                            thumbnailUrl: true
+                            thumbnailUrl: true,
+                            _count : {
+                                select : {
+                                    chapter : true
+                                }
+                            },
+                            courseCategory : {
+                                select : {
+                                    category : {
+                                        select : {
+                                            name : true
+                                        }
+                                    }
+                                }
+                            },
+                            mentor : {
+                                select : {
+                                    author : {
+                                        select : {
+                                            profile : {
+                                                select : {
+                                                    name : true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             })
 
-            const pagination = transactionsPagination(req,allTransactionsCount,page,limit,status,courseCode,method,from,to)
+
+            const aggregation = await prisma.rating.groupBy({
+                by : 'courseId',
+                _avg : {
+                    rate : true
+                }
+            })
+
+            const sumDurationByCourse = await sumDuration()
+
+
+            /// map rating into transactions
+            transactions = transactions.map((transaction) => {
+                aggregation.forEach(aggregate => {
+
+                    if ( (transaction.course.id).toString() in sumDurationByCourse) {
+                        transaction.course.duration = sumDurationByCourse[transaction.course.id]
+                    }
+        
+                    if (transaction.courseId === aggregate.courseId) {
+                        transaction.course.rate = aggregate._avg.rate
+                        return
+                    }
+                })
+
+                transaction.course.duration = transaction.course.duration ? transaction.course.duration : null
+                transaction.course.rate = transaction.course.rate ? transaction.course.rate : null
+                return transaction
+            })
+            
+
+            console.log(transactions);
+
+
+            const pagination = transactionsPagination(req,null,page,limit,status,courseCode,method,from,to)
 
             const result = {
                 pagination,

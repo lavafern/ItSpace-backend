@@ -1,9 +1,9 @@
-const {prisma} = require("../utils/prismaClient")
+const {prisma} = require("../libs/prismaClient")
 const {ForbiddenError,BadRequestError, NotFoundError} = require("../errors/customErrors")
 
 
 module.exports = {
-
+    
     createCategory : async (req,res,next) => {
         try {
             const role = req.user.profile.role

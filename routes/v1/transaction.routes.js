@@ -1,5 +1,5 @@
 const {createTransaction,getAllTransaction,payTransaction,deleteTransaction, getTransactionDetail, myTransactions} = require('../../controllers/transaction.controller')
-const {restrict} = require("../../middlewares/auth.middleware")
+const {restrict} = require("../../middlewares/authentication.middleware")
 const router = require('express').Router()
 
 router.post('/transactions',restrict,createTransaction)

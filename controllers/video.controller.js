@@ -1,4 +1,4 @@
-const { prisma } = require("../utils/prismaClient");
+const { prisma } = require("../libs/prismaClient");
 const { ForbiddenError, BadRequestError, NotFoundError, CourseNotPurchasedError } = require("../errors/customErrors");
 
 module.exports = {
@@ -286,125 +286,105 @@ module.exports = {
         }
     },
 
-  deleteVideo: async (req, res, next) => {
-    try {
-          const role = req.user.profile.role;
-          if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini");
+    deleteVideo: async (req, res, next) => {
+        try {
+            const role = req.user.profile.role;
+            if (role !== 'ADMIN') throw new ForbiddenError("Kamu tidak memiliki akses kesini");
  
-          let { courseId, chapterId, id } = req.params;
+            let { courseId, chapterId, id } = req.params;
 
-          if (!id) {
-            throw new BadRequestError("Video ID harus diisi");
-          }
+            if (!id) throw new BadRequestError("Video ID harus diisi");
+            if (isNaN(Number(id))) throw new BadRequestError("ID Harus Berupa Angka");
+            if (!courseId || !chapterId) throw new BadRequestError('Course dan Chapter harus diisi');
+            if (isNaN(Number(courseId)) || isNaN(Number(chapterId))) throw new BadRequestError("ID Harus Berupa Angka")
+          
+            id = Number(id);
+            courseId = Number(courseId);
+            chapterId = Number(chapterId);
 
-          if (isNaN(Number(id))) {
-            throw new BadRequestError("ID Harus Berupa Angka");
-          }
+            const checkCourse = await prisma.course.findUnique({
+                where: {
+                        id: courseId,
+                    },
+                });
 
-          if (!courseId || !chapterId){
-            throw new BadRequestError('Course dan Chapter harus diisi');
-          }
-
-          if (isNaN(Number(courseId)) || isNaN(Number(chapterId))){
-            throw new BadRequestError("ID Harus Berupa Angka")
-          }
-
-
-          id = Number(id);
-          courseId = Number(courseId);
-          chapterId = Number(chapterId);
-
-          const checkCourse = await prisma.course.findUnique({
-            where: {
-              id: courseId,
-              },
-            });
-
-          if (!checkCourse) throw new BadRequestError("Course dengan id tersebut tidak ada");
+            if (!checkCourse) throw new BadRequestError("Course dengan id tersebut tidak ada");
           
 
-          const checkChapter = await prisma.chapter.findUnique({
-            where: {
-              id: chapterId,
-            },
-          });
-    
-        if (!checkChapter)  throw new BadRequestError("Chapter dengan id tersebut tidak ada");
-    
-
-    
-          const checkVideo = await prisma.video.findUnique({
-            where: {
-              id: id,
-            },
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              url: true,
-              duration: true,
-              chapter: {
-                select: {
-                  id: true,
-                  number: true,
-                  title: true,
-                  isPremium: true,
-                  course : {
-                    select : {
-                      id : true,
-                      code : true,
-                      title : true,
-                      price : true,
-                      level : true,
-                      isPremium : true,
-                    }
-                  }
+            const checkChapter = await prisma.chapter.findUnique({
+                where: {
+                    id: chapterId,
                 },
-              },
-            },
-          });
+            });
     
-          if (!checkVideo) {
-            throw new NotFoundError("Video dengan ID tersebut tidak ditemukan");
-          }
-
-          if (checkVideo.chapter.id !== chapterId) {
-            throw new BadRequestError("Video dengan id tersebut bukan berasal dari chapter ini")
-          }
-
-          if (checkVideo.chapter.course.id !== courseId) {
-            throw new BadRequestError("Video dengan id tersebut bukan berasal dari courser ini")
-          }
+            if (!checkChapter)  throw new BadRequestError("Chapter dengan id tersebut tidak ada");
+    
 
     
-          const deletedVideo = await prisma.video.delete({
-            where: {
-              id: id,
-            },
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              url: true,
-              duration: true,
-              chapter: {
-                select: {
-                  id: true,
-                  number: true,
-                  title: true,
-                  isPremium: true,
+            const checkVideo = await prisma.video.findUnique({
+                where: {
+                    id: id,
                 },
-              },
-            },
-          });
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    url: true,
+                    duration: true,
+                    chapter: {
+                        select: {
+                            id: true,
+                            number: true,
+                            title: true,
+                            isPremium: true,
+                            course : {
+                                select : {
+                                    id : true,
+                                    code : true,
+                                    title : true,
+                                    price : true,
+                                    level : true,
+                                    isPremium : true,
+                                }
+                            }
+                        },
+                    },
+                },
+            });
     
-          res.status(200).json({
-            success: true,
-            message: "Berhasil menghapus video",
-            data: deletedVideo,
-          });
+            if (!checkVideo) throw new NotFoundError("Video dengan ID tersebut tidak ditemukan");
+            if (checkVideo.chapter.id !== chapterId) throw new BadRequestError("Video dengan id tersebut bukan berasal dari chapter ini")
+            if (checkVideo.chapter.course.id !== courseId) throw new BadRequestError("Video dengan id tersebut bukan berasal dari courser ini")
+
+    
+            const deletedVideo = await prisma.video.delete({
+                where: {
+                    id: id,
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    url: true,
+                    duration: true,
+                    chapter: {
+                        select: {
+                            id: true,
+                            number: true,
+                            title: true,
+                            isPremium: true,
+                        },
+                    },
+                },
+            });
+    
+            res.status(200).json({
+                success: true,
+                message: "Berhasil menghapus video",
+                data: deletedVideo,
+            });
         } catch (err) {
-          next(err);
+            next(err);
         }
       },
 };

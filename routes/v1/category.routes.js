@@ -1,5 +1,5 @@
 const {createCategory,getAllCategory,deleteCategory,updateCategory} = require('../../controllers/category.controller')
-const {restrict} = require("../../middlewares/auth.middleware")
+const {restrict} = require("../../middlewares/authentication.middleware")
 const router = require('express').Router()
 
 router.post('/categories',restrict,createCategory)

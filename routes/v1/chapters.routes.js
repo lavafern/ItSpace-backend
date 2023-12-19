@@ -1,5 +1,5 @@
 const {createChapter, getChapter, getAllChaptersForCourse, updateChapter,deleteChapter} = require('../../controllers/chapter.controller')
-const { restrict, restrictGuest } = require('../../middlewares/auth.middleware')
+const { restrict, restrictGuest } = require("../../middlewares/authentication.middleware")
 const router = require('express').Router()
 
 router.post('/courses/:courseId/chapters',restrict,createChapter)

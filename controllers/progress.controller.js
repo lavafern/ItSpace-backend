@@ -1,5 +1,5 @@
 const { BadRequestError } = require("../errors/customErrors");
-const { prisma } = require("../utils/prismaClient");
+const { prisma } = require("../libs/prismaClient");
 
 module.exports = {
     createProgress : async (req,res,next) => {

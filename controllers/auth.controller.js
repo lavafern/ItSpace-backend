@@ -1,12 +1,12 @@
 const bcrypt = require("bcrypt")
-const { prisma } = require("../utils/prismaClient")
+const { prisma } = require("../libs/prismaClient")
 const {JWT_SECRET,JWT_REFRESH_SECRET,JWT_RESETPASSWORD_SECRET,FRONTEND_URL,RESET_PASSWORD_URL} = process.env
 const {sendEmail} = require("../utils/sendEmail")
 const {otpHtml} = require("../views/templates/emailVerification")
 const {resetPasswordHtml} = require("../views/templates/resetPassword")
 const {generateOtp,signToken, decodeToken} = require("../utils/authUtils")
 const {BadRequestError,UnauthorizedError,NotFoundError} = require("../errors/customErrors")
-const imagekit = require("../utils/imagekit")
+const imagekit = require("../libs/imagekit")
 
 module.exports = {
     LoginWithGoogle : async (req,res,next) => {
