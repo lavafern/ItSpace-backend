@@ -1,8 +1,8 @@
-const {restrict} = require("../../middlewares/authentication.middleware")
-const router = require('express').Router()
-const {getMyNotification,deleteNotification} = require("../../controllers/notification.controller")
+const {restrict} = require('../../middlewares/authentication.middleware');
+const router = require('express').Router();
+const {getMyNotification,deleteNotification} = require('../../controllers/notification.controller');
 
-router.get('/my-notifications',restrict,getMyNotification)
-router.delete('/my-notifications/:id',restrict,deleteNotification)
+router.get('/my-notifications',restrict,getMyNotification);
+router.delete('/my-notifications/:id',restrict,deleteNotification);
 
-module.exports = router
+module.exports = router;

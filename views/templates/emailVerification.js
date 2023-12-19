@@ -1116,8 +1116,8 @@ module.exports = {
             </html>
 
 
-`
-        return html
+`;
+        return html;
     }
-}
+};
 

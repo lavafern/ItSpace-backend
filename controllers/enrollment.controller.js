@@ -1,35 +1,35 @@
-const { BadRequestError, CourseNotPurchasedError,UserNotVerifiedError } = require("../errors/customErrors")
-const { prisma } = require("../libs/prismaClient")
-const {getAllCourseFilter} = require("../utils/searchFilters")
-const {coursePagination} = require("../utils/pagination")
+const { BadRequestError, CourseNotPurchasedError,UserNotVerifiedError } = require('../errors/customErrors');
+const { prisma } = require('../libs/prismaClient');
+const {getAllCourseFilter} = require('../utils/searchFilters');
+const {coursePagination} = require('../utils/pagination');
 
 module.exports = {
     createEnrollment : async (req,res,next) => {
         try {
+            const userid = req.user.id;
 
-            const userid = req.user.id
+            let {courseId} = req.body;
+            courseId = Number(courseId);
 
-            let {courseId} = req.body
-            courseId = Number(courseId)
+            if (!courseId) throw new BadRequestError('Tolong masukan courseId');
 
-            if (!courseId) throw new BadRequestError("Tolong masukan courseId")
-
-             // checks if user is verified
-             const user = await prisma.user.findUnique({
+            // checks if user is verified
+            const user = await prisma.user.findUnique({
                 where : {
                     id : userid
                 }
-            })
-            if (!(user.verified)) throw new UserNotVerifiedError("Akun belum di verifikasi")
+            });
+
+            if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
 
             // checks if course exist
             const checkCourse = await prisma.course.findUnique({
                 where : {
                     id : courseId
                 }
-            })
+            });
 
-            if (!checkCourse) throw new BadRequestError("CourseId tidak valid")
+            if (!checkCourse) throw new BadRequestError('CourseId tidak valid');
 
             // checks if enrollment already exist
             const checkEnrollment = await prisma.enrollment.findMany({
@@ -37,12 +37,12 @@ module.exports = {
                     courseId : courseId,
                     authorId : userid
                 }
-            })
+            });
 
-            if (checkEnrollment.length > 0)  throw new BadRequestError("Anda telah mendaftar di course ini")
+            if (checkEnrollment.length > 0)  throw new BadRequestError('Anda telah mendaftar di course ini');
 
             // chekcs if enrollment premium
-            if (checkCourse.isPremium) throw new CourseNotPurchasedError("Anda harus membeli course premium")
+            if (checkCourse.isPremium) throw new CourseNotPurchasedError('Anda harus membeli course premium');
 
             
             // insert enrollment data
@@ -67,104 +67,102 @@ module.exports = {
                         }
                     }
                 }
-            })
+            });
 
             const pushNotification = prisma.notification.create({
                 data : {
                     authorId: userid,
-                    type : "Pendaftaran kelas berhasil",
+                    type : 'Pendaftaran kelas berhasil',
                     message : `Terima kasih telah melakukan pendaftaran, kelas ${checkCourse.title} sudah bisa kamu akses.`,
                     created_at : new Date(),
                     is_read : false
                 }
-            })
+            });
 
-            const enrollAndNotif = await prisma.$transaction([enrollment,pushNotification])
+            const enrollAndNotif = await prisma.$transaction([enrollment,pushNotification]);
 
             res.status(201).json({
                 success : true,
-                message : "Succesfully create new enrollment",
+                message : 'Succesfully create new enrollment',
                 data : enrollAndNotif[0]
-            })
-
+            });
         } catch (err) {
-            next(err)
+            next(err);
         }
     },
     
     getMyEnrollment : async (req,res,next) => {
         try {
-            const userId = req.user.id
+            const userId = req.user.id;
 
             const EnrolledCourse = await prisma.enrollment.findMany({
                 where : {
                     authorId : userId
                 }
-            })
+            });
 
             const getEnrolledCourseId = EnrolledCourse.length > 0 ? EnrolledCourse.map((i) => {
-                return {id : i.courseId}
-            }) : []
+                return {id : i.courseId};
+            }) : [];
 
             
-            let {category,level,ispremium,page,limit,se} = req.query
-            page = page ? Number(page) : 1
-            limit = limit ? Number(limit) : 10
+            let {category,level,ispremium,page,limit,se} = req.query;
+            page = page ? Number(page) : 1;
+            limit = limit ? Number(limit) : 10;
             
-            const filters = getAllCourseFilter(ispremium,level,category)
+            const filters = getAllCourseFilter(ispremium,level,category);
             let coursesCount = await prisma.course.findMany({
                 orderBy : [
                     { id : 'asc'}
-                ]
-            ,
-              where : {
-                OR : getEnrolledCourseId,
-                 title : {
-                    contains : se,
-                    mode : 'insensitive'
+                ],
+                where : {
+                    OR : getEnrolledCourseId,
+                    title : {
+                        contains : se,
+                        mode : 'insensitive'
+                    },
+                    AND : filters
                 },
-                AND : filters
-              },
-              include : {
-                courseCategory : {
-                    select : {
-                        category : {
-                            select : {
-                                name : true
+                include : {
+                    courseCategory : {
+                        select : {
+                            category : {
+                                select : {
+                                    name : true
+                                }
                             }
                         }
-                    }
-                    
-                },
-                mentor : {
-                    select : { 
-                        author : {
-                            select :{
-                                profile : {
-                                    select : {
-                                        name : true
+
+                    },
+                    mentor : {
+                        select : { 
+                            author : {
+                                select :{
+                                    profile : {
+                                        select : {
+                                            name : true
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                },
-                chapter : {
-                    select : {
-                        id : true,
-                        title : true,
-                        video : {
-                            select : {
-                                id : true,
-                                title : true
+                    },
+                    chapter : {
+                        select : {
+                            id : true,
+                            title : true,
+                            video : {
+                                select : {
+                                    id : true,
+                                    title : true
+                                }
                             }
                         }
                     }
                 }
-              }
-            })
+            });
         
-            coursesCount = coursesCount.length
+            coursesCount = coursesCount.length;
         
             const courses = await prisma.course.findMany({
                 skip : (page - 1) * limit,
@@ -172,70 +170,69 @@ module.exports = {
                 // TODO : buat sorting berdasarkan banyak popularity (enroll)
                 orderBy : [
                     { id : 'asc'}
-                ]
-            ,
-              where : {
-                OR : getEnrolledCourseId,
-                title : {
-                    contains : se,
-                    mode : 'insensitive'
+                ],
+                where : {
+                    OR : getEnrolledCourseId,
+                    title : {
+                        contains : se,
+                        mode : 'insensitive'
+                    },
+                    AND : filters
                 },
-                AND : filters
-              },
-              include : {
-                courseCategory : {
-                    select : {
-                        category : {
-                            select : {
-                                name : true
+                include : {
+                    courseCategory : {
+                        select : {
+                            category : {
+                                select : {
+                                    name : true
+                                }
                             }
                         }
-                    }
-                    
-                },
-                mentor : {
-                    select : { 
-                        author : {
-                            select :{
-                                profile : {
-                                    select : {
-                                        name : true
+
+                    },
+                    mentor : {
+                        select : { 
+                            author : {
+                                select :{
+                                    profile : {
+                                        select : {
+                                            name : true
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                },
-                chapter : {
-                    select : {
-                        id : true,
-                        title : true,
-                        video : {
-                            select : {
-                                id : true,
-                                title : true
+                    },
+                    chapter : {
+                        select : {
+                            id : true,
+                            title : true,
+                            video : {
+                                select : {
+                                    id : true,
+                                    title : true
+                                }
                             }
                         }
                     }
                 }
-              }
-            })
+            });
         
-            const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium)
+            const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium);
         
             const result = {
                 pagination,
                 courses
-            }
+            };
+
             return res.status(200).json({
                 success : true,
-                message : "Sucessfully get all enrolled course course",
+                message : 'Sucessfully get all enrolled course course',
                 data : result
-            })
-
+            });
         } catch (err) {
-           next(err) 
+            next(err);
         }
     }
 
-}
+};

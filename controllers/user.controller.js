@@ -1,18 +1,18 @@
-const { prisma } = require("../libs/prismaClient")
-const {BadRequestError,NotFoundError,UnauthorizedError, ForbiddenError, InternalServerError} = require("../errors/customErrors")
-const bcrypt = require("bcrypt")
-const imagekit = require("../libs/imagekit")
-const path = require("path")
-const {userPagination} = require("../utils/pagination")
+const { prisma } = require('../libs/prismaClient');
+const {BadRequestError,NotFoundError,UnauthorizedError, ForbiddenError, InternalServerError} = require('../errors/customErrors');
+const bcrypt = require('bcrypt');
+const imagekit = require('../libs/imagekit');
+const path = require('path');
+const {userPagination} = require('../utils/pagination');
 module.exports = {
     getAllUsers : async (req,res,next) => {
         try {
-            let {page,limit} = req.query
-            page = page ? Number(page) : 1
-            limit = limit ? Number(limit) : 10
+            let {page,limit} = req.query;
+            page = page ? Number(page) : 1;
+            limit = limit ? Number(limit) : 10;
 
 
-            const userCount = await prisma.user.count()
+            const userCount = await prisma.user.count();
 
 
             let users = await prisma.user.findMany({
@@ -32,31 +32,32 @@ module.exports = {
                         
                 }
                
-            })
+            });
 
-            const pagination = userPagination(req,userCount,page,limit)
+            const pagination = userPagination(req,userCount,page,limit);
 
             const result = {
                 pagination,
                 users
-            }
+            };
+
             res.status(200).json({
                 success : true,
-                message : "Succesfully get all users",
+                message : 'Succesfully get all users',
                 data : result
-            })
+            });
         } catch (err) {
-            next(err)
+            next(err);
         }
     },
 
     getUserDetail : async (req,res,next) => {
         try {
-            let {id} = req.params
-            if (!id) throw new BadRequestError("Sertakan Id")
+            let {id} = req.params;
+            if (!id) throw new BadRequestError('Sertakan Id');
 
-            id = Number(id)
-            if (isNaN(id)) throw new BadRequestError("Id harus angka")
+            id = Number(id);
+            if (isNaN(id)) throw new BadRequestError('Id harus angka');
 
             const userDetail = await prisma.user.findUnique({
                 where : {
@@ -78,39 +79,38 @@ module.exports = {
                         }
                     }
                 }
-            })
+            });
 
-            if (!userDetail) throw new NotFoundError("Id tidak ditemukan")
+            if (!userDetail) throw new NotFoundError('Id tidak ditemukan');
 
             res.status(200).json({
                 success : true,
-                message : "Succesfully get user details",
+                message : 'Succesfully get user details',
                 data : userDetail
-            })
-
+            });
         } catch (err) {
-            next(err)
+            next(err);
         }
     },
 
     updateProfile : async (req,res,next) => {
         try {
-            let {id} = req.params
-            if (!id) throw new InternalServerError("Id tidak valid")
-            id = Number(id)
-            if (isNaN(id)) throw new InternalServerError("Id tidak valid")
+            let {id} = req.params;
+            if (!id) throw new InternalServerError('Id tidak valid');
+            id = Number(id);
+            if (isNaN(id)) throw new InternalServerError('Id tidak valid');
 
 
-            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+            if (id !== req.user.id) throw new ForbiddenError('Anda tidak punya akses kesini');
             
            
            
-            let {email,name,phoneNumber,country,city} = req.body
+            let {email,name,phoneNumber,country,city} = req.body;
 
-            if (!email)  throw new BadRequestError("Email wajib di isi")
-            if (!name)  throw new BadRequestError("Nama wajib di isi")
+            if (!email)  throw new BadRequestError('Email wajib di isi');
+            if (!name)  throw new BadRequestError('Nama wajib di isi');
             if (phoneNumber) {
-                if (isNaN(phoneNumber)) throw new BadRequestError("Nomor telepon harus angka")
+                if (isNaN(phoneNumber)) throw new BadRequestError('Nomor telepon harus angka');
             }
 
             //check user exist
@@ -118,14 +118,14 @@ module.exports = {
                 where : {
                     authorId : id
                 }
-            })
+            });
 
-            if (!user) throw new BadRequestError("User tidak ditemukan")
+            if (!user) throw new BadRequestError('User tidak ditemukan');
 
             let profilePicture = !(req.file) ? user.profilePicture : (await imagekit.upload({
                 fileName: + Date.now() + path.extname(req.file.originalname),
                 file: req.file.buffer.toString('base64')
-            })).url
+            })).url;
 
             const updatedProfile = await prisma.profile.update({
                 where : {
@@ -138,59 +138,60 @@ module.exports = {
                     city,
                     country
                 }
-            })
+            });
            
-            delete updatedProfile.id
-            delete updatedProfile.authorId
+            delete updatedProfile.id;
+            delete updatedProfile.authorId;
 
             res.status(201).json({
                 success : true,
-                message : "Succesfully edit profile",
+                message : 'Succesfully edit profile',
                 data : updatedProfile
-            })
-
+            });
         } catch (err) {
-            next(err)
+            next(err);
         }
     },
 
     changePassword : async (req,res,next) => {
         try {
-            let {id} = req.params
-            if (!id) throw new InternalServerError("Sertakan Id")
+            let {id} = req.params;
+            if (!id) throw new InternalServerError('Sertakan Id');
 
-            id = Number(id)
-            if (isNaN(id)) throw new InternalServerError("Id harus angka")
+            id = Number(id);
+            if (isNaN(id)) throw new InternalServerError('Id harus angka');
 
-            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+            if (id !== req.user.id) throw new ForbiddenError('Anda tidak punya akses kesini');
 
-            const {currentPassword,newPassword,newPasswordValidation} = req.body
-            console.log(req.body);
-            if (newPassword !== newPasswordValidation) throw new BadRequestError("validasi password baru salah")
-            if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError("Harap masukan password 8 - 14 karakter")
+            const {currentPassword,newPassword,newPasswordValidation} = req.body;
+
+            if (newPassword !== newPasswordValidation) throw new BadRequestError('validasi password baru salah');
+            if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError('Harap masukan password 8 - 14 karakter');
 
             const foundUser = await prisma.user.findUnique({
                 where : {
                     id
                 }
-            })
-            if (!foundUser) throw new NotFoundError("User tidak ditemukan")
+            });
+
+            if (!foundUser) throw new NotFoundError('User tidak ditemukan');
 
             const comparePassword = await new Promise((resolve,reject) => {
                 bcrypt.compare(currentPassword,foundUser.password,function (err,result) {
-                    if (err) reject(err)
-                    resolve(result)
-                })
-            })
-            if (!comparePassword) throw new UnauthorizedError("Password salah")
+                    if (err) reject(err);
+                    resolve(result);
+                });
+            });
+
+            if (!comparePassword) throw new UnauthorizedError('Password salah');
 
             /// hashing password
             const hashedNewPassword = await new Promise((resolve, reject) => {
                 bcrypt.hash(newPassword, 10, function(err, hash) {
-                    if (err) reject(err)
-                    resolve(hash) 
+                    if (err) reject(err);
+                    resolve(hash) ;
                 });
-            })
+            });
 
             const updatePassword = await prisma.user.update({
                 where : {
@@ -199,29 +200,30 @@ module.exports = {
                 data : {
                     password : hashedNewPassword
                 }
-            })
-            delete updatePassword.password
-            delete updatePassword.googleId
-            delete updatePassword.verified
+            });
+
+            delete updatePassword.password;
+            delete updatePassword.googleId;
+            delete updatePassword.verified;
+
             res.status(201).json({
                 success : true,
-                message : "Succesfully change Password",
+                message : 'Succesfully change Password',
                 data : updatePassword
-            })
-
+            });
         } catch (err) {
-            next(err)
+            next(err);
         }
     },
 
     deleteUser : async (req,res,next) => {
         try {
-            let {id} = req.params
-            if (!id) throw new InternalServerError("Id tidak valid")
-            id = Number(id)
-            if (isNaN(id)) throw new InternalServerError("Id tidak valid")
+            let {id} = req.params;
+            if (!id) throw new InternalServerError('Id tidak valid');
+            id = Number(id);
+            if (isNaN(id)) throw new InternalServerError('Id tidak valid');
 
-            if (id !== req.user.id) throw new ForbiddenError("Anda tidak punya akses kesini")
+            if (id !== req.user.id) throw new ForbiddenError('Anda tidak punya akses kesini');
 
             const userDetail = await prisma.user.findUnique({
                 where : {
@@ -231,17 +233,18 @@ module.exports = {
                     id : true,
                     email : true,
                 }
-            })
-            if (!userDetail) throw new NotFoundError("Id tidak ditemukan")
+            });
+
+            if (!userDetail) throw new NotFoundError('Id tidak ditemukan');
 
             res.status(201).json({
                 success : true,
-                message : "Succesfully delete user",
+                message : 'Succesfully delete user',
                 data : userDetail
-            })
+            });
 
         } catch (err) {
-            next(err)
+            next(err);
         }
     }
-}
+};

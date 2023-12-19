@@ -1107,8 +1107,8 @@ button.es-button {
 </body>
 
 </html>
-        `
+        `;
 
-        return html
+        return html;
     }
-}
+};
