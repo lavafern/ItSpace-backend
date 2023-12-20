@@ -1,24 +1,22 @@
 const { prisma } = require('../libs/prismaClient');
-const { ForbiddenError, BadRequestError, NotFoundError, CourseNotPurchasedError } = require('../errors/customErrors');
+const { BadRequestError, NotFoundError, CourseNotPurchasedError } = require('../errors/customErrors');
 
 module.exports = {
     createVideo: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
- 
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
- 
-            let {title, description, url, duration} = req.body;
+            let {title, description, url, duration,number} = req.body;
             let { courseId, chapterId } = req.params;
       
       
-            if (!title || !description || !url || !duration) throw new BadRequestError('Harap isi semua kolom');
+            if (!title || !description || !url || !duration || !number) throw new BadRequestError('Harap isi semua kolom');
             if (isNaN(Number(duration))) throw new BadRequestError('Duration harus berupa Angka');
+            if (isNaN(Number(number))) throw new BadRequestError('Number harus berupa Angka');
             if (!courseId || !chapterId) throw new BadRequestError('Course dan Chapter harus diisi');
             if (isNaN(Number(courseId)) || isNaN(Number(chapterId))) throw new BadRequestError('ID Harus Berupa Angka');
       
 
             duration = Number(duration);
+            number = Number(number);
             courseId = Number(courseId);
             chapterId = Number(chapterId);
 
@@ -40,9 +38,20 @@ module.exports = {
                 }
             });
 
+
             if (!checkChapter) throw new BadRequestError('Chapter dengan id tersebut tidak ada');
     
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter ini bukan berasal dari course ini');
+
+            // validasi number apabila sudah digunakan
+            const checkVideoNumber = await prisma.video.findMany({
+                where: {
+                    number,
+                    chapterId
+                },
+            });
+
+            if (checkVideoNumber.length > 0 ) throw new BadRequestError('Video dengan nomor tersebut sudah digunakan di chapter ini');    
 
             const newVideo = await prisma.video.create({
                 data:{
@@ -50,7 +59,8 @@ module.exports = {
                     description,
                     url,
                     duration,
-                    chapterId
+                    chapterId,
+                    number
                 },
                 select: {
                     id: true,
@@ -58,6 +68,7 @@ module.exports = {
                     description: true,
                     url: true,
                     duration: true,
+                    number : true,
                     chapter: {
                         select: {
                             id: true,
@@ -176,14 +187,12 @@ module.exports = {
 
     updateVideo: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
- 
-            let { title, description, url, duration } = req.body;
+            let { title, description, url, duration,number } = req.body;
             let { courseId, chapterId, id } = req.params;
 
             if (!title || !description || !url || !duration) throw new BadRequestError('Harap isi semua kolom');
             if (isNaN(Number(duration))) throw new BadRequestError('Duration harus berupa Angka');
+            if (isNaN(Number(number))) throw new BadRequestError('Number harus berupa Angka');
             if (!id) throw new BadRequestError('Video ID harus diisi');
             if (isNaN(Number(id))) throw new BadRequestError('ID Harus Berupa Angka');
             if (!courseId || !chapterId) throw new BadRequestError('Course dan Chapter harus diisi');
@@ -191,6 +200,7 @@ module.exports = {
 
             id = Number(id);
             duration = Number(duration);
+            number = Number(number);
             courseId = Number(courseId);
             chapterId = Number(chapterId);
 
@@ -212,13 +222,14 @@ module.exports = {
     
             if (!checkChapter)  throw new BadRequestError('Chapter dengan id tersebut tidak ada');
     
-
+            
             const checkVideo = await prisma.video.findUnique({
                 where: {
                     id: id,
                 },
                 select: {
                     id: true,
+                    number : true,
                     title: true,
                     description: true,
                     url: true,
@@ -248,6 +259,17 @@ module.exports = {
             if (checkVideo.chapter.id !== chapterId) throw new BadRequestError('Video dengan id tersebut bukan berasal dari chapter ini');
             if (checkVideo.chapter.course.id !== courseId) throw new BadRequestError('Video dengan id tersebut bukan berasal dari courser ini');
 
+            // validasi number apabila sudah digunakan
+            const checkVideoNumber = await prisma.video.findMany({
+                where: {
+                    number,
+                    chapterId
+                },
+            });
+
+            if (checkVideoNumber.length > 0 && number !== checkVideo.number) throw new BadRequestError('Video dengan nomor tersebut sudah digunakan di chapter ini');    
+
+
             const updatedVideo = await prisma.video.update({
                 where: {
                     id: id,
@@ -257,6 +279,7 @@ module.exports = {
                     description,
                     url,
                     duration,
+                    number
                 },
                 select: {
                     id: true,
@@ -287,9 +310,6 @@ module.exports = {
 
     deleteVideo: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
- 
             let { courseId, chapterId, id } = req.params;
 
             if (!id) throw new BadRequestError('Video ID harus diisi');

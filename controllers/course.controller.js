@@ -1,18 +1,14 @@
 const {prisma} = require('../libs/prismaClient');
-const {ForbiddenError,BadRequestError, NotFoundError} = require('../errors/customErrors');
+const {BadRequestError, NotFoundError} = require('../errors/customErrors');
 const imagekit = require('../libs/imagekit');
 const path = require('path');
 const {getAllCourseFilter} = require('../utils/searchFilters');
 const {coursePagination} = require('../utils/pagination');
-const {sumDuration} = require('../utils/sumDuration');
+const {sumDurationCourse} = require('../utils/sumDuration');
 
 module.exports = {
     createCourse : async (req,res,next) => {
         try {
-            const role = req.user.profile.role;
-
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
-
             let thumbnailUrl = !(req.file) ? 'https://ik.imagekit.io/itspace/desktop-wallpaper-plain-sky-blue-backgrounds-blue-light-sky-plain-pastel.jpg?updatedAt=1702296536370' : (await imagekit.upload({
                 fileName: + Date.now() + path.extname(req.file.originalname),
                 file: req.file.buffer.toString('base64')
@@ -183,9 +179,9 @@ module.exports = {
                 }
             });
 
-            const sumDurationByCourse = await sumDuration();
+            const sumDurationByCourse = await sumDurationCourse();
 
-            /// map rating into course
+            /// map rating and duration into course
             courses = courses.map((course) => {
                 if ( (course.id).toString() in sumDurationByCourse) {
                     course.duration = sumDurationByCourse[course.id];
@@ -239,7 +235,7 @@ module.exports = {
             const viewGroup = checkEnrollment.length > 0 ? true : false;
 
             // TODO : add chapters, videos, rating, progress etc.
-            const courseDetail = await prisma.course.findUnique({
+            let courseDetail = await prisma.course.findUnique({
                 where : {
                     id
                 },
@@ -278,6 +274,19 @@ module.exports = {
                 }
             });
 
+            const aggregation = await prisma.rating.groupBy({
+                by : 'courseId',
+                _avg : {
+                    rate : true
+                },
+                where : {
+                    courseId : id
+                }
+            });
+
+
+            courseDetail.rate = aggregation.length > 0 ? aggregation[0]._avg.rate : null;
+
             if (!courseDetail) throw new NotFoundError('Course tidak ditemukan');
 
             res.status(200).json({
@@ -292,9 +301,6 @@ module.exports = {
 
     updateCourse: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
-            
             let courseId = req.params.id;
             let {
                 code, title, price, level, isPremium, description, courseCategory, mentorEmail,groupUrl
@@ -416,10 +422,6 @@ module.exports = {
 
     deleteCourse: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
-
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
-
             let { id } = req.params;
             if (!id) throw new BadRequestError('Id tidak boleh kosong');
 

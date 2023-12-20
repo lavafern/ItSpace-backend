@@ -1,14 +1,11 @@
 const {prisma} = require('../libs/prismaClient');
-const {ForbiddenError,BadRequestError, NotFoundError} = require('../errors/customErrors');
+const {BadRequestError, NotFoundError} = require('../errors/customErrors');
 
 
 module.exports = {
     
     createCategory : async (req,res,next) => {
         try {
-            const role = req.user.profile.role;
-
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
             let {name} = req.body;
 
             if (!name) throw new BadRequestError('Harap isi semua kolom');
@@ -55,9 +52,6 @@ module.exports = {
 
     updateCategory : async (req,res,next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
-
             let {id} = req.params;
             let {name} = req.body;
 
@@ -107,9 +101,6 @@ module.exports = {
 
     deleteCategory : async (req,res,next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
-
             let {id} = req.params;
             id = Number(id);
 

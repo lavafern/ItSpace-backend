@@ -1,15 +1,14 @@
 const { prisma } = require('../libs/prismaClient');
-const { ForbiddenError,BadRequestError,NotFoundError } = require('../errors/customErrors');
+const { BadRequestError,NotFoundError } = require('../errors/customErrors');
+const { sumDurationChapter } = require('../utils/sumDuration');
 
 module.exports = {
 
     createChapter: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
             let { courseId } = req.params;
 
             if (!courseId) throw new BadRequestError('Tolong isi courseId');
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini') ; 
             let { title, number, isPremium } = req.body;
             if (!title || !number) throw new BadRequestError('Harap isi semua kolom');
             if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError('isPremium harus 1 / 0');
@@ -153,7 +152,7 @@ module.exports = {
 
             if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
 
-            const chapters = await prisma.chapter.findMany({
+            let chapters = await prisma.chapter.findMany({
                 where: {
                     courseId,
                 },
@@ -170,13 +169,13 @@ module.exports = {
                             id : true,
                             title : true,
                             duration : true,
-                            progress : {
-                                where : {
-                                    authorId : userId
-                                },
+                            _count : {
                                 select : {
-                                    id : true,
-                                    completedDate : true
+                                    progress : {
+                                        where : {
+                                            authorId :userId
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -194,6 +193,26 @@ module.exports = {
                 }
             });
 
+
+            //summarizing duration of each chapters
+            const chapterIds = chapters.map(chapter => {
+                return {chapterId : chapter.id };
+            });
+
+
+            const sumDurationByChapter = await sumDurationChapter(chapterIds);
+
+            chapters = chapters.map(chapter => {
+                sumDurationByChapter.forEach(duration => {
+                    if (duration.chapterId === chapter.id) {
+                        chapter.duration = duration._sum.duration;
+                    }
+                });
+
+                chapter.duration = chapter.duration ? chapter.duration : null;
+                return chapter;
+            });
+
             res.status(200).json({
                 success: true,
                 message: 'Berhasil mendapatkan daftar chapters',
@@ -206,10 +225,7 @@ module.exports = {
 
     updateChapter: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
             let { courseId, id } = req.params;
-
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
 
             courseId = Number(courseId);
             id = Number(id);
@@ -315,12 +331,7 @@ module.exports = {
     },
     deleteChapter: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
-
             let { courseId, id } = req.params;
-
-
 
             courseId = Number(courseId);
             id = Number(id);
