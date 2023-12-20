@@ -268,7 +268,7 @@ module.exports = {
     
     sendResetPassword : async (req,res,next) => {
         try {
-            const {email} = req.body;
+            const {email} = req.params;
             if (!email) throw new BadRequestError('Email harus di isi');
             const user = await prisma.user.findUnique({
                 where : {
