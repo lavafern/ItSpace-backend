@@ -2,6 +2,7 @@ const { BadRequestError, CourseNotPurchasedError,UserNotVerifiedError } = requir
 const { prisma } = require('../libs/prismaClient');
 const {getAllCourseFilter} = require('../utils/searchFilters');
 const {coursePagination} = require('../utils/pagination');
+const { sumDurationCourse } = require('../utils/sumDuration');
 
 module.exports = {
     createEnrollment : async (req,res,next) => {
@@ -111,60 +112,8 @@ module.exports = {
             limit = limit ? Number(limit) : 10;
             
             const filters = getAllCourseFilter(ispremium,level,category);
-            let coursesCount = await prisma.course.findMany({
-                orderBy : [
-                    { id : 'asc'}
-                ],
-                where : {
-                    OR : getEnrolledCourseId,
-                    title : {
-                        contains : se,
-                        mode : 'insensitive'
-                    },
-                    AND : filters
-                },
-                include : {
-                    courseCategory : {
-                        select : {
-                            category : {
-                                select : {
-                                    name : true
-                                }
-                            }
-                        }
-
-                    },
-                    mentor : {
-                        select : { 
-                            author : {
-                                select :{
-                                    profile : {
-                                        select : {
-                                            name : true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    chapter : {
-                        select : {
-                            id : true,
-                            title : true,
-                            video : {
-                                select : {
-                                    id : true,
-                                    title : true
-                                }
-                            }
-                        }
-                    }
-                }
-            });
         
-            coursesCount = coursesCount.length;
-        
-            const courses = await prisma.course.findMany({
+            let courses = await prisma.course.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
                 // TODO : buat sorting berdasarkan banyak popularity (enroll)
@@ -179,7 +128,44 @@ module.exports = {
                     },
                     AND : filters
                 },
-                include : {
+                select : {
+                    id : true,
+                    code : true,
+                    title: true,
+                    price: true,
+                    level: true,
+                    isPremium: true,
+                    description: true,
+                    thumbnailUrl: true,
+                    _count : {
+                        select : {
+                            chapter : true,
+                        }
+                    },
+                    chapter : {
+                        select : {
+                            id : true,
+                            title : true,
+                            number : true,
+                            isPremium : true,
+                            video : {
+                                select : {
+                                    id : true,
+                                    title : true,
+                                    duration : true,
+                                    _count : {
+                                        select : {
+                                            progress : {
+                                                where : {
+                                                    authorId :userId
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     courseCategory : {
                         select : {
                             category : {
@@ -188,7 +174,6 @@ module.exports = {
                                 }
                             }
                         }
-
                     },
                     mentor : {
                         select : { 
@@ -202,23 +187,41 @@ module.exports = {
                                 }
                             }
                         }
-                    },
-                    chapter : {
-                        select : {
-                            id : true,
-                            title : true,
-                            video : {
-                                select : {
-                                    id : true,
-                                    title : true
-                                }
-                            }
-                        }
                     }
+
+                }
+
+            });
+
+            //count rating
+            const aggregation = await prisma.rating.groupBy({
+                by : 'courseId',
+                _avg : {
+                    rate : true
                 }
             });
-        
-            const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium);
+
+            const sumDurationByCourse = await sumDurationCourse();
+
+            /// map rating and duration into course
+            courses = courses.map((course) => {
+                if ( (course.id).toString() in sumDurationByCourse) {
+                    course.duration = sumDurationByCourse[course.id];
+                }
+
+                aggregation.forEach(aggergate => {
+                    if ( course.id === aggergate.courseId) {
+                        course.rate = aggergate._avg.rate;
+                        return;
+                    }
+                });
+
+                course.duration = course.duration ? course.duration : null;
+                course.rate = course.rate ? course.rate : null;
+                return course;
+            });
+
+            const pagination = coursePagination(req,null,page,limit,category,level,ispremium);
         
             const result = {
                 pagination,

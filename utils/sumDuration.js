@@ -1,7 +1,7 @@
 const {prisma} = require('../libs/prismaClient');
 
 module.exports = {
-    sumDuration : async () => {
+    sumDurationCourse : async () => {
         //summing duration
         const sumDurationByChapter = await prisma.video.groupBy({
             by : 'chapterId',
@@ -47,5 +47,21 @@ module.exports = {
 
         return sumDurationByCourse;
 
+    },
+
+    sumDurationChapter : async (chapterIds) => {
+
+        //summing duration
+        const sumDurationByChapter = await prisma.video.groupBy({
+            by : 'chapterId',
+            _sum : {
+                duration : true
+            },
+            where : {
+                OR : chapterIds
+            }
+        });
+
+        return sumDurationByChapter;
     }
 };

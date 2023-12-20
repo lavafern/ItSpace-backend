@@ -3,7 +3,7 @@ const { transactionsPagination } = require('../utils/pagination');
 const { prisma } = require('../libs/prismaClient');
 const { getAllTransactionFilter } = require('../utils/searchFilters');
 const {transactionPagination} = require('../utils/pagination');
-const {sumDuration} = require('../utils/sumDuration');
+const {sumDurationCourse} = require('../utils/sumDuration');
 
 module.exports = {
     createTransaction : async (req,res,next) => {
@@ -468,7 +468,7 @@ module.exports = {
                 }
             });
 
-            const sumDurationByCourse = await sumDuration();
+            const sumDurationByCourse = await sumDurationCourse();
 
 
             /// map rating into transactions

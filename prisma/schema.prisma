@@ -92,6 +92,7 @@ model Chapter {
 model Video {
   id          Int        @id @default(autoincrement())
   title       String
+  number      Int
   description String
   chapterId   Int
   duration    Int
