@@ -10,7 +10,7 @@ router.get('/decode',restrict,jwtDecode);
 router.post('/logout',restrict,logout);
 router.post('/resend-otp/:email',resendOtp);
 router.put('/verify-otp',verifyOtp);
-router.get('/reset-password',sendResetPassword);
+router.get('/reset-password/:email',sendResetPassword);
 router.put('/reset-password/:token',resetPassword);
 router.put('/change-password',restrict,changePassword);
 
