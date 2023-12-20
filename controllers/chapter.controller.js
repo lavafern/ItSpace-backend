@@ -178,15 +178,6 @@ module.exports = {
                                     }
                                 }
                             }
-                            // progress : {
-                                // where : {
-                                    // authorId : userId
-                                // },
-                                // select : {
-                                    // id : true,
-                                    // completedDate : true
-                                // }
-                            // }
                         }
                     },
                     course : {

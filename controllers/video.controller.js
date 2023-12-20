@@ -1,13 +1,9 @@
 const { prisma } = require('../libs/prismaClient');
-const { ForbiddenError, BadRequestError, NotFoundError, CourseNotPurchasedError } = require('../errors/customErrors');
+const { BadRequestError, NotFoundError, CourseNotPurchasedError } = require('../errors/customErrors');
 
 module.exports = {
     createVideo: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
- 
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
- 
             let {title, description, url, duration,number} = req.body;
             let { courseId, chapterId } = req.params;
       
@@ -191,9 +187,6 @@ module.exports = {
 
     updateVideo: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
- 
             let { title, description, url, duration,number } = req.body;
             let { courseId, chapterId, id } = req.params;
 
@@ -317,9 +310,6 @@ module.exports = {
 
     deleteVideo: async (req, res, next) => {
         try {
-            const role = req.user.profile.role;
-            if (role !== 'ADMIN') throw new ForbiddenError('Kamu tidak memiliki akses kesini');
- 
             let { courseId, chapterId, id } = req.params;
 
             if (!id) throw new BadRequestError('Video ID harus diisi');
