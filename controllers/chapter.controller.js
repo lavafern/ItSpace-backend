@@ -169,6 +169,7 @@ module.exports = {
                             id : true,
                             title : true,
                             duration : true,
+                            number : true,
                             _count : {
                                 select : {
                                     progress : {

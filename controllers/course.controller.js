@@ -206,6 +206,7 @@ module.exports = {
                 courses
             };
 
+
             return res.status(200).json({
                 success : true,
                 message : 'Sucessfully get all course',
