@@ -90,6 +90,54 @@ module.exports = {
             next(err);
         }
     },
+
+    getAllVideoForChapter : async (req,res,next) => {
+        try {
+            let { courseId, chapterId } = req.params;
+
+            if (!courseId || !chapterId) throw new BadRequestError('Course dan Chapter harus diisi');
+            if (isNaN(Number(courseId)) || isNaN(Number(chapterId))) throw new BadRequestError('ID Harus Berupa Angka');
+      
+            courseId = Number(courseId);
+            chapterId = Number(chapterId);
+
+            const checkCourse = await prisma.course.findUnique({
+                where: {
+                    id: courseId,
+                },
+            });
+
+            if (!checkCourse)throw new BadRequestError('Course dengan id tersebut tidak ada');
+
+            // Mengasumsikan ada model video dengan kolom: id, title, description, url, duration
+            const checkChapter = await prisma.chapter.findUnique({
+                where: {
+                    id: chapterId,
+                },
+                include : {
+                    course : true
+                }
+            });
+
+
+            if (!checkChapter) throw new BadRequestError('Chapter dengan id tersebut tidak ada');
+            if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter ini bukan berasal dari course ini');
+
+            const allVideoOfChapter = await prisma.video.findMany({
+                where : {
+                    chapterId : chapterId
+                }
+            });
+
+            res.status(200).json({
+                success: true,
+                message: 'Succesfully get all video of chapter',
+                data: allVideoOfChapter,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
   
     getVideoDetails: async (req, res, next) => {
         try {
