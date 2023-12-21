@@ -9,6 +9,7 @@ const {BadRequestError,UnauthorizedError,NotFoundError} = require('../errors/cus
 const imagekit = require('../libs/imagekit');
 const path = require('path');
 // const {FRONTEND_DOMAIN} = process.env;
+const notValidToken = 'ccf5ce427fa3697f09aec480969abe9c0810118a78c4ce92264b3d76e54bc277a8bad331ebb942ba24c2a8680b684ad0cc1765dd84842ed967278883f8f78b16';
 
 module.exports = {
     LoginWithGoogle : async (req,res,next) => {
@@ -255,8 +256,8 @@ module.exports = {
         try {
             res
                 .status(200)
-                .clearCookie('accesToken')
-                .clearCookie('refreshToken')
+                .cookie('accesToken',notValidToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+                .cookie('refreshToken',notValidToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
                 .json({
                     success : true,
                     message : 'successfully logout',
