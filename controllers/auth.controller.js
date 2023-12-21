@@ -391,7 +391,7 @@ module.exports = {
         }
     },
 
-    jwtDecode : async (req,res,next) => {
+    jwtDecode : (req,res,next) => {
         try {
             if (req.accesToken) {
                 return res
@@ -408,6 +408,34 @@ module.exports = {
                 success : true,
                 message : 'jwt verify succes',
                 data : req.user
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    checkEnrollmentOfCourse : async (req,res,next) => {
+        try {
+            const userid = req.user.id;
+            let {courseId} = req.params;
+
+            if (!courseId) throw new BadRequestError('Tolong masukan courseId');
+            if (isNaN(Number(courseId))) throw new BadRequestError('Tolong masukan angka untuk courseId');
+            
+            courseId = Number(courseId);
+
+            const checkEnrollment = await prisma.enrollment.findMany({
+                where : {
+                    authorId : userid,
+                    courseId : courseId
+                }
+            });
+
+            const result = checkEnrollment.length > 0 ? true : false;
+
+            return res.status(200).json({
+                success : true,
+                message : 'if this user have enrolled?',
+                data : result
             });
         } catch (err) {
             next(err);
