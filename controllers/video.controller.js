@@ -94,7 +94,7 @@ module.exports = {
     getVideoDetails: async (req, res, next) => {
         try {
 
-            const userId = req.user.profile.id;
+            const userId = req.user.id;
       
             let { courseId, chapterId, id } = req.params;
 
