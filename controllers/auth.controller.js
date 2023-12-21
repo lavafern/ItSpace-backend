@@ -8,6 +8,7 @@ const {generateOtp,signToken, decodeToken} = require('../utils/authUtils');
 const {BadRequestError,UnauthorizedError,NotFoundError} = require('../errors/customErrors');
 const imagekit = require('../libs/imagekit');
 const path = require('path');
+const {FRONTEND_URL} = process.env;
 
 module.exports = {
     LoginWithGoogle : async (req,res,next) => {
@@ -236,8 +237,8 @@ module.exports = {
             const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET);
 
             res
-                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
-                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
+                .cookie('accesToken',accesToken, {domain: FRONTEND_URL,httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+                .cookie('refreshToken',refreshToken, {domain: FRONTEND_URL,httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
                 .status(200).json({
                     success : true,
                     message : 'login success',
@@ -250,12 +251,12 @@ module.exports = {
         }
     },
     
-    logout : async (req,res,next) => {
+    logout : (req,res,next) => {
         try {
             res
                 .status(200)
-                .clearCookie('accesToken')
-                .clearCookie('refreshToken')
+                .clearCookie('accesToken',{domain : FRONTEND_URL})
+                .clearCookie('refreshToken',{domain : FRONTEND_URL})
                 .json({
                     success : true,
                     message : 'successfully logout',
