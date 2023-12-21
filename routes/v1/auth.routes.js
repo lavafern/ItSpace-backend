@@ -1,7 +1,7 @@
 const passport = require('../../libs/passport');
 const router = require('express').Router();
-const {restrict} = require('../../middlewares/authentication.middleware');
-const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, sendResetPassword, resetPassword, changePassword} = require('../../controllers/auth.controller');
+const {restrict, restrictGuest} = require('../../middlewares/authentication.middleware');
+const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, sendResetPassword, resetPassword, changePassword, checkEnrollmentOfCourse} = require('../../controllers/auth.controller');
 const {image} = require('../../libs/multer');
 
 router.post('/register',image.single('image'),register);
@@ -13,6 +13,7 @@ router.put('/verify-otp',verifyOtp);
 router.get('/reset-password/:email',sendResetPassword);
 router.put('/reset-password/:token',resetPassword);
 router.put('/change-password',restrict,changePassword);
+router.get('/check-enrollment/:courseId',restrictGuest,checkEnrollmentOfCourse);
 
 /// login with google routes
 router.get('/google', 
