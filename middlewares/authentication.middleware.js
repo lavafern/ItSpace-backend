@@ -16,6 +16,7 @@ module.exports = {
             const refreshToken = req.cookies.refreshToken;
 
             try {
+                console.log('inside refres try');
                 if (!refreshToken) throw new UnauthorizedError('Unauthorized');
 
                 const userData = await decodeToken(refreshToken,JWT_REFRESH_SECRET);
@@ -26,7 +27,8 @@ module.exports = {
                 };
                 const accesToken = await signToken('access',userConstruct,JWT_SECRET);
                 req.user = userConstruct;
-                req.accesToken = accesToken;
+                
+                res.cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true});
                 next();
             } catch (err) {
                 next(err);
