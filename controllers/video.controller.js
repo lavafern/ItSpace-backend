@@ -156,54 +156,52 @@ module.exports = {
             courseId = Number(courseId);
             chapterId = Number(chapterId);
 
+            const checkCourseTask = prisma.course.findUnique({
+                where : {
+                    id: courseId,
+                },
+            });
 
+            const checkChapterTask =prisma.chapter.findUnique({
+                where : {
+                    id: chapterId,
+                },
+            });
 
-            const [checkCourse,
-                checkChapter,
-                videoDetails] = await Promise.all( [
-                prisma.course.findUnique({
-                    where : {
-                        id: courseId,
-                    },
-                }),
-            
-                prisma.chapter.findUnique({
-                    where : {
-                        id: chapterId,
-                    },
-                }),
-            
-                prisma.video.findUnique({
-                    where : {
-                        id,
-                    },
-                    select : {
-                        id: true,
-                        title: true,
-                        description: true,
-                        url: true,
-                        duration: true,
-                        chapter : {
-                            select : {
-                                id: true,
-                                number: true,
-                                title: true,
-                                isPremium: true,
-                                course : {
-                                    select : {
-                                        id : true,
-                                        code : true,
-                                        title : true,
-                                        price : true,
-                                        level : true,
-                                        isPremium : true,
-                                    }
+            const videoDetailsTask =   prisma.video.findUnique({
+                where : {
+                    id,
+                },
+                select : {
+                    id: true,
+                    title: true,
+                    description: true,
+                    url: true,
+                    duration: true,
+                    chapter : {
+                        select : {
+                            id: true,
+                            number: true,
+                            title: true,
+                            isPremium: true,
+                            course : {
+                                select : {
+                                    id : true,
+                                    code : true,
+                                    title : true,
+                                    price : true,
+                                    level : true,
+                                    isPremium : true,
                                 }
                             }
                         }
                     }
-                })]);
-            
+                }
+            });
+
+            const [checkCourse,
+                checkChapter,
+                videoDetails] = await Promise.all([checkCourseTask,checkChapterTask,videoDetailsTask]);
 
             if (!checkCourse) throw new BadRequestError('Course dengan id tersebut tidak ada');
             if (!checkChapter)  throw new BadRequestError('Chapter dengan id tersebut tidak ada');

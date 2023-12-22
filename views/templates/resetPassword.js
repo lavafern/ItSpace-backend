@@ -1000,7 +1000,7 @@ button.es-button {
                                                                         <table cellpadding="0" cellspacing="0" width="100%" style="border-left:2px dashed #cccccc;border-right:2px dashed #cccccc;border-top:2px dashed #cccccc;border-bottom:2px dashed #cccccc;border-radius: 5px; border-collapse: separate;">
                                                                             <tbody>
                                                                                 <tr>
-                                                                                    <td align="center" class="esd-block-button"><span class="es-button-border"><a href="${url}/${token}" class="es-button" target="_blank"> Button </a></span></td>
+                                                                                    <td align="center" class="esd-block-button"><span class="es-button-border"><a href="${url}?${token}" class="es-button" target="_blank"> Button </a></span></td>
                                                                                 </tr>
                                                                             </tbody>
                                                                         </table>
