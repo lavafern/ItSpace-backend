@@ -5,7 +5,7 @@ const {sendEmail} = require('../utils/sendEmail');
 const {otpHtml} = require('../views/templates/emailVerification');
 const {resetPasswordHtml} = require('../views/templates/resetPassword');
 const {generateOtp,signToken, decodeToken} = require('../utils/authUtils');
-const {BadRequestError,UnauthorizedError,NotFoundError} = require('../errors/customErrors');
+const {BadRequestError,UnauthorizedError,NotFoundError, ForbiddenError} = require('../errors/customErrors');
 const imagekit = require('../libs/imagekit');
 const path = require('path');
 // const {FRONTEND_DOMAIN} = process.env;
@@ -159,8 +159,6 @@ module.exports = {
 
     verifyOtp : async (req,res,next) => {
         try {
-
-
             const {otp,email} = req.body;
 
             if (!email || !otp) throw new BadRequestError('Harap isi semua kolom');
@@ -178,22 +176,38 @@ module.exports = {
             if (userData.otp.otp !== otp) throw new UnauthorizedError('Otp salah');
             if (userData.otp.expiration < new Date()) throw new UnauthorizedError('Otp kadaluarsa');
 
-            const verifyingUser = await prisma.user.update({
+            const foundUser = await prisma.user.update({
                 where : {
                     email
                 },
                 data : {
                     verified : true
+                },
+                select : {
+                    id : true,
+                    email : true,
+                    password : true,
+                    verified : true,
+                    profile : {
+                        select : {
+                            role : true
+                        }
+                    }
                 }
             });
 
-            delete verifyingUser.password;
-            delete verifyingUser.googleId;
-            res.status(201).json({
-                success : true,
-                message : 'successfully verify email',
-                data : verifyingUser
-            });
+            delete foundUser.password;
+            const accesToken = await signToken('access',foundUser,JWT_SECRET);
+            const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET);
+
+            res
+                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
+                .status(201).json({
+                    success : true,
+                    message : 'successfully verify email',
+                    data : foundUser
+                });
         } catch (err) {
             next(err);
         }
@@ -212,6 +226,7 @@ module.exports = {
                     id : true,
                     email : true,
                     password : true,
+                    verified : true,
                     profile : {
                         select : {
                             role : true
@@ -221,7 +236,6 @@ module.exports = {
             });
 
             if (! foundUser) throw new UnauthorizedError('Email / password salah');
-
             //checks if password correct
             const comparePassword = await new Promise((resolve,reject) => {
                 bcrypt.compare(password,foundUser.password,function (err,result) {
@@ -233,7 +247,7 @@ module.exports = {
             delete foundUser.password;
 
             if (!comparePassword) throw new UnauthorizedError('Email / password salah');
-
+            if (!(foundUser.verified)) throw new ForbiddenError('Tolong verifikasi akun anda');
             const accesToken = await signToken('access',foundUser,JWT_SECRET);
             const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET);
 
