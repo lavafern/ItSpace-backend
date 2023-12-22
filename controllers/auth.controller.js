@@ -256,8 +256,8 @@ module.exports = {
         try {
             res
                 .status(200)
-                .cookie('accesToken',notValidToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
-                .cookie('refreshToken',notValidToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
+                .clearCookie('accesToken')
+                .clearCookie('refreshToken')
                 .json({
                     success : true,
                     message : 'successfully logout',
