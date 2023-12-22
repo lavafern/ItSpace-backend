@@ -17,11 +17,13 @@ module.exports = {
             if (isNaN(Number(courseId))) throw new BadRequestError('Tolong isi semua kolom');
             courseId = Number(courseId);
 
+            const headCode = paymentMethod === 'VIRTUAL_ACCOUNT' ? '0001' :paymentMethod === 'E_WALLET' ? '0002' : paymentMethod === 'GERAI_RETAIL' ? '0003' : false;
+            //  paymentMethod === 'GERAI_RETAIL' ? '0003'
             // checks if user is verified
             const user = await prisma.user.findUnique({
                 where : {
                     id : authorId
-                }
+                },
             });
 
             if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
@@ -65,11 +67,13 @@ module.exports = {
                 update : {
                     expirationDate : new Date(new Date().getTime() + 24 * 60 * 60000),
                     paymentMethod,
+                    paymentCode : headCode+user.id+courseId
                 },
                 create : {
                     date: new Date(),
                     expirationDate : new Date(new Date().getTime() + 24 * 60 * 60000),
                     paymentMethod : paymentMethod,
+                    paymentCode : headCode+user.id+courseId,
                     authorId,
                     courseId,
                 },
@@ -79,6 +83,7 @@ module.exports = {
                     expirationDate : true,
                     payDone : true,
                     payDate : true,
+                    paymentCode: true,
                     paymentMethod : true,
                     course : {
                         select : {

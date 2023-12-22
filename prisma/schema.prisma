@@ -107,6 +107,7 @@ model Transaction {
   payDone        Boolean       @default(false)
   payDate        DateTime?
   authorId       Int
+  paymentCode    String?
   courseId       Int?
   date           DateTime
   paymentMethod  PaymentMethod
