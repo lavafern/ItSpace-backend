@@ -118,6 +118,7 @@ model Transaction {
 model Enrollment {
   id       Int      @id @default(autoincrement())
   date     DateTime @default(now())
+  lastAccessed DateTime?
   authorId Int
   courseId Int
   author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)

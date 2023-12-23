@@ -17,6 +17,7 @@ const notificationsRoute = require('./routes/v1/notification.routes');
 const progressRoute = require('./routes/v1/progress.routes');
 const bodyParser = require('body-parser');
 const cookies = require('cookie-parser');
+const {continueLearningReminder} = require('./utils/cronJobs');
 
 
 
@@ -25,6 +26,9 @@ app.use(cookies());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(corsMiddleware);
+continueLearningReminder();
+
+
 app.get('/',(req,res,next) => {
     try {
         res.json({

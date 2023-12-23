@@ -27,7 +27,7 @@ module.exports = {
                 },
             });
 
-            if (!checkCourse)throw new BadRequestError('Course dengan id tersebut tidak ada');
+            if (!checkCourse)throw new NotFoundError('Course dengan id tersebut tidak ada');
 
             // cek jika chapterId ada
             const checkChapter = await prisma.chapter.findUnique({
@@ -40,7 +40,7 @@ module.exports = {
             });
 
 
-            if (!checkChapter) throw new BadRequestError('Chapter dengan id tersebut tidak ada');
+            if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
     
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter ini bukan berasal dari course ini');
 
@@ -108,7 +108,7 @@ module.exports = {
                 },
             });
 
-            if (!checkCourse)throw new BadRequestError('Course dengan id tersebut tidak ada');
+            if (!checkCourse)throw new NotFoundError('Course dengan id tersebut tidak ada');
 
             // Mengasumsikan ada model video dengan kolom: id, title, description, url, duration
             const checkChapter = await prisma.chapter.findUnique({
@@ -121,7 +121,7 @@ module.exports = {
             });
 
 
-            if (!checkChapter) throw new BadRequestError('Chapter dengan id tersebut tidak ada');
+            if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter ini bukan berasal dari course ini');
 
             const allVideoOfChapter = await prisma.video.findMany({
@@ -203,8 +203,8 @@ module.exports = {
                 checkChapter,
                 videoDetails] = await Promise.all([checkCourseTask,checkChapterTask,videoDetailsTask]);
 
-            if (!checkCourse) throw new BadRequestError('Course dengan id tersebut tidak ada');
-            if (!checkChapter)  throw new BadRequestError('Chapter dengan id tersebut tidak ada');
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
+            if (!checkChapter)  throw new NotFoundError('Chapter dengan id tersebut tidak ada');
     
 
             if (!videoDetails) throw new NotFoundError('Video dengan ID tersebut tidak ditemukan');
@@ -261,7 +261,7 @@ module.exports = {
                 },
             });
 
-            if (!checkCourse) throw new BadRequestError('Course dengan id tersebut tidak ada');
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
           
 
             const checkChapter = await prisma.chapter.findUnique({
@@ -270,7 +270,7 @@ module.exports = {
                 },
             });
     
-            if (!checkChapter)  throw new BadRequestError('Chapter dengan id tersebut tidak ada');
+            if (!checkChapter)  throw new NotFoundError('Chapter dengan id tersebut tidak ada');
     
             
             const checkVideo = await prisma.video.findUnique({
@@ -377,7 +377,7 @@ module.exports = {
                 },
             });
 
-            if (!checkCourse) throw new BadRequestError('Course dengan id tersebut tidak ada');
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
           
 
             const checkChapter = await prisma.chapter.findUnique({
@@ -386,7 +386,7 @@ module.exports = {
                 },
             });
     
-            if (!checkChapter)  throw new BadRequestError('Chapter dengan id tersebut tidak ada');
+            if (!checkChapter)  throw new NotFoundError('Chapter dengan id tersebut tidak ada');
     
 
     
