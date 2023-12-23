@@ -233,7 +233,21 @@ module.exports = {
                 }
             });
 
+            // if user has enroll this course, can view the api returns group link
             const viewGroup = checkEnrollment.length > 0 ? true : false;
+
+            // if user has enroll this course, update lastAccesed
+            if ( checkEnrollment.length > 0) {
+                await prisma.enrollment.update({
+                    where : {
+                        id : checkEnrollment[0].id
+                    },
+                    data : {
+                        lastAccessed : new Date()
+                    }
+                });
+            }
+
 
             // TODO : add chapters, videos, rating, progress etc.
             let courseDetail = await prisma.course.findUnique({

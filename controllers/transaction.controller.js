@@ -2,7 +2,6 @@ const { BadRequestError, ForbiddenError, UserNotVerifiedError } = require('../er
 const { transactionsPagination } = require('../utils/pagination');
 const { prisma } = require('../libs/prismaClient');
 const { getAllTransactionFilter } = require('../utils/searchFilters');
-const {transactionPagination} = require('../utils/pagination');
 const {sumDurationCourse} = require('../utils/sumDuration');
 
 module.exports = {
@@ -176,7 +175,7 @@ module.exports = {
             });
 
 
-            const pagination = transactionPagination(req,null,page,limit,status,courseCode,method,from,to);
+            const pagination = transactionsPagination(req,null,page,limit,status,courseCode,method,from,to);
 
             const result = {
                 pagination,

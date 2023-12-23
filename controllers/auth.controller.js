@@ -5,10 +5,9 @@ const {sendEmail} = require('../utils/sendEmail');
 const {otpHtml} = require('../views/templates/emailVerification');
 const {resetPasswordHtml} = require('../views/templates/resetPassword');
 const {generateOtp,signToken, decodeToken} = require('../utils/authUtils');
-const {BadRequestError,UnauthorizedError,NotFoundError, ForbiddenError} = require('../errors/customErrors');
+const {BadRequestError,UnauthorizedError,NotFoundError, UserNotVerifiedError} = require('../errors/customErrors');
 const imagekit = require('../libs/imagekit');
 const path = require('path');
-// const {FRONTEND_DOMAIN} = process.env;
 const notValidToken = 'ccf5ce427fa3697f09aec480969abe9c0810118a78c4ce92264b3d76e54bc277a8bad331ebb942ba24c2a8680b684ad0cc1765dd84842ed967278883f8f78b16';
 
 module.exports = {
@@ -127,7 +126,9 @@ module.exports = {
                 }
             });
 
+        
             if (!verifyUser) throw new BadRequestError('User belum terdaftar');
+            if (verifyUser.verified) throw new BadRequestError('User sudah terverifikasi');
 
             await prisma.otp.upsert({
                 where : {
@@ -236,6 +237,7 @@ module.exports = {
             });
 
             if (! foundUser) throw new UnauthorizedError('Email / password salah');
+
             //checks if password correct
             const comparePassword = await new Promise((resolve,reject) => {
                 bcrypt.compare(password,foundUser.password,function (err,result) {
@@ -247,7 +249,12 @@ module.exports = {
             delete foundUser.password;
 
             if (!comparePassword) throw new UnauthorizedError('Email / password salah');
-            if (!(foundUser.verified)) throw new ForbiddenError('Tolong verifikasi akun anda');
+
+            if (!(foundUser.verified)) {
+                res.cookie('otpEmail', email, { sameSite: 'none', httpOnly: false, secure: true });
+                throw new UserNotVerifiedError('Tolong verifikasi akun anda');
+            }
+
             const accesToken = await signToken('access',foundUser,JWT_SECRET);
             const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET);
 
