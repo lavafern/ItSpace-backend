@@ -982,7 +982,7 @@ button.es-button {
                                                                                     <td align="center" class="esd-block-text es-p5t es-p5b es-p40r es-p40l es-m-p0r es-m-p0l">
                                                                                         <p>Hai ${userName},</p>
 
-                                                                                        <p>Sudah 7 hari sejak terakhir kali Anda belajar ${courseTitle} di itSpace. Ayo, lanjutkan perjalanan belajar Anda sekarang!</p>
+                                                                                        <p>Sudah beberapa hari sejak terakhir kali Anda belajar ${courseTitle} di itSpace. Ayo, lanjutkan perjalanan belajar Anda sekarang!</p>
                                                                                     </td>
                                                                                 </tr>
                                                                             </tbody>

@@ -7,16 +7,15 @@ const {FRONTEND_HOME_URL} = process.env;
 
 module.exports  = {
     continueLearningReminder : () => {
-        cron.schedule('*/10 * * * * *', async function() {
+        cron.schedule('0 0 * * 0', async function() {
             const matchEnrollment = await prisma.enrollment.findMany({
                 where : {
                     NOT : [
                         {lastAccessed : null}
                     ],
                     lastAccessed : {
-                        lte : new Date((new Date().setDate(new Date().getDate() - 0)))
+                        lte : new Date((new Date().setDate(new Date().getDate() - 3)))
                     },
-                    authorId : 3
                 },
                 include : {
                     author : {
