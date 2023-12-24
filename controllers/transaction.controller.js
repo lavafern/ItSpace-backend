@@ -7,7 +7,7 @@ const {sumDurationCourse} = require('../utils/sumDuration');
 module.exports = {
     createTransaction : async (req,res,next) => {
         try {
-            const authorId = req.user.id;
+            let authorId = req.user.id;
            
             let {courseId,paymentMethod} = req.body;
 
@@ -213,6 +213,7 @@ module.exports = {
                     payDone : true,
                     payDate : true,
                     paymentMethod : true,
+                    authorId : true,
                     course : {
                         select : {
                             id : true,
