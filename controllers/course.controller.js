@@ -220,11 +220,13 @@ module.exports = {
     getCourseDetail : async (req,res,next) => {
         try {
             const userId = req.user.id;
+            const role = req.user.profile.role;
             let {id} = req.params;
 
             if (!id) throw new BadRequestError('Id tidak valid');
             if (isNaN(Number(id))) throw new BadRequestError('Id tidak valid');
             id = Number(id);
+
 
             const checkEnrollment = await prisma.enrollment.findMany({
                 where : {
@@ -234,7 +236,7 @@ module.exports = {
             });
 
             // if user has enroll this course, can view the api returns group link
-            const viewGroup = checkEnrollment.length > 0 ? true : false;
+            const viewGroup = checkEnrollment.length > 0 || role === 'ADMIN' ? true : false;
 
             // if user has enroll this course, update lastAccesed
             if ( checkEnrollment.length > 0) {

@@ -16,7 +16,6 @@ module.exports = {
             const refreshToken = req.cookies.refreshToken;
 
             try {
-                console.log('inside refres try');
                 if (!refreshToken) throw new UnauthorizedError('Unauthorized');
 
                 const userData = await decodeToken(refreshToken,JWT_REFRESH_SECRET);
@@ -42,7 +41,11 @@ module.exports = {
 
             if (!accesToken) {
                 req.user= {
-                    id : -1
+                    id : -1,
+                    email : null,
+                    profile : {
+                        role : null
+                    }
                 };
                 return next();
             }
@@ -57,7 +60,11 @@ module.exports = {
             try {
                 if (!refreshToken) {
                     req.user= {
-                        id : -1
+                        id : -1,
+                        email : null,
+                        profile : {
+                            role : null
+                        }
                     };
                     return next();
                 }
@@ -74,7 +81,11 @@ module.exports = {
                 next();
             } catch (err) {
                 req.user= {
-                    id : -1
+                    id : -1,
+                    email : null,
+                    profile : {
+                        role : null
+                    }
                 };
                 next();
             }
