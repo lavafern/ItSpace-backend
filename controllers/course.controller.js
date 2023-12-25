@@ -117,13 +117,15 @@ module.exports = {
             limit = limit ? Number(limit) : 10;
 
             const filters = getAllCourseFilter(ispremium,level,category);
+            /// order by : default : newest, popularity : count of how many enrolled, newest : newest course
+
             const orderBy = order === 'popularity'? [
                 {enrollment : {
                     _count : 'desc'
                 }}
             ]  :  [ { id : 'desc'}];
-
-            let courses = await prisma.course.findMany({
+            
+            let courses = prisma.course.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
                 orderBy : orderBy,
@@ -174,14 +176,17 @@ module.exports = {
                 }
             });
 
-            const aggregation = await prisma.rating.groupBy({
+            let aggregation = prisma.rating.groupBy({
                 by : 'courseId',
                 _avg : {
                     rate : true
                 }
             });
 
-            const sumDurationByCourse = await sumDurationCourse();
+            let sumDurationByCourse = sumDurationCourse();
+
+            /// run query concurrently
+            [courses,aggregation,sumDurationByCourse] = await Promise.all([courses,aggregation,sumDurationByCourse]);
 
             /// map rating and duration into course
             courses = courses.map((course) => {

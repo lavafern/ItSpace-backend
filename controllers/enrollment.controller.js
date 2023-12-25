@@ -107,19 +107,20 @@ module.exports = {
             }) : [];
 
             
-            let {category,level,ispremium,page,limit,se} = req.query;
+            let {category,level,ispremium,page,limit,se,order} = req.query;
             page = page ? Number(page) : 1;
             limit = limit ? Number(limit) : 10;
             
             const filters = getAllCourseFilter(ispremium,level,category);
+
+            const orderBy = order === 'popularity' ? [{enrollment : {
+                _count : 'desc'
+            }}] : order === 'newest' ? [ { id : 'desc'}] : undefined;
         
             let courses = await prisma.course.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
-                // TODO : buat sorting berdasarkan banyak popularity (enroll)
-                orderBy : [
-                    { id : 'asc'}
-                ],
+                orderBy : orderBy,
                 where : {
                     OR : getEnrolledCourseId,
                     title : {
@@ -137,6 +138,14 @@ module.exports = {
                     isPremium: true,
                     description: true,
                     thumbnailUrl: true,
+                    enrollment : {
+                        where : {
+                            authorId : userId
+                        },
+                        select : {
+                            lastAccessed : true
+                        }
+                    },
                     _count : {
                         select : {
                             chapter : true,
@@ -220,6 +229,17 @@ module.exports = {
                 course.rate = course.rate ? course.rate : null;
                 return course;
             });
+
+            //if no order filter, sort it by last accessed
+            courses = !order ? courses.sort((a,b) => {
+                if (!(b.enrollment[0].lastAccessed)) {
+                    return -1;
+                } else if (!(a.enrollment[0].lastAccessed)){
+                    return 1;
+                } else {
+                    return a.enrollment[0].lastAccessed - b.enrollment[0].lastAccessed;
+                }
+            }) : courses;
 
             const pagination = coursePagination(req,null,page,limit,category,level,ispremium);
         
