@@ -51,6 +51,4 @@ class UserNotVerifiedError extends ForbiddenError{
     }
 }
 
-
-
 module.exports = {BadRequestError,UnauthorizedError,ForbiddenError,NotFoundError,InternalServerError,CourseNotPurchasedError,UserNotVerifiedError};

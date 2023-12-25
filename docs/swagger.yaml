@@ -314,7 +314,9 @@ paths:
     delete:
       tags:
         - courses
-      description: Deletes a specific course. [DONE]
+      description: |
+        * This endpoint serves to delete a course
+        * Restricted acces for admin only
       parameters:
        - in: path
          name: courseId
@@ -369,10 +371,12 @@ paths:
     post:
       tags:
         - auth
-      description: create new course [DONE]
+      description: |
+        * This endpoint serves to register new user.
+        * Utilize multipart/form-data as the request body to enable image uploads.
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
                 $ref: '#/components/schemas/RegisterReqBody'
 
@@ -422,7 +426,9 @@ paths:
     post:
       tags:
         - auth
-      description: User login [DONE]
+      description: | 
+        * This endpoint serves to login.
+        * Auth token will sent to http-only cookie.
       requestBody:
         content:
           application/json:
@@ -475,7 +481,9 @@ paths:
     post:
       tags:
         - auth
-      description: User login with google [DONE]
+      description: |
+        * This endpoint serves to login with google account.
+        * Auth token will sent to http-only cookie.
       responses:
         '201':
           description: Successful operation
@@ -3792,7 +3800,16 @@ components:
           items:
             type: string
           example : ["Backend","Database"]
-          
+      required:
+        - code
+        - title
+        - price
+        - level
+        - isPremium
+        - description
+        - groupUrl
+        - mentorEmail
+        - courseCategory
     courseGetAll:
       type: object
       properties:
@@ -3890,9 +3907,12 @@ components:
           type: string
           example: password123
         image:
-            type: string
             format: binary
-            example : "upload profile pic image here"
+      required:
+        - name
+        - email
+        - password
+        - passwordValidation
     RegisterResponse:
       title: Register response
       type: object
@@ -3916,6 +3936,9 @@ components:
         password:
           type: string
           example: password123
+      required:
+        - email
+        - password
     LoginResponse:
       title: Register response
       type: object
