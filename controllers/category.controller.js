@@ -63,21 +63,23 @@ module.exports = {
             name = name.toLowerCase();
 
             // check if category exist
-            const checkId = await prisma.category.findUnique({
+            let checkId = prisma.category.findUnique({
                 where : {
                     id
                 }
             });
 
-            if (!checkId) throw new NotFoundError('Id tidak ditemukan');
 
             // check if name unique
-            const checkName = await prisma.category.findUnique({
+            let checkName = prisma.category.findUnique({
                 where : {
                     name
                 }
             });
 
+            [checkId,checkName] = await Promise.all([checkId,checkName]);
+
+            if (!checkId) throw new NotFoundError('Id tidak ditemukan');
             if (checkName) throw new BadRequestError('Gunakan nama lain');
 
             const updatedCategory = await prisma.category.update({

@@ -134,7 +134,24 @@ module.exports = {
             if ((to === undefined && from) || (to && from === undefined)) throw new BadRequestError('Jika menggunakan filter tanggal, gunakan kedua parameter (to & from)');
 
             const filters = getAllTransactionFilter(courseCode,status,method);
-            const transactions = await prisma.transaction.findMany({
+
+            let transactionsCount = prisma.transaction.findMany({
+                where : {
+                    course : {
+                        title : {
+                            contains : se,
+                            mode : 'insensitive'
+                        }
+                    },
+                    date : {
+                        lte : to,
+                        gte : from
+                    },
+                    AND : filters
+                },
+            });
+
+            let transactions = prisma.transaction.findMany({
                 orderBy : [
                     { id : 'desc'}
                 ],
@@ -175,8 +192,10 @@ module.exports = {
                 }
             });
 
-
-            const pagination = transactionsPagination(req,null,page,limit,status,courseCode,method,from,to);
+            [transactions,transactionsCount] = await Promise.all([transactions,transactionsCount]);
+            transactionsCount = transactionsCount.length;
+            
+            const pagination = transactionsPagination(req,transactionsCount,page,limit,status,courseCode,method,from,to);
 
             const result = {
                 pagination,
@@ -397,8 +416,24 @@ module.exports = {
 
             const filters = getAllTransactionFilter(courseCode,status,method);
 
+            let transactionsCount = prisma.transaction.findMany({
+                where : {
+                    authorId : userId,
+                    course : {
+                        title : {
+                            contains : se,
+                            mode : 'insensitive'
+                        }
+                    },
+                    date : {
+                        lte : to,
+                        gte : from
+                    },
+                    AND : filters
+                }
+            });
 
-            let transactions = await prisma.transaction.findMany({
+            let transactions = prisma.transaction.findMany({
                 orderBy : [
                     { id : 'desc'}
                 ],
@@ -469,15 +504,18 @@ module.exports = {
             });
 
 
-            const aggregation = await prisma.rating.groupBy({
+            let aggregation = prisma.rating.groupBy({
                 by : 'courseId',
                 _avg : {
                     rate : true
                 }
             });
 
-            const sumDurationByCourse = await sumDurationCourse();
+            let sumDurationByCourse = sumDurationCourse();
 
+            [transactions,aggregation,sumDurationByCourse,transactionsCount] = await Promise.all([transactions,aggregation,sumDurationByCourse,transactionsCount]);
+
+            transactionsCount = await transactionsCount.length;
 
             /// map rating into transactions
             transactions = transactions.map((transaction) => {
@@ -498,7 +536,7 @@ module.exports = {
                 return transaction;
             });
             
-            const pagination = transactionsPagination(req,null,page,limit,status,courseCode,method,from,to);
+            const pagination = transactionsPagination(req,transactionsCount,page,limit,status,courseCode,method,from,to);
 
             const result = {
                 pagination,

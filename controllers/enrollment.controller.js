@@ -15,33 +15,34 @@ module.exports = {
             if (!courseId) throw new BadRequestError('Tolong masukan courseId');
 
             // checks if user is verified
-            const user = await prisma.user.findUnique({
+            let user = prisma.user.findUnique({
                 where : {
                     id : userid
                 }
             });
 
-            if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
 
             // checks if course exist
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = prisma.course.findUnique({
                 where : {
                     id : courseId
                 }
             });
 
-            if (!checkCourse) throw new BadRequestError('CourseId tidak valid');
+            [user,checkCourse] = await Promise.all([user,checkCourse]);
 
+            if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
+            if (!checkCourse) throw new BadRequestError('CourseId tidak valid');
+ 
             // checks if enrollment already exist
-            const checkEnrollment = await prisma.enrollment.findMany({
+            let checkEnrollment = await prisma.enrollment.findMany({
                 where : {
                     courseId : courseId,
                     authorId : userid
                 }
             });
-
+            
             if (checkEnrollment.length > 0)  throw new BadRequestError('Anda telah mendaftar di course ini');
-
             // chekcs if enrollment premium
             if (checkCourse.isPremium) throw new CourseNotPurchasedError('Anda harus membeli course premium');
 
@@ -113,11 +114,23 @@ module.exports = {
             
             const filters = getAllCourseFilter(ispremium,level,category);
 
+            /// order by : default : lastAccessed, popularity : count of how many enrolled, newest : newest course
             const orderBy = order === 'popularity' ? [{enrollment : {
                 _count : 'desc'
             }}] : order === 'newest' ? [ { id : 'desc'}] : undefined;
-        
-            let courses = await prisma.course.findMany({
+            
+            let couresCount = prisma.course.findMany({
+                where : {
+                    OR : getEnrolledCourseId,
+                    title : {
+                        contains : se,
+                        mode : 'insensitive'
+                    },
+                    AND : filters
+                }
+            });
+
+            let courses = prisma.course.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
                 orderBy : orderBy,
@@ -202,15 +215,31 @@ module.exports = {
 
             });
 
-            //count rating
-            const aggregation = await prisma.rating.groupBy({
+            [courses,couresCount] = await Promise.all([courses,couresCount]);
+
+            couresCount = await couresCount.length;
+            
+            // rating section
+            const courseIds = courses.map((course) => {
+                return {courseId : course.id};
+            });
+
+            let aggregation = prisma.rating.groupBy({
                 by : 'courseId',
                 _avg : {
                     rate : true
+                },
+                where : {
+                    OR : courseIds
                 }
             });
 
-            const sumDurationByCourse = await sumDurationCourse();
+            console.log(aggregation);
+
+            // sumduration section
+            let sumDurationByCourse = sumDurationCourse();
+
+            [aggregation,sumDurationByCourse] = await Promise.all([aggregation,sumDurationByCourse]);
 
             /// map rating and duration into course
             courses = courses.map((course) => {
@@ -241,7 +270,7 @@ module.exports = {
                 }
             }) : courses;
 
-            const pagination = coursePagination(req,null,page,limit,category,level,ispremium);
+            const pagination = coursePagination(req,couresCount,page,limit,category,level,ispremium,order,se);
         
             const result = {
                 pagination,

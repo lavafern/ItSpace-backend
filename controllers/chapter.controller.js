@@ -89,16 +89,15 @@ module.exports = {
 
             if (!Number.isInteger(courseId) || !Number.isInteger(id)) throw new BadRequestError('Course ID dan Chapter ID harus berupa angka');
 
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = prisma.course.findUnique({
                 where: {
                     id: courseId,
                 },
             });
 
-            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
 
             // Ambil chapter berdasarkan courseId dan id
-            const chapter = await prisma.chapter.findUnique({
+            let chapter = prisma.chapter.findUnique({
                 where: {
                     id: id,
                 },
@@ -119,7 +118,13 @@ module.exports = {
                     }
                 }
             }); 
+
+            //run query concurrently
+            [checkCourse,chapter] = await Promise.all([checkCourse,chapter]);
+
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
             if (!chapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada'); 
+            if (chapter.course.id !== checkCourse.id) throw new BadRequestError('Chapter ini bukan berasal dari course ini'); 
 
             res.status(200).json({
                 success: true,
@@ -195,11 +200,11 @@ module.exports = {
             });
 
 
+
             //summarizing duration of each chapters
             const chapterIds = chapters.map(chapter => {
                 return {chapterId : chapter.id };
             });
-
 
             const sumDurationByChapter = await sumDurationChapter(chapterIds);
 
@@ -227,25 +232,27 @@ module.exports = {
     updateChapter: async (req, res, next) => {
         try {
             let { courseId, id } = req.params;
+            let { title, isPremium, number } = req.body;
 
+            if (isNaN(courseId) || isNaN(id)) throw new BadRequestError('Course ID dan Chapter ID harus berupa angka');
+            if (!title || !isPremium || !number) throw new BadRequestError('isi semua kolom');
+            if (isNaN(Number(number))) throw new BadRequestError('number harus berupa angka');
+            if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError('isPremium harus 1 / 0');
+
+            isPremium = isPremium == '1' ? true : false;
+            number = Number(number);
             courseId = Number(courseId);
             id = Number(id);
 
-            // Validasi courseId dan chapterId harus berupa angka
-            if (isNaN(courseId) || isNaN(id)) throw new BadRequestError('Course ID dan Chapter ID harus berupa angka');
-            
-
             // Cek apakah course dengan id tersebut ada
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = await prisma.course.findUnique({
                 where: {
                     id: courseId,
                 }
             });
 
-            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
-
             // Cek apakah chapter dengan id tersebut ada di dalam course
-            const checkChapter = await prisma.chapter.findUnique({
+            let checkChapter = await prisma.chapter.findUnique({
                 where: {
                     id,
                 },
@@ -267,33 +274,29 @@ module.exports = {
                 }
             });
 
+
+
+            //run query concurrently
+            [checkCourse,checkChapter] = await Promise.all([checkCourse,checkChapter]);
+
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
             if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter dengan id tersebut berasal dari course yang berbeda');
 
-            // Dapatkan data update dari body request
-            let { title, isPremium, number } = req.body;
-
-            if (!title || !isPremium || !number) throw new BadRequestError('isi semua kolom');
-            if (isNaN(Number(number))) throw new BadRequestError('number harus berupa angka');
-            number = Number(number);
-
-            if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError('isPremium harus 1 / 0');
-
-            isPremium = isPremium == '1' ? true : false;
 
             // validasi number apabila sudah digunakan
-            const checkChapterNumber = await prisma.chapter.findMany({
+            let checkChapterNumber = await prisma.chapter.findMany({
                 where: {
                     number,
                     courseId,
                 },
             });
-
+            
             if (checkChapterNumber.length > 0 && checkChapter.number !== number) throw new BadRequestError('Chapter dengan nomor tersebut sudah digunakan');
-
+            
 
             // Update chapter berdasarkan chapterId
-            const updatedChapter = await prisma.chapter.update({
+            let updatedChapter = await prisma.chapter.update({
                 where: {
                     id,
                 },
@@ -320,7 +323,7 @@ module.exports = {
                 }
 
             });
-
+            
             res.status(201).json({
                 success: true,
                 message: 'Berhasil update chapter',
@@ -340,15 +343,13 @@ module.exports = {
             if (isNaN(courseId) || isNaN(id)) throw new BadRequestError('Course ID dan Chapter ID harus berupa angka');
           
 
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = prisma.course.findUnique({
                 where: {
                     id: courseId,
                 },
             });
 
-            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
-
-            const checkChapter = await prisma.chapter.findUnique({
+            let checkChapter = prisma.chapter.findUnique({
                 where: {
                     id,
                 },
@@ -370,6 +371,11 @@ module.exports = {
                 }
             });
 
+            //run query concurrently
+            [checkCourse,checkChapter] = await Promise.all([checkCourse,checkChapter]);
+
+
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
             if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter dengan id tersebut berasal dari course yang berbeda');
             
