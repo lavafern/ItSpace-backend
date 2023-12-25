@@ -112,19 +112,21 @@ module.exports = {
 
     getAllCourse : async (req,res,next) => {
         try {
-            let {category,level,ispremium,page,limit,se} = req.query;
+            let {category,level,ispremium,page,limit,se,order} = req.query;
             page = page ? Number(page) : 1;
             limit = limit ? Number(limit) : 10;
 
             const filters = getAllCourseFilter(ispremium,level,category);
+            const orderBy = order === 'popularity'? [
+                {enrollment : {
+                    _count : 'desc'
+                }}
+            ]  :  [ { id : 'desc'}];
 
             let courses = await prisma.course.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
-                // TODO : buat sorting berdasarkan banyak popularity (enroll)
-                orderBy : [
-                    { id : 'desc'}
-                ],
+                orderBy : orderBy,
                 where : {
                     title : {
                         contains : se,
