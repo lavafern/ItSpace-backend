@@ -29,19 +29,19 @@ module.exports = {
                 }
             });
 
+            [user,checkCourse] = await Promise.all([user,checkCourse]);
 
+            if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
+            if (!checkCourse) throw new BadRequestError('CourseId tidak valid');
+ 
             // checks if enrollment already exist
-            let checkEnrollment = prisma.enrollment.findMany({
+            let checkEnrollment = await prisma.enrollment.findMany({
                 where : {
                     courseId : courseId,
                     authorId : userid
                 }
             });
-
-            [user,checkCourse,checkEnrollment] = await Promise.all([user,checkCourse,checkEnrollment]);
-
-            if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
-            if (!checkCourse) throw new BadRequestError('CourseId tidak valid');
+            
             if (checkEnrollment.length > 0)  throw new BadRequestError('Anda telah mendaftar di course ini');
             // chekcs if enrollment premium
             if (checkCourse.isPremium) throw new CourseNotPurchasedError('Anda harus membeli course premium');
@@ -118,8 +118,19 @@ module.exports = {
             const orderBy = order === 'popularity' ? [{enrollment : {
                 _count : 'desc'
             }}] : order === 'newest' ? [ { id : 'desc'}] : undefined;
-        
-            let courses = await prisma.course.findMany({
+            
+            let couresCount = prisma.course.findMany({
+                where : {
+                    OR : getEnrolledCourseId,
+                    title : {
+                        contains : se,
+                        mode : 'insensitive'
+                    },
+                    AND : filters
+                }
+            });
+
+            let courses = prisma.course.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
                 orderBy : orderBy,
@@ -204,15 +215,16 @@ module.exports = {
 
             });
 
+            [courses,couresCount] = await Promise.all([courses,couresCount]);
+
+            couresCount = await couresCount.length;
             
             // rating section
             const courseIds = courses.map((course) => {
                 return {courseId : course.id};
             });
 
-            console.log(courseIds);
-
-            const aggregation = await prisma.rating.groupBy({
+            let aggregation = prisma.rating.groupBy({
                 by : 'courseId',
                 _avg : {
                     rate : true
@@ -225,7 +237,9 @@ module.exports = {
             console.log(aggregation);
 
             // sumduration section
-            const sumDurationByCourse = await sumDurationCourse();
+            let sumDurationByCourse = sumDurationCourse();
+
+            [aggregation,sumDurationByCourse] = await Promise.all([aggregation,sumDurationByCourse]);
 
             /// map rating and duration into course
             courses = courses.map((course) => {
@@ -256,7 +270,7 @@ module.exports = {
                 }
             }) : courses;
 
-            const pagination = coursePagination(req,null,page,limit,category,level,ispremium);
+            const pagination = coursePagination(req,couresCount,page,limit,category,level,ispremium,order,se);
         
             const result = {
                 pagination,

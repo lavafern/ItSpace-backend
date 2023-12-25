@@ -16,23 +16,34 @@ module.exports = {
             courseId = Number(courseId);
             rating = Number(rating);
 
-            const checkEnrollment = await prisma.enrollment.findMany({
+            const checkCourse = await prisma.course.findUnique({
+                where : {
+                    id : courseId
+                }
+            });
+
+            if (!checkCourse) throw new BadRequestError('Courseid tidak valid');
+
+            let checkEnrollment = prisma.enrollment.findMany({
                 where : {
                     authorId : userId,
                     courseId : courseId
                 }
             });
 
+
+
+            let checkRating = prisma.rating.findMany({
+                where : {
+                    authorId : userId,
+                    courseId : courseId
+                }
+            });
+
+            [checkEnrollment,checkRating] = await Promise.all([checkEnrollment,checkRating]);
+
+            // checks if user already enrrol this course
             if (checkEnrollment.length < 1 ) throw new CourseNotPurchasedError('Kamu harus daftar course ini untuk memberi rating');
-
-
-            const checkRating = await prisma.rating.findMany({
-                where : {
-                    authorId : userId,
-                    courseId : courseId
-                }
-            });
-
             // checks if rating already exist, if not exist id is -1 to trigger create
             const ratingId = checkRating.length < 1 ? -1 : checkRating[0].id;
 
@@ -86,7 +97,7 @@ module.exports = {
             id = Number(id);
 
             ///checks if rating is exist
-            const ratingData = await prisma.rating.findMany({
+            const ratingData = await prisma.rating.findUnique({
                 where : {
                     id
                 }

@@ -12,10 +12,10 @@ module.exports = {
             limit = limit ? Number(limit) : 10;
 
 
-            const userCount = await prisma.user.count();
+            let userCount = prisma.user.count();
 
 
-            let users = await prisma.user.findMany({
+            let users = prisma.user.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
                 select : {
@@ -33,6 +33,8 @@ module.exports = {
                 }
                
             });
+
+            [users,userCount] = await Promise.all([users,userCount]);
 
             const pagination = userPagination(req,userCount,page,limit);
 
@@ -96,21 +98,18 @@ module.exports = {
     updateProfile : async (req,res,next) => {
         try {
             let {id} = req.params;
-            if (!id) throw new InternalServerError('Id tidak valid');
+            if (!id) throw new BadRequestError('Id tidak valid');
             id = Number(id);
-            if (isNaN(id)) throw new InternalServerError('Id tidak valid');
-
+            if (isNaN(id)) throw new BadRequestError('Id tidak valid');
 
             if (id !== req.user.id) throw new ForbiddenError('Anda tidak punya akses kesini');
-            
-           
            
             let {email,name,phoneNumber,country,city} = req.body;
 
             if (!email)  throw new BadRequestError('Email wajib di isi');
             if (!name)  throw new BadRequestError('Nama wajib di isi');
             if (phoneNumber) {
-                if (isNaN(phoneNumber)) throw new BadRequestError('Nomor telepon harus angka');
+                if (isNaN(Number(phoneNumber))) throw new BadRequestError('Nomor telepon harus angka');
             }
 
             //check user exist

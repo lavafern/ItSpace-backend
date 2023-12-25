@@ -218,7 +218,7 @@ module.exports = {
                 return course;
             });
 
-            const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium,order);
+            const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium,order,se);
 
             const result = {
                 pagination,

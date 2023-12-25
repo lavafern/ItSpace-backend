@@ -21,16 +21,15 @@ module.exports = {
             chapterId = Number(chapterId);
 
             //cek jika course id ada
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = prisma.course.findUnique({
                 where: {
                     id: courseId,
                 },
             });
 
-            if (!checkCourse)throw new NotFoundError('Course dengan id tersebut tidak ada');
 
             // cek jika chapterId ada
-            const checkChapter = await prisma.chapter.findUnique({
+            let checkChapter = prisma.chapter.findUnique({
                 where: {
                     id: chapterId,
                 },
@@ -39,9 +38,10 @@ module.exports = {
                 }
             });
 
+            [checkCourse,checkChapter] = await Promise.all([checkCourse,checkChapter]);
 
+            if (!checkCourse)throw new NotFoundError('Course dengan id tersebut tidak ada');
             if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
-    
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter ini bukan berasal dari course ini');
 
             // validasi number apabila sudah digunakan
@@ -102,16 +102,14 @@ module.exports = {
             courseId = Number(courseId);
             chapterId = Number(chapterId);
 
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = prisma.course.findUnique({
                 where: {
                     id: courseId,
                 },
             });
 
-            if (!checkCourse)throw new NotFoundError('Course dengan id tersebut tidak ada');
-
             // Mengasumsikan ada model video dengan kolom: id, title, description, url, duration
-            const checkChapter = await prisma.chapter.findUnique({
+            let checkChapter = prisma.chapter.findUnique({
                 where: {
                     id: chapterId,
                 },
@@ -120,7 +118,9 @@ module.exports = {
                 }
             });
 
+            [checkCourse,checkChapter] = await Promise.all([checkCourse,checkChapter]);
 
+            if (!checkCourse)throw new NotFoundError('Course dengan id tersebut tidak ada');
             if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter ini bukan berasal dari course ini');
 
@@ -162,7 +162,7 @@ module.exports = {
                 },
             });
 
-            const checkChapterTask =prisma.chapter.findUnique({
+            const checkChapterTask = prisma.chapter.findUnique({
                 where : {
                     id: chapterId,
                 },
@@ -255,25 +255,23 @@ module.exports = {
             chapterId = Number(chapterId);
 
 
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse =  prisma.course.findUnique({
                 where: {
                     id: courseId,
                 },
             });
 
-            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
           
 
-            const checkChapter = await prisma.chapter.findUnique({
+            let checkChapter =  prisma.chapter.findUnique({
                 where: {
                     id: chapterId,
                 },
             });
     
-            if (!checkChapter)  throw new NotFoundError('Chapter dengan id tersebut tidak ada');
     
             
-            const checkVideo = await prisma.video.findUnique({
+            let checkVideo =  prisma.video.findUnique({
                 where: {
                     id: id,
                 },
@@ -304,6 +302,11 @@ module.exports = {
                     },
                 },
             });
+
+            [checkCourse,checkChapter,checkVideo] = await Promise.all([checkCourse,checkChapter,checkVideo]);
+
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
+            if (!checkChapter)  throw new NotFoundError('Chapter dengan id tersebut tidak ada');
 
             if (!checkVideo) throw new NotFoundError('Video dengan id tersebut tidak ada');
             if (checkVideo.chapter.id !== chapterId) throw new BadRequestError('Video dengan id tersebut bukan berasal dari chapter ini');
@@ -371,26 +374,24 @@ module.exports = {
             courseId = Number(courseId);
             chapterId = Number(chapterId);
 
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = prisma.course.findUnique({
                 where: {
                     id: courseId,
                 },
             });
 
-            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
           
 
-            const checkChapter = await prisma.chapter.findUnique({
+            let checkChapter = prisma.chapter.findUnique({
                 where: {
                     id: chapterId,
                 },
             });
     
-            if (!checkChapter)  throw new NotFoundError('Chapter dengan id tersebut tidak ada');
     
 
     
-            const checkVideo = await prisma.video.findUnique({
+            let checkVideo = prisma.video.findUnique({
                 where: {
                     id: id,
                 },
@@ -420,7 +421,13 @@ module.exports = {
                     },
                 },
             });
-    
+
+            [checkCourse,checkChapter,checkVideo] = await Promise.all([checkCourse,checkChapter,checkVideo]);
+
+            
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
+            if (!checkChapter)  throw new NotFoundError('Chapter dengan id tersebut tidak ada');
+
             if (!checkVideo) throw new NotFoundError('Video dengan ID tersebut tidak ditemukan');
             if (checkVideo.chapter.id !== chapterId) throw new BadRequestError('Video dengan id tersebut bukan berasal dari chapter ini');
             if (checkVideo.chapter.course.id !== courseId) throw new BadRequestError('Video dengan id tersebut bukan berasal dari courser ini');

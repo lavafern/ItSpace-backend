@@ -149,11 +149,13 @@ module.exports = {
 
             courseId = Number(courseId);
 
-            let checkCourse = await prisma.course.findUnique({
+            const checkCourse = await prisma.course.findUnique({
                 where: {
                     id: courseId,
                 }
             });
+
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
 
             let chapters = await prisma.chapter.findMany({
                 where: {
@@ -197,9 +199,7 @@ module.exports = {
                 }
             });
 
-            [checkCourse,chapters] = await Promise.all([checkCourse,chapters]);
 
-            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
 
             //summarizing duration of each chapters
             const chapterIds = chapters.map(chapter => {
@@ -274,21 +274,24 @@ module.exports = {
                 }
             });
 
+
+
+            //run query concurrently
+            [checkCourse,checkChapter] = await Promise.all([checkCourse,checkChapter]);
+
+            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
+            if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
+            if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter dengan id tersebut berasal dari course yang berbeda');
+
+
             // validasi number apabila sudah digunakan
-            let checkChapterNumber = prisma.chapter.findMany({
+            let checkChapterNumber = await prisma.chapter.findMany({
                 where: {
                     number,
                     courseId,
                 },
             });
-
-
-            //run query concurrently
-            [checkCourse,checkChapter,checkChapterNumber] = await Promise.all([checkCourse,checkChapter,checkChapterNumber]);
-
-            if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
-            if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
-            if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter dengan id tersebut berasal dari course yang berbeda');
+            
             if (checkChapterNumber.length > 0 && checkChapter.number !== number) throw new BadRequestError('Chapter dengan nomor tersebut sudah digunakan');
             
 

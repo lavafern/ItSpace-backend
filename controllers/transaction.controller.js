@@ -193,7 +193,8 @@ module.exports = {
             });
 
             [transactions,transactionsCount] = await Promise.all([transactions,transactionsCount]);
-
+            transactionsCount = transactionsCount.length;
+            
             const pagination = transactionsPagination(req,transactionsCount,page,limit,status,courseCode,method,from,to);
 
             const result = {
