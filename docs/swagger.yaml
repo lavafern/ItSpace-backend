@@ -128,6 +128,13 @@ paths:
           schema:
             type: string
           description: Search filter by its title
+          example: javascript
+        - in: query
+          name: order
+          schema:
+            type: string
+          description: order course by 
+          example: popularity
         - in: query
           name: page
           example: 1
