@@ -124,7 +124,17 @@ module.exports = {
                     _count : 'desc'
                 }}
             ]  :  [ { id : 'desc'}];
-            
+
+            let coursesCount = prisma.course.findMany({
+                where : {
+                    title : {
+                        contains : se,
+                        mode : 'insensitive'
+                    },
+                    AND : filters
+                }
+            });
+
             let courses = prisma.course.findMany({
                 skip : (page - 1) * limit,
                 take : limit,
@@ -186,7 +196,9 @@ module.exports = {
             let sumDurationByCourse = sumDurationCourse();
 
             /// run query concurrently
-            [courses,aggregation,sumDurationByCourse] = await Promise.all([courses,aggregation,sumDurationByCourse]);
+            [courses,aggregation,sumDurationByCourse,coursesCount] = await Promise.all([courses,aggregation,sumDurationByCourse,coursesCount]);
+            console.log(coursesCount);
+            coursesCount = coursesCount.length;
 
             /// map rating and duration into course
             courses = courses.map((course) => {
@@ -206,7 +218,7 @@ module.exports = {
                 return course;
             });
 
-            const pagination = coursePagination(req,null,page,limit,category,level,ispremium);
+            const pagination = coursePagination(req,coursesCount,page,limit,category,level,ispremium,order);
 
             const result = {
                 pagination,
@@ -257,9 +269,7 @@ module.exports = {
                 });
             }
 
-
-            // TODO : add chapters, videos, rating, progress etc.
-            let courseDetail = await prisma.course.findUnique({
+            let courseDetail = prisma.course.findUnique({
                 where : {
                     id
                 },
@@ -298,7 +308,7 @@ module.exports = {
                 }
             });
 
-            const aggregation = await prisma.rating.groupBy({
+            let aggregation = prisma.rating.groupBy({
                 by : 'courseId',
                 _avg : {
                     rate : true
@@ -308,6 +318,8 @@ module.exports = {
                 }
             });
 
+            //run query concurrently
+            [courseDetail,aggregation] = await Promise.all([courseDetail,aggregation]);
 
             courseDetail.rate = aggregation.length > 0 ? aggregation[0]._avg.rate : null;
 

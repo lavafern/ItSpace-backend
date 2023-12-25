@@ -8,6 +8,7 @@ module.exports = {
             _sum : {
                 duration : true
             },
+            
         });
 
 

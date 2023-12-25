@@ -15,33 +15,34 @@ module.exports = {
             if (!courseId) throw new BadRequestError('Tolong masukan courseId');
 
             // checks if user is verified
-            const user = await prisma.user.findUnique({
+            let user = prisma.user.findUnique({
                 where : {
                     id : userid
                 }
             });
 
-            if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
 
             // checks if course exist
-            const checkCourse = await prisma.course.findUnique({
+            let checkCourse = prisma.course.findUnique({
                 where : {
                     id : courseId
                 }
             });
 
-            if (!checkCourse) throw new BadRequestError('CourseId tidak valid');
 
             // checks if enrollment already exist
-            const checkEnrollment = await prisma.enrollment.findMany({
+            let checkEnrollment = prisma.enrollment.findMany({
                 where : {
                     courseId : courseId,
                     authorId : userid
                 }
             });
 
-            if (checkEnrollment.length > 0)  throw new BadRequestError('Anda telah mendaftar di course ini');
+            [user,checkCourse,checkEnrollment] = await Promise.all([user,checkCourse,checkEnrollment]);
 
+            if (!(user.verified)) throw new UserNotVerifiedError('Akun belum di verifikasi');
+            if (!checkCourse) throw new BadRequestError('CourseId tidak valid');
+            if (checkEnrollment.length > 0)  throw new BadRequestError('Anda telah mendaftar di course ini');
             // chekcs if enrollment premium
             if (checkCourse.isPremium) throw new CourseNotPurchasedError('Anda harus membeli course premium');
 
@@ -113,6 +114,7 @@ module.exports = {
             
             const filters = getAllCourseFilter(ispremium,level,category);
 
+            /// order by : default : lastAccessed, popularity : count of how many enrolled, newest : newest course
             const orderBy = order === 'popularity' ? [{enrollment : {
                 _count : 'desc'
             }}] : order === 'newest' ? [ { id : 'desc'}] : undefined;
@@ -202,14 +204,27 @@ module.exports = {
 
             });
 
-            //count rating
+            
+            // rating section
+            const courseIds = courses.map((course) => {
+                return {courseId : course.id};
+            });
+
+            console.log(courseIds);
+
             const aggregation = await prisma.rating.groupBy({
                 by : 'courseId',
                 _avg : {
                     rate : true
+                },
+                where : {
+                    OR : courseIds
                 }
             });
 
+            console.log(aggregation);
+
+            // sumduration section
             const sumDurationByCourse = await sumDurationCourse();
 
             /// map rating and duration into course
