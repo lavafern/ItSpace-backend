@@ -39,10 +39,14 @@ paths:
     post:
       tags:
         - courses
-      description: create new course - [DONE]
+      description: | 
+        * This endpoint serves to create a new course. 
+        * Utilize multipart/form-data as the request body to enable image uploads.
+        * iSpremium body only accept 1 or 0. 1 means true and 0 means false.
+        * Restricted acces for admin only
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
                 $ref: '#/components/schemas/updateCoursesReq'
 
@@ -91,43 +95,51 @@ paths:
     get:
       tags:
         - courses
-      description: get all course [DONE]
+      description: |
+        * This endpoint serves to view all course
+        * Have search, filter and pagination feature
       parameters:
         - in: query
           name: ispremium
           example: 1
           schema:
             type: string
-          description: 1 = premium, 0 = not premium
+          description: |
+            * Filter course by type
+            * 1 = premium / 0 = not premium
         - in: query
           name: category
           example : backend,frontend
           schema:
             type: string
-          description: filter course by categories
+          description: |
+            * Filter course by categories
+            * You can put more than one value
         - in: query
           name: level
           example: BEGINNER,INTERMEDIATE,ADVANCED
           schema:
             type: string
-          description: filter course by level
+          description: |
+            * Filter course by difficulty level
+            * You can put more than one value
         - in: query
           name: se
           schema:
             type: string
-          description: search title of course
+          description: Search filter by its title
         - in: query
           name: page
           example: 1
           schema:
             type: integer
-          description: the page you want to access
+          description: For pagination feature, select page you want to access
         - in: query
           name: limit
           example: 10
           schema:
             type: integer
-          description: The numbers of items to return
+          description: For pagination feature, select the number of items you want to return
       responses:
         '200':
           description: Successful operation
@@ -181,7 +193,9 @@ paths:
     get:
       tags:
         - courses
-      description: get specific course [not copleted]
+      description: |
+        * This endpoint serves to view course detail
+        * Restricted content for user that have not enroll the course, groupUrl will not sent to the response
       parameters:
         - in: path
           name: courseId
@@ -234,7 +248,13 @@ paths:
     put:
       tags:
         - courses
-      description: update course detail [DONE]
+      description: |
+        * This endpoint serves to update a course
+        * Utilize multipart/form-data as the request body to enable image uploads.
+        * This endpoint serves to create a new course.
+          Utilize multipart/form-data as the request body to enable image uploads.
+          iSpremium body only accept 1 or 0. 1 means true and 0 means false.
+        * Restricted acces for admin only
       parameters:
         - in: path
           name: courseId
@@ -244,7 +264,7 @@ paths:
           description: The ID of the course to get.
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
                 $ref: '#/components/schemas/updateCoursesReq'
 
@@ -502,7 +522,7 @@ paths:
     post:
       tags:
         - auth
-      description: User login [DONE]
+      description: User logout [DONE]
 
       responses:
         '201':
@@ -3699,13 +3719,6 @@ components:
         rating:
           type: integer
           example: 4
-        progress:
-          type: integer
-          example: 4
-        chapter:
-          type: array
-          items:
-            example : [{"id": 1,"title" : "pendahuluan", "duration" : "20","video" : [ {"id": 3, "title": "Judul Video 3"}, {"id": 4, "title": "Judul Video 4"}]},{"id": 2,"title" : "pemrograman dasar", "duration" : "20","video" : [ {"id": 1, "title": "Judul Video 1"}, {"id": 1, "title": "Judul Video 1"}]}]
     Courses:
       type: object
       properties:
@@ -3768,9 +3781,7 @@ components:
           type: string
           example: "www.url.com"
         image:
-            type: string
             format: binary
-            example : "upload thumbnail image here"
         mentorEmail:
            type: array
            items:
@@ -3795,17 +3806,17 @@ components:
           type: string
           example: Backend dengan expressjs
         price:
-           type: integer
-           example: 1000
+           type: string
+           example: 9999999
         level:
           type: string
           example: BEGINNER
         isPremium:
           type: boolean
           example: true
-        groupUrl:
-         type: string
-         example: www.url.com
+        description:
+          type: string
+          example: Course ini mengajarkan kamu tentang backend
         thumbnailUrl:
          type: string
          example: www.url.com
@@ -3834,11 +3845,18 @@ components:
                       name:
                         type: string
                         example: john doe
-                  
-              
-                  
-          
-          
+        _count:
+          type: object
+          properties:
+            chapter:
+              type: integer
+              example: 4   
+        duration:
+          type : integer
+          example: 4
+        rate: 
+          type : integer
+          example: 4
     Pagination:
       title: Pagination
       type: object
@@ -3902,9 +3920,15 @@ components:
       title: Register response
       type: object
       properties:
+        id:
+          type: integer
+          example : 1
         email:
          type: string
          example: example@gmail.com
+        verified:
+         type: boolean
+         example: true
         profile:
           type: object
           properties:

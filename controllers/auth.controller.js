@@ -53,7 +53,12 @@ module.exports = {
             if (password.length < 8 || password.length > 14 ) throw new BadRequestError('Harap masukan password 8 - 14 karakter');
             if (password !== passwordValidation ) throw new BadRequestError('Validasi password salah');
             if (name.length > 35)  throw new BadRequestError('Harap masukan nama tidak lebih dari 35 karakter');
-            
+
+
+            const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
+            if (!(emailRegex.test(email))) throw new BadRequestError('Email tidak valid');
+
             //checks if email already used
             const checkEmail = await prisma.user.findUnique({
                 where : {

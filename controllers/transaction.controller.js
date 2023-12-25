@@ -160,6 +160,7 @@ module.exports = {
                     payDone : true,
                     payDate : true,
                     paymentMethod : true,
+                    paymentCode : true,
                     course : {
                         select : {
                             id : true,
@@ -214,6 +215,7 @@ module.exports = {
                     payDate : true,
                     paymentMethod : true,
                     authorId : true,
+                    paymentCode : true,
                     course : {
                         select : {
                             id : true,
@@ -424,6 +426,7 @@ module.exports = {
                     payDate : true,
                     paymentMethod : true,
                     courseId : true,
+                    paymentCode : true,
                     course : {
                         select : {
                             id : true,
@@ -495,10 +498,6 @@ module.exports = {
                 return transaction;
             });
             
-
-            console.log(transactions);
-
-
             const pagination = transactionsPagination(req,null,page,limit,status,courseCode,method,from,to);
 
             const result = {
