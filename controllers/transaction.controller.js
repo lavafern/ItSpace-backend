@@ -178,6 +178,16 @@ module.exports = {
                     payDate : true,
                     paymentMethod : true,
                     paymentCode : true,
+                    author : {
+                        select : {
+                            id : true,
+                            profile : {
+                                select : {
+                                    name : true
+                                }
+                            }
+                        }
+                    },
                     course : {
                         select : {
                             id : true,
