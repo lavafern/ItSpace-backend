@@ -152,9 +152,9 @@ module.exports = {
             });
 
             let transactions = prisma.transaction.findMany({
-                orderBy : [
-                    { id : 'desc'}
-                ],
+                orderBy : {
+                    id : 'desc'
+                },
                 skip : (page - 1) * limit,
                 take : limit,
                 where : {
@@ -207,6 +207,7 @@ module.exports = {
             
             const pagination = transactionsPagination(req,transactionsCount,page,limit,status,courseCode,method,from,to);
 
+            console.log(transactions);
             const result = {
                 pagination,
                 transactions
