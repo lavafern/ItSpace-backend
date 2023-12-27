@@ -31,6 +31,7 @@ module.exports = {
             });
 
             if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
+            if (!(checkCourse.isPremium) && isPremium) throw new BadRequestError('Course gratis tidak bisa memiliki chapter premium');
 
             // validasi number apabila sudah digunakan
             const checkChapter = await prisma.chapter.findMany({
@@ -282,6 +283,7 @@ module.exports = {
             if (!checkCourse) throw new NotFoundError('Course dengan id tersebut tidak ada');
             if (!checkChapter) throw new NotFoundError('Chapter dengan id tersebut tidak ada');
             if (checkChapter.course.id !== courseId) throw new BadRequestError('Chapter dengan id tersebut berasal dari course yang berbeda');
+            if (!(checkCourse.isPremium) && isPremium) throw new BadRequestError('Course gratis tidak bisa memiliki chapter premium');
 
 
             // validasi number apabila sudah digunakan
