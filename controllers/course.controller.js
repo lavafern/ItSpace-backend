@@ -287,6 +287,7 @@ module.exports = {
                         select : {
                             author : {
                                 select : {
+                                    email : true,
                                     profile : {
                                         select : {
                                             name : true
