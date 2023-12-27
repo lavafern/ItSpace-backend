@@ -398,6 +398,19 @@ module.exports = {
                 }
             });
 
+
+            //menambahkan notifikasi telah melakukan pembelian
+            await prisma.notification.create({
+                data : {
+                    authorId : id,
+                    created_at : new Date(),
+                    is_read : false,
+                    type : 'Ubah password',
+                    message : 'password akun Anda telah berhasil diubah. Ini adalah langkah keamanan yang baik untuk melindungi informasi akun Anda.',
+                }
+            });
+
+
             delete updatePassword.password;
             delete updatePassword.verified;
             delete updatePassword.googleId;
