@@ -1,11 +1,12 @@
 module.exports = {
     
-    coursePagination : (req, count, page, limit, category, level, ispremium, order) => {
+    coursePagination : (req, count, page, limit, category, level, ispremium, order, se) => {
         category = category ? 'category='+category : '';
         level = level ? '&level='+level : '';
         ispremium = ispremium ? '&ispremium='+ispremium : '';
         order = order ? '&order='+order : '';
-        let path = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}?${category}${level}${ispremium}${order}`;
+        se = se ? '&se='+se : '';
+        let path = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}?${category}${level}${ispremium}${order}${se}`;
         let links = {};
         if (count - page * limit < 1 ) {
             links.next = '';
