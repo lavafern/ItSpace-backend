@@ -14,7 +14,7 @@ tags:
   - name: courses
     description: Everything about courses
   - name : auth
-    description: Register,login and logout
+    description: Everything about authentication
   - name : users
     description: Everything about users
   - name : categories
@@ -381,6 +381,7 @@ paths:
       description: |
         * This endpoint serves to register new user.
         * Utilize multipart/form-data as the request body to enable image uploads.
+        * Otp will sent to email with 10 minutes expiration.
       requestBody:
         content:
           multipart/form-data:
@@ -490,6 +491,7 @@ paths:
         - auth
       description: |
         * This endpoint serves to login with google account.
+        * Account will automatically verified if login by this api.
         * Auth token will sent to http-only cookie.
       responses:
         '201':
@@ -537,8 +539,9 @@ paths:
     post:
       tags:
         - auth
-      description: User logout [DONE]
-
+      description: |
+        * This endpoint serves to logout.
+        * Not valid token will sent to client cookie.
       responses:
         '201':
           description: Successful operation
@@ -583,10 +586,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse500' 
   /auth/resend-otp/{email}:
-    get:
+    post:
       tags:
         - auth
-      description: resend otp to email, for account verification [DONE]
+      description: |
+        * This endpoint serves to send new otp to your email to verifying your account.
+        * Otp will expired after 10 minutes.
       parameters:
       - in: path
         name: email
@@ -638,78 +643,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse500' 
-  /auth/verify-otp:
-    put:
-      tags:
-        - auth
-      description: verify your otp that has sent to your email [DONE]
-      
-      responses:
-        '201':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/basicResponse'
-                  - type: object
-                    properties:
-                      data: 
-                        type: object
-                        properties:
-                          id:
-                            type: integer
-                            example: 1
-                          email:
-                            type: string
-                            example: example@gmail.com
-                          verified:
-                            type: boolean
-                            example: true
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse400'
-        '401':
-          description: Unauthenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-        '404':
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-        '500':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500' 
   /auth/reset-password:
     get:
       tags:
         - auth
-      description: send reset password form to your email [DONE]
-      requestBody:
-       content:
-        application/json:
+      description: |
+        * This endpoint serves to send reset password link to your email.
+        * The link will expired after 10 minutes.
+      parameters:
+        - in: path
+          name: email
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-                example: example@gmail.com
+            type: string
+            example: example@gmail.com
+          required: true
       responses:
         '201':
           description: Successful operation
@@ -753,12 +700,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse500' 
+                $ref: '#/components/schemas/ErrorResponse500'
   /auth/reset-password/{token}:
     put:
       tags:
         - auth
-      description: reset user password [DONE]
+      description: |
+        * This endpoint serves to reset your password.
       parameters:
           - in: path
             name: token
@@ -827,12 +775,88 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+  /auth/verify-otp:
+    put:
+      tags:
+        - auth
+      description: |
+        * This endpoint serves to verify otp.
+      requestBody:
+        content:
+         application/json:
+           schema:
+             type: object
+             properties:
+               email:
+                 type: string
+                 example: example@gmail.com
+               otp:
+                 type: string
+                 example: 123456
+             required: 
+             - email
+             - otp
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data: 
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          email:
+                            type: string
+                            example: example@gmail.com
+                          verified:
+                            type: boolean
+                            example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ErrorResponse500' 
+   
+   
   /auth/change-password:
     put:
       tags:
         - auth
-      description: reset user password [DONE]
+      description: |
+        * This endpoint serves to change your password.
       requestBody:
        content:
         application/json:
@@ -903,7 +927,8 @@ paths:
     get:
       tags:
         - users
-      description: get all user [DONE]
+      description: |
+        * This endpoint serves to list all users.
       responses:
         '201':
           description: Successful operation
@@ -955,7 +980,8 @@ paths:
             schema:
               type: integer
             required: true
-        description: get user detail [DONE]
+        description: |
+          * This endpoint serves to show user detail.
         responses:
           '201':
             description: Successful operation
@@ -1043,7 +1069,7 @@ paths:
             required: true
         requestBody:
           content:
-           application/json:
+           multipart/form-data:
              schema:
                type: object
                properties:
@@ -1060,9 +1086,13 @@ paths:
                    type: string
                    example: "Indonesia"
                  image:
-                    type: string
-                    example: upload profile picture here
-        description: Update profile [DONE]
+                    format: binary
+               required:
+                 - "name"
+        description: |
+          * This endpoint serves to edit user profile.
+          * Utilize multipart/form-data as the request body to enable image uploads.
+          * Restricted acces to account owner only
         responses:
           '201':
             description: Successful operation
@@ -1136,7 +1166,9 @@ paths:
               schema:
                 type: integer
               required: true
-          description: delete profile [DONE]
+          description: |
+            * This endpoint serves to delete user.
+            * Restricted acces to account owner only
           responses:
             '201':
               description: Successful operation
@@ -1193,7 +1225,9 @@ paths:
     post:
       tags:
         - categories
-      description: create new course
+      description: |
+        * This endpoint serves to create a new category.
+        * Restricted acces for admin only.
       requestBody:
         content:
           application/json:
@@ -1244,7 +1278,8 @@ paths:
     get:
       tags:
         - categories
-      description: get all categories
+      description: |
+        * This endpoint serves to get all categories.
       responses:
         '201':
           description: Successful operation
@@ -1294,7 +1329,9 @@ paths:
     put:
       tags:
         - categories
-      description: update category
+      description: |
+        * This endpoint serves to edit category.
+        * Restricted acces for admin only.
       parameters:
       - in: path
         name: categoryId
@@ -1351,7 +1388,9 @@ paths:
     delete:
       tags:
         - categories
-      description: delete category
+      description: |
+        * This endpoint serves to delete category.
+        * Restricted acces for admin only.
       parameters:
       - in: path
         name: categoryId
@@ -1405,7 +1444,9 @@ paths:
     post:
       tags:
         - transactions
-      description: create new course
+      description: |
+        * This endpoint serves to buy paid course (make transaction).
+        * paymentMethod: only accept : VIRTUAL_ACCOUNT / E_WALLET / GERAI_RETAIL.
       requestBody:
         content:
           application/json:
@@ -1417,7 +1458,7 @@ paths:
                   example : 1
                 paymentMethod: 
                   type: string
-                  example: cc
+                  example: VIRTUAL_ACCOUNT
       responses:
         '201':
           description: Successful operation
@@ -1448,7 +1489,7 @@ paths:
                            example: null
                           paymentMethod:
                            type: string
-                           example: "cc"
+                           example: "VIRTUAL_ACCOUNT"
                           course:
                            type: object
                            properties:
@@ -1504,7 +1545,9 @@ paths:
     get:
       tags:
         - transactions
-      description: create new course
+      description:  |
+        * This endpoint serves to get all transactions.
+        * Restricted access for admin only.
       parameters:
         - in: query
           name: status
@@ -1651,7 +1694,9 @@ paths:
     get:
       tags:
         - transactions
-      description: get transaction detail
+      description: |
+        * This endpoint serves to get all transactions.
+        * Restricted access for admin / author only.
       parameters:
         - in: path
           name: id
@@ -1746,7 +1791,9 @@ paths:
     put:
       tags:
         - transactions
-      description: pay transaction
+      description: |
+        * This endpoint serves to pay transactions.
+        * Restricted access for author only.
       parameters:
       - in: path
         name: id
@@ -1783,7 +1830,7 @@ paths:
                            example: "2023-12-06T19:35:33.128Z"
                           paymentMethod:
                            type: string
-                           example: "cc"
+                           example: "VIRTUAL_ACCOUNT"
                           course:
                            type: object
                            properties:
@@ -1808,7 +1855,9 @@ paths:
     delete:
       tags:
         - transactions
-      description: create new course
+      description: |
+        * This endpoint serves to pay transactions.
+        * Restricted access for author / admin only.
       parameters:
       - in: path
         name: id
@@ -1987,7 +2036,7 @@ paths:
                                
                                paymentMethod:
                                 type: string
-                                example: "cc"
+                                example: "VIRUTAL_ACCOUNT"
                                course:
                                 type: object
                                 properties:
