@@ -29,8 +29,8 @@ module.exports = {
             const refreshToken = await signToken('refresh',userConstruct,JWT_REFRESH_SECRET);
             
             res
-                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
-                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
+                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true, domain : FRONTEND_URL})
+                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true, domain : FRONTEND_URL})
                 .redirect(FRONTEND_URL);
         } catch (err) {
             next(err);
