@@ -144,11 +144,12 @@ module.exports = {
             });
  
             const progressOfCourse = videosOfCourse.filter((videos) => videos._count.progress);
-
+            console.log(videosOfCourse.length);
+            console.log(progressOfCourse.length);
             if (videosOfCourse.length === progressOfCourse.length) {
-                await prisma.enrollment.update({
+                await prisma.enrollment.updateMany({
                     where : {
-                        author : userId,
+                        authorId : userId,
                         courseId : course.id
                     },
                     data : {
@@ -156,15 +157,17 @@ module.exports = {
                     }
                 });
 
-                await prisma.notification.create({
+                const a = await prisma.notification.create({
                     data : {
-                        author : userId,
+                        authorId : userId,
                         created_at : new Date(),
                         is_read : false,
                         type : 'Pencapaian',
                         message : `Selamat! Anda baru saja menyelesaikan kursus ${course.title} di itSpace!, Teruskan semangat belajar Anda!`,
                     }
                 });
+
+                console.log(a);
     
             }
 
