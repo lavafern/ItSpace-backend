@@ -11,7 +11,8 @@ module.exports  = {
             const matchEnrollment = await prisma.enrollment.findMany({
                 where : {
                     NOT : [
-                        {lastAccessed : null}
+                        {lastAccessed : null},
+                        {completed : false}
                     ],
                     lastAccessed : {
                         lte : new Date((new Date().setDate(new Date().getDate() - 3)))

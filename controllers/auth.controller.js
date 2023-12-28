@@ -79,7 +79,6 @@ module.exports = {
             if (!hashedPassword) throw new Error('Gagal mengenkripsi password');
 
             const otp = generateOtp();
-            
 
             const newUser = await prisma.user.create({
                 data : {
@@ -203,12 +202,8 @@ module.exports = {
             });
 
             delete foundUser.password;
-            const accesToken = await signToken('access',foundUser,JWT_SECRET);
-            const refreshToken = await signToken('refresh',foundUser,JWT_REFRESH_SECRET);
 
             res
-                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
-                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
                 .status(201).json({
                     success : true,
                     message : 'successfully verify email',
@@ -402,6 +397,19 @@ module.exports = {
                     password : newHashedPassword
                 }
             });
+
+
+            //menambahkan notifikasi telah melakukan pembelian
+            await prisma.notification.create({
+                data : {
+                    authorId : id,
+                    created_at : new Date(),
+                    is_read : false,
+                    type : 'Ubah password',
+                    message : 'password akun Anda telah berhasil diubah. Ini adalah langkah keamanan yang baik untuk melindungi informasi akun Anda.',
+                }
+            });
+
 
             delete updatePassword.password;
             delete updatePassword.verified;
