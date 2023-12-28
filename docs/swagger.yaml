@@ -1952,7 +1952,9 @@ paths:
     get:
       tags:
         - transactions
-      description: transactions of logged in user
+      description: |
+        * This endpoint serves view transactions of logged in user.
+        * Restricted access for author only.
       parameters:
         - in: query
           name: status
@@ -1968,7 +1970,7 @@ paths:
           description: filter course by course code
         - in: query
           name: method
-          example: cc
+          example: VIRTUAL_ACCOUNT
           schema:
             type: string
           description: filter course payment method
@@ -2093,7 +2095,9 @@ paths:
     post:
       tags:
         - enrollments
-      description: create new enrollment
+      description: |
+        * This endpoint serves to make enrollment to not premium course.
+        * Restricted access for author only..
       requestBody:
         content:
           application/json:
@@ -2143,6 +2147,12 @@ paths:
                               ispremium:
                                 type: boolean
                                 example: false
+                              completed:
+                                type: boolean
+                                example: false
+                              lastAccessed:
+                                type: string
+                                example: null
         '400':
           description: Bad request
           content:
@@ -2177,7 +2187,8 @@ paths:
     get:
       tags:
         - enrollments
-      description: list of enrolled course of logged in user
+      description: |
+        * This endpoint serves to make enrollment to not premium course.
       parameters:
       - in: query
         name: ispremium
