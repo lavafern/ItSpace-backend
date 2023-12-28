@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { prisma } = require('../libs/prismaClient');
-const {JWT_SECRET,JWT_REFRESH_SECRET,JWT_RESETPASSWORD_SECRET,RESET_PASSWORD_URL} = process.env;
+const {JWT_SECRET,JWT_REFRESH_SECRET,JWT_RESETPASSWORD_SECRET,RESET_PASSWORD_URL,FRONTEND_URL} = process.env;
 const {sendEmail} = require('../utils/sendEmail');
 const {otpHtml} = require('../views/templates/emailVerification');
 const {resetPasswordHtml} = require('../views/templates/resetPassword');
@@ -31,11 +31,7 @@ module.exports = {
             res
                 .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
                 .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
-                .status(200).json({
-                    success : true,
-                    message : 'successfully login with google',
-                    data : req.user
-                });
+                .redirect(FRONTEND_URL);
         } catch (err) {
             next(err);
         }
@@ -399,7 +395,7 @@ module.exports = {
             });
 
 
-            //menambahkan notifikasi telah melakukan pembelian
+            //menambahkan notifikasi
             await prisma.notification.create({
                 data : {
                     authorId : id,
