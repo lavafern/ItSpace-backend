@@ -119,6 +119,7 @@ model Enrollment {
   id       Int      @id @default(autoincrement())
   date     DateTime @default(now())
   lastAccessed DateTime?
+  completed Boolean @default(false)
   authorId Int
   courseId Int
   author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)

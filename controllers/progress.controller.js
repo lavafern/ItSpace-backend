@@ -1,4 +1,4 @@
-const { BadRequestError } = require('../errors/customErrors');
+const { BadRequestError, CourseNotPurchasedError } = require('../errors/customErrors');
 const { prisma } = require('../libs/prismaClient');
 
 module.exports = {
@@ -19,6 +19,36 @@ module.exports = {
             });
 
             if (!checkVideo) throw new BadRequestError('VideoId tidak ditemukan');
+
+
+            // find chapterId
+            const chapter = await prisma.chapter.findUnique({
+                where : {
+                    id : checkVideo.chapterId
+                }
+            });
+
+
+            // find courseId
+            const course = await prisma.course.findUnique({
+                where : {
+                    id : chapter.courseId
+                },
+                include : {
+                    chapter : true
+                }
+            });
+
+
+            //check enrollment
+            const checkEnrollment = await prisma.enrollment.findMany({
+                where : {
+                    authorId : userId,
+                    courseId : course.id
+                }
+            });
+
+            if (checkEnrollment.length < 1) throw new CourseNotPurchasedError('Anda harus daftar kelas ini untuk memperi progress');
 
             // checks if progress is already exist
 
@@ -48,6 +78,8 @@ module.exports = {
                     }
                 }
             });
+
+
 
             if (checkProgress.length > 0) {
                 return res.status(200).json({
@@ -84,6 +116,57 @@ module.exports = {
                     }
                 }
             });
+
+
+            // get all chapter Id of all course of this video
+            const chapterIds = course.chapter.map((chapter) => {
+                return {chapterId :chapter.id};
+            });
+
+            // get video count and progress count of this course
+            const videosOfCourse = await prisma.video.findMany({
+                where : {
+                    OR : chapterIds
+                },
+                select : {
+                    id : true,
+                    title : true,
+                    _count : {
+                        select : {
+                            progress : {
+                                where : {
+                                    authorId : userId
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+ 
+            const progressOfCourse = videosOfCourse.filter((videos) => videos._count.progress);
+
+            if (videosOfCourse.length === progressOfCourse.length) {
+                await prisma.enrollment.update({
+                    where : {
+                        author : userId,
+                        courseId : course.id
+                    },
+                    data : {
+                        completed : true
+                    }
+                });
+
+                await prisma.notification.create({
+                    data : {
+                        author : userId,
+                        created_at : new Date(),
+                        is_read : false,
+                        type : 'Pencapaian',
+                        message : `Selamat! Anda baru saja menyelesaikan kursus ${course.title} di itSpace!, Teruskan semangat belajar Anda!`,
+                    }
+                });
+    
+            }
 
             return res.status(201).json({
                 success : true,
