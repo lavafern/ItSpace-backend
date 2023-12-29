@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { prisma } = require('../libs/prismaClient');
-const {JWT_SECRET,JWT_REFRESH_SECRET,JWT_RESETPASSWORD_SECRET,RESET_PASSWORD_URL,FRONTEND_URL} = process.env;
+const {JWT_SECRET,JWT_REFRESH_SECRET,JWT_RESETPASSWORD_SECRET,RESET_PASSWORD_URL,FRONTEND_HOME_URL} = process.env;
 const {sendEmail} = require('../utils/sendEmail');
 const {otpHtml} = require('../views/templates/emailVerification');
 const {resetPasswordHtml} = require('../views/templates/resetPassword');
@@ -29,9 +29,9 @@ module.exports = {
             const refreshToken = await signToken('refresh',userConstruct,JWT_REFRESH_SECRET);
             
             res
-                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true, domain : FRONTEND_URL})
-                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true, domain : FRONTEND_URL})
-                .redirect(FRONTEND_URL);
+                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true, domain : FRONTEND_HOME_URL})
+                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true, domain : FRONTEND_HOME_URL})
+                .redirect(FRONTEND_HOME_URL);
         } catch (err) {
             next(err);
         }
