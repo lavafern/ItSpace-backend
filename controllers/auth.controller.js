@@ -9,6 +9,7 @@ const {BadRequestError,UnauthorizedError,NotFoundError, UserNotVerifiedError} = 
 const imagekit = require('../libs/imagekit');
 const path = require('path');
 const notValidToken = 'ccf5ce427fa3697f09aec480969abe9c0810118a78c4ce92264b3d76e54bc277a8bad331ebb942ba24c2a8680b684ad0cc1765dd84842ed967278883f8f78b16';
+var cookie = require('cookie');
 
 module.exports = {
     LoginWithGoogle : async (req,res,next) => {
@@ -28,8 +29,19 @@ module.exports = {
             const refreshToken = await signToken('refresh',userConstruct,JWT_REFRESH_SECRET);
             
             res
-                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'lax', domain : FRONTEND_HOME_URL})
-                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'lax', domain : FRONTEND_HOME_URL})
+                // .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'lax', domain : FRONTEND_HOME_URL})
+                // .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'lax', domain : FRONTEND_HOME_URL})
+                .setHeader(
+                    'Set-Cookie',
+                    cookie.serialize('XSRF-TOKEN', 'aw', { // XSRF-TOKEN is the name of your cookie
+                        sameSite: 'lax', // lax is important, don't use 'strict' or 'none'
+                        httpOnly: process.env.ENVIRONMENT !== 'development', // must be true in production
+                        path: '/',
+                        secure: process.env.ENVIRONMENT !== 'development', // must be true in production
+                        maxAge: 60 * 60 * 24 * 7 * 52, // 1 year
+                        domain: FRONTEND_HOME_URL, // the period before is important and intentional
+                    })
+                )
                 .redirect(FRONTEND_HOME_URL);
         } catch (err) {
             next(err);
