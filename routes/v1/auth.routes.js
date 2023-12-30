@@ -1,7 +1,7 @@
 const passport = require('../../libs/passport');
 const router = require('express').Router();
 const {restrict, restrictGuest} = require('../../middlewares/authentication.middleware');
-const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, sendResetPassword, resetPassword, changePassword, checkEnrollmentOfCourse} = require('../../controllers/auth.controller');
+const {LoginWithGoogle, register, login, jwtDecode, logout, resendOtp, verifyOtp, sendResetPassword, resetPassword, changePassword, checkEnrollmentOfCourse, googleLogin} = require('../../controllers/auth.controller');
 const {image} = require('../../libs/multer');
 
 router.post('/register',image.single('image'),register);
@@ -14,11 +14,13 @@ router.get('/reset-password/:email',sendResetPassword);
 router.put('/reset-password/:token',resetPassword);
 router.put('/change-password',restrict,changePassword);
 router.get('/check-enrollment/:courseId',restrictGuest,checkEnrollmentOfCourse);
+router.post('/google',googleLogin);
 
 /// login with google routes
-router.get('/google', 
-    passport.authenticate('google', {scope: ['profile','email']})
-);
+// router.get('/google', 
+//     passport.authenticate('google', {scope: ['profile','email']})
+// );
+
  
 router.get('/google/callback', 
     passport.authenticate('google', {failureRedirect : '/auth/redirect', session : false}),
