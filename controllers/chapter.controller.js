@@ -235,6 +235,8 @@ module.exports = {
             let { courseId, id } = req.params;
             let { title, isPremium, number } = req.body;
 
+            console.log(req.body);
+
             if (isNaN(courseId) || isNaN(id)) throw new BadRequestError('Course ID dan Chapter ID harus berupa angka');
             if (!title || !isPremium || !number) throw new BadRequestError('isi semua kolom');
             if (isNaN(Number(number))) throw new BadRequestError('number harus berupa angka');

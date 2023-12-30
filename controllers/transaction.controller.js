@@ -17,7 +17,6 @@ module.exports = {
             courseId = Number(courseId);
 
             const headCode = paymentMethod === 'VIRTUAL_ACCOUNT' ? '0001' :paymentMethod === 'E_WALLET' ? '0002' : paymentMethod === 'GERAI_RETAIL' ? '0003' : false;
-            //  paymentMethod === 'GERAI_RETAIL' ? '0003'
             // checks if user is verified
             const user = await prisma.user.findUnique({
                 where : {

@@ -9,9 +9,69 @@ const {BadRequestError,UnauthorizedError,NotFoundError, UserNotVerifiedError} = 
 const imagekit = require('../libs/imagekit');
 const path = require('path');
 const notValidToken = 'ccf5ce427fa3697f09aec480969abe9c0810118a78c4ce92264b3d76e54bc277a8bad331ebb942ba24c2a8680b684ad0cc1765dd84842ed967278883f8f78b16';
-var cookie = require('cookie');
 
 module.exports = {
+    googleLogin : async (req,res,next) => {
+        try {
+            const {email,family_name,given_name,sub} = req.body;
+
+            if(!family_name || !given_name || !sub || !email) throw new BadRequestError('data tidak lengkap');
+
+            const name = `${given_name} ${family_name}`;
+
+            const user = await prisma.user.upsert({
+                where : {
+                    email : email
+    
+                },
+                update : {
+                    googleId : sub,
+                    verified : true
+                },
+                create : {
+                    email : email,
+                    googleId :  sub,
+                    profile : {
+                        create : {
+                            name : name,
+                            role : 'USER',
+                            profilePicture : 'https://ik.imagekit.io/itspace/18b5b599bb873285bd4def283c0d3c09.jpg?updatedAt=1701289000673'
+                        }
+                    },
+                    verified : true
+    
+                },
+                include : {
+                    profile : true
+                }
+            });
+
+
+            const userConstruct = {
+                id : user.id,
+                email : user.email,
+                profile : user.profile
+            };
+
+            delete userConstruct.profile.city;
+            delete userConstruct.profile.country;
+
+            const accesToken = await signToken('access',userConstruct,JWT_SECRET);
+            const refreshToken = await signToken('refresh',userConstruct,JWT_REFRESH_SECRET);
+            
+            res
+                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+                .status(201).json({
+                    success : true,
+                    message : 'success create new account',
+                    data : userConstruct
+                });
+
+        } catch (err) {
+            next(err);
+        }
+    },
     LoginWithGoogle : async (req,res,next) => {
         try {
             console.log(req.user);
@@ -29,19 +89,8 @@ module.exports = {
             const refreshToken = await signToken('refresh',userConstruct,JWT_REFRESH_SECRET);
             
             res
-                // .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'lax', domain : FRONTEND_HOME_URL})
-                // .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'lax', domain : FRONTEND_HOME_URL})
-                .setHeader(
-                    'Set-Cookie',
-                    cookie.serialize('XSRF-TOKEN', 'aw', { // XSRF-TOKEN is the name of your cookie
-                        sameSite: 'lax', // lax is important, don't use 'strict' or 'none'
-                        httpOnly: process.env.ENVIRONMENT !== 'development', // must be true in production
-                        path: '/',
-                        secure: process.env.ENVIRONMENT !== 'development', // must be true in production
-                        maxAge: 60 * 60 * 24 * 7 * 52, // 1 year
-                        domain: FRONTEND_HOME_URL, // the period before is important and intentional
-                    })
-                )
+                .cookie('accesToken',accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
+                .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
                 .redirect(FRONTEND_HOME_URL);
         } catch (err) {
             next(err);
