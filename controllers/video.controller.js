@@ -128,6 +128,9 @@ module.exports = {
                 where : {
                     chapterId : chapterId
                 },
+                orderBy : [
+                    {number : 'asc'}
+                ],
                 select : {
                     id : true,
                     title : true,
