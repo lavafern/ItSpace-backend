@@ -127,6 +127,14 @@ module.exports = {
             const allVideoOfChapter = await prisma.video.findMany({
                 where : {
                     chapterId : chapterId
+                },
+                select : {
+                    id : true,
+                    title : true,
+                    description : true,
+                    number : true,
+                    duration : true,
+                    chapterId : true
                 }
             });
 

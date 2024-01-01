@@ -16,10 +16,10 @@ router.put('/change-password',restrict,changePassword);
 router.get('/check-enrollment/:courseId',restrictGuest,checkEnrollmentOfCourse);
 router.post('/google',googleLogin);
 
-/// login with google routes
-// router.get('/google', 
-//     passport.authenticate('google', {scope: ['profile','email']})
-// );
+// login with google routes
+router.get('/google', 
+    passport.authenticate('google', {scope: ['profile','email']})
+);
 
  
 router.get('/google/callback', 
