@@ -97,7 +97,7 @@ paths:
         - courses
       description: |
         * This endpoint serves to view all course
-        * Have search, filter and pagination feature
+        * Default order by newest course
       parameters:
         - in: query
           name: ispremium
@@ -123,6 +123,13 @@ paths:
           description: |
             * Filter course by difficulty level
             * You can put more than one value
+        - in: query
+          name: order
+          example: popularity
+          schema:
+            type: string
+          description: |
+            * Order course by popularity
         - in: query
           name: se
           schema:
@@ -490,7 +497,56 @@ paths:
       tags:
         - auth
       description: |
-        * This endpoint serves to login with google account.
+        * This endpoint serves to login with google account (oauth in client).
+        * Account will automatically verified if login by this api.
+        * Auth token will sent to http-only cookie.
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500' 
+    get:
+      tags:
+        - auth
+      description: |
+        * This endpoint serves to login with google account (oauth in server).
         * Account will automatically verified if login by this api.
         * Auth token will sent to http-only cookie.
       responses:
@@ -1447,6 +1503,7 @@ paths:
       description: |
         * This endpoint serves to buy paid course (make transaction).
         * paymentMethod: only accept : VIRTUAL_ACCOUNT / E_WALLET / GERAI_RETAIL.
+         * Will push notification after user checkout.
       requestBody:
         content:
           application/json:
@@ -1794,6 +1851,7 @@ paths:
       description: |
         * This endpoint serves to pay transactions.
         * Restricted access for author only.
+        * Will push notification after user pay transaction.
       parameters:
       - in: path
         name: id
@@ -2097,7 +2155,7 @@ paths:
         - enrollments
       description: |
         * This endpoint serves to make enrollment to not premium course.
-        * Restricted access for author only..
+        * Will push notification after user enrolled.
       requestBody:
         content:
           application/json:
@@ -2147,12 +2205,6 @@ paths:
                               ispremium:
                                 type: boolean
                                 example: false
-                              completed:
-                                type: boolean
-                                example: false
-                              lastAccessed:
-                                type: string
-                                example: null
         '400':
           description: Bad request
           content:
@@ -2189,6 +2241,7 @@ paths:
         - enrollments
       description: |
         * This endpoint serves to make enrollment to not premium course.
+        * Default order by last accesed
       parameters:
       - in: query
         name: ispremium
@@ -2208,6 +2261,12 @@ paths:
         schema:
           type: string
         description: filter course by level
+      - in: query
+        name: order
+        example: 'popularity'
+        schema:
+          type: string
+        description: available order =  popularity,newest
       - in: query
         name: se
         schema:
@@ -2237,72 +2296,136 @@ paths:
                     properties:
                       data:
                         type: object
-                        properties:
-                          id :
-                            type: integer
-                            example: 1
-                          code :
-                            type: string
-                            example: BE1
-                          title:
-                            type: string
-                            example: Backend dengan expressjs
-                          price:
-                             type: integer
-                             example: 1000
-                          level:
-                            type: string
-                            example: BEGINNER
-                          isPremium:
-                            type: boolean
-                            example: true
-                          groupUrl:
-                           type: string
-                           example: www.url.com
-                          thumbnailUrl:
-                           type: string
-                           example: www.url.com
-                          courseCategory:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                category:
+                        properties :
+                          pagination:
+                           title: Pagination
+                           type: object
+                           properties:
+                             links:
+                               type: object
+                               properties:
+                                 next:
+                                   type: string
+                                   example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=3&limit=10"
+                                 prev:
+                                   type: string
+                                   example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=1&limit=10"
+                             total_items:
+                               type: integer
+                               example: 100
+                          courses:
+                            type: object
+                            properties:
+                              id :
+                                type: integer
+                                example: 1
+                              code :
+                                type: string
+                                example: BE1
+                              title:
+                                type: string
+                                example: Backend dengan expressjs
+                              price:
+                                 type: integer
+                                 example: 1000
+                              description: 
+                                type: string
+                                example: Backend dengan expressjs
+                              level:
+                                type: string
+                                example: BEGINNER
+                              isPremium:
+                                type: boolean
+                                example: true
+                              groupUrl:
+                               type: string
+                               example: www.url.com
+                              thumbnailUrl:
+                               type: string
+                               example: www.url.com
+                              enrollment: 
+                                type: array
+                                items:
                                   type: object
                                   properties:
-                                    name:
-                                      type: string
-                                      example: backend
-                          mentor:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                author:
+                                   lastAccessed: 
+                                    type: string
+                                    example: "2023-12-25T16:33:30.755Z"
+                              chapter:
+                                type: array
+                                items:
                                   type: object
                                   properties:
-                                    profile:
+                                   id: 
+                                    type: integer
+                                    example: 1
+                                   title: 
+                                    type: string
+                                    example: "dasar backend"
+                                   number: 
+                                    type: integer
+                                    example: 1
+                                   isPremium: 
+                                    type: boolean
+                                    example: true
+                                   video: 
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                         id: 
+                                          type: integer
+                                          example: 1
+                                         title: 
+                                          type: string
+                                          example: 'pengenalan express js'
+                                         duration: 
+                                          type: integer
+                                          example: 1
+                                         _count:
+                                          type: object
+                                          properties:
+                                            progress:
+                                              type: integer
+                                              example: 1
+                              _count:
+                                type: object
+                                properties:
+                                  chapter:
+                                    type: integer
+                                    example: 1
+                              duration:
+                                type : integer
+                                example: 4
+                              rate: 
+                                type : integer
+                                example: 4
+                              courseCategory:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    category:
                                       type: object
                                       properties:
                                         name:
                                           type: string
-                                          example: john doe
-                                        Pagination:
-                                          title: Pagination
+                                          example: backend
+                              mentor:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    author:
+                                      type: object
+                                      properties:
+                                        profile:
                                           type: object
                                           properties:
-                                            links:
-                                              type: object
-                                              properties:
-                                                next:
-                                                  type: string
-                                                  example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=3&limit=10"
-                                                prev:
-                                                  type: string
-                                                  example: "https://domain.com/courses?categories=Backend&level=BEGINNER&page=1&limit=10"
-                                            total_items:
-                                              type: integer
-                                              example: 100      
+                                            name:
+                                              type: string
+                                              example: john doe
+                                              
         '400':
           description: Bad request
           content:
@@ -2337,7 +2460,9 @@ paths:
     post:
       tags:
         - ratings
-      description: give rating
+      description: |
+        * This endpoint serves to make/update a rating to a course.
+        * Restricted access for user that have enrolled the course only.
       requestBody:
         content:
           application/json:
@@ -2424,7 +2549,9 @@ paths:
     delete:
       tags:
         - ratings
-      description: delete rating
+      description: |
+        * This endpoint serves to delete a rating to a course.
+        * Restricted access for author only.
       parameters:
         - in: path
           name: id
@@ -2507,7 +2634,9 @@ paths:
     post:
       tags:
         - chapters
-      description: make chapter
+      description: |
+        * This endpoint serves to make a chapter of a course.
+        * Restricted access for admin only.
       parameters:
         - in: path
           name: courseId
@@ -2611,7 +2740,8 @@ paths:
     get:
       tags:
         - chapters
-      description: make chapter
+      description: |
+        * This endpoint serves to get all chapters of a course.
       parameters:
         - in: path
           name: courseId
@@ -2702,7 +2832,8 @@ paths:
     get:
       tags:
         - chapters
-      description: delete chapter
+      description: |
+        * This endpoint serves to get a chapter of a course.
       parameters:
         - in: path
           name: courseId
@@ -2765,7 +2896,9 @@ paths:
     put:
       tags:
         - chapters
-      description: delete chapter
+      description: |
+        * This endpoint serves to edit a chapter of a course.
+        * Restricted access for admin only.
       parameters:
         - in: path
           name: courseId
@@ -2845,7 +2978,9 @@ paths:
     delete:
       tags:
         - chapters
-      description: delete chapter
+      description: |
+        * This endpoint serves to delete a chapter of a course.
+        * Restricted access for admin only.
       parameters:
         - in: path
           name: courseId
@@ -2940,7 +3075,9 @@ paths:
     get:
       tags:
         - notifications
-      description: get all notification of user
+      description: |
+        * This endpoint serves to get all notifications of a user.
+        * Restricted access for author only.
       responses:
         '201':
           description: Successful operation
@@ -2982,7 +3119,9 @@ paths:
     delete:
       tags:
         - notifications
-      description: delete a notification
+      description: |
+        * This endpoint serves to get all notifications of a user.
+        * Restricted access for author only.
       responses:
         '201':
           description: Successful operation
@@ -3017,11 +3156,53 @@ paths:
                            authorId:
                              type: string
                              example: 1
+    put:
+      tags:
+        - notifications
+      description: |
+        * This endpoint serves to update a notifications isread is true.
+        * Restricted access for author only.
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                           id:
+                             type: integer
+                             example: 1
+                           type:
+                             type: string
+                             example: 'Pembayaran'
+                           message:
+                             type: string
+                             example: "Pembayaran telah berhasil, anda dapat mengakses kelas"
+                           details:
+                             type: string
+                             example: "Selamat belajar"
+                           createdAt:
+                             type: string
+                             example: 2023-12-05T20:37:56.205Z
+                           isRead:
+                             type: boolean
+                             example: true
+                           authorId:
+                             type: string
+                             example: 1
   /courses/{courseId}/chapters/{chapterId}/videos:
     post:
       tags:
         - videos
-      description: make chapter
+      description: |
+        * This endpoint serves to create a video of a chapter.
+        * Restricted access for admin only.
       parameters:
         - in: path
           name: courseId
@@ -3055,121 +3236,7 @@ paths:
                 duration :
                   type: integer  
                   example : 5
-
-      responses:
-        '201':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/basicResponse'
-                  - type: object
-                    properties:
-                      data:
-                       type: object
-                       properties:
-                          id:
-                            type: integer
-                            example: 1
-                          title:
-                            type: string
-                            example: 'introduction'
-                          description :
-                            type: integer
-                            example: 1
-                          url:
-                            type: string
-                            example: www.com
-                          duration:
-                            type: integer
-                            example: 5
-                          chapter:
-                           type: object
-                           properties:
-                              id:
-                               type: integer
-                               example: 1
-                              number:
-                                type: integer
-                                example: 3
-                              title:
-                                type: string
-                                example: "Backend javascript"
-                              isPremium:
-                                type: boolean
-                                example: true
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse400'
-        '401':
-          description: Unauthenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse401'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse403'
-        '404':
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse404'
-        '500':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse500'
-  /courses/{courseId}/chapters/{chapterId}/videos/{videoId}:
-    put:
-      tags:
-        - videos
-      description: make chapter
-      parameters:
-        - in: path
-          name: courseId
-          schema:
-            type: integer
-          required: true
-          description: The ID of the course of the video to create.
-        - in: path
-          name: chapterId
-          schema:
-            type: integer
-          required: true
-          description: The ID of the chapter of the video to create.
-        - in: path
-          name: videoId
-          schema:
-            type: integer
-          required: true
-          description: The ID of the chapter of the video to create.
-      requestBody:
-        content:
-          application/json:
-            schema:
-               type: object
-               properties:
-                title :
-                  type: string  
-                  example : introducion
-                  description: '1 for premium 0 for not premium'
-                description :
-                  type: string  
-                  example : welcome to first video...
-                url :
-                  type: string  
-                  example : www.com
-                duration :
+                number :
                   type: integer  
                   example : 5
 
@@ -3249,7 +3316,216 @@ paths:
     get:
       tags:
         - videos
-      description: make chapter
+      description: |
+        * This endpoint serves to get all video of a course.
+      parameters:
+        - in: path
+          name: courseId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course of the video to create.
+        - in: path
+          name: chapterId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+        - in: path
+          name: videoId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type : array
+                        items:
+                          type: object
+                          properties:
+                             id:
+                               type: integer
+                               example: 1
+                             title:
+                               type: string
+                               example: 'introduction'
+                             description :
+                               type: integer
+                               example: 1
+                             duration:
+                               type: integer
+                               example: 5
+                             number:
+                               type: integer
+                               example: 5
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+    
+  /courses/{courseId}/chapters/{chapterId}/videos/{videoId}:
+    put:
+      tags:
+        - videos
+      description: |
+        * This endpoint serves to edit a chapter of a course.
+        * Restricted access for admin only.
+      parameters:
+        - in: path
+          name: courseId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the course of the video to create.
+        - in: path
+          name: chapterId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+        - in: path
+          name: videoId
+          schema:
+            type: integer
+          required: true
+          description: The ID of the chapter of the video to create.
+      requestBody:
+        content:
+          application/json:
+            schema:
+               type: object
+               properties:
+                title :
+                  type: string  
+                  example : introducion
+                  description: '1 for premium 0 for not premium'
+                description :
+                  type: string  
+                  example : welcome to first video...
+                url :
+                  type: string  
+                  example : www.com
+                duration :
+                  type: integer  
+                  example : 5
+                number :
+                  type: integer  
+                  example : 5
+
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/basicResponse'
+                  - type: object
+                    properties:
+                      data:
+                       type: object
+                       properties:
+                          id:
+                            type: integer
+                            example: 1
+                          title:
+                            type: string
+                            example: 'introduction'
+                          description :
+                            type: integer
+                            example: 1
+                          url:
+                            type: string
+                            example: www.com
+                          duration:
+                            type: integer
+                            example: 5
+                          chapter:
+                           type: object
+                           properties:
+                              id:
+                               type: integer
+                               example: 1
+                              number:
+                                type: integer
+                                example: 3
+                              title:
+                                type: string
+                                example: "Backend javascript"
+                              isPremium:
+                                type: boolean
+                                example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse400'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse401'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse403'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+        '500':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse500'
+    get:
+      tags:
+        - videos
+      description: |
+        * This endpoint serves to get a video of a course.
+        * Restricted access for user that have enrolled the course.
       parameters:
         - in: path
           name: courseId
@@ -3295,6 +3571,9 @@ paths:
                             type: string
                             example: www.com
                           duration:
+                            type: integer
+                            example: 5
+                          number:
                             type: integer
                             example: 5
                           chapter:
@@ -3367,7 +3646,9 @@ paths:
     delete:
       tags:
         - videos
-      description: delete video
+      description: |
+        * This endpoint serves to delete a video of a course.
+        * Restricted access for admin only.
       parameters:
         - in: path
           name: courseId
@@ -3413,6 +3694,9 @@ paths:
                             type: string
                             example: www.com
                           duration:
+                            type: integer
+                            example: 5
+                          number:
                             type: integer
                             example: 5
                           chapter:
@@ -3464,7 +3748,9 @@ paths:
     post:
       tags:
         - progress
-      description: make chapter
+      description: |
+        * This endpoint serves to make a progress to a video.
+        * Restricted access user that have enrolled the course.
       requestBody:
         content:
           application/json:

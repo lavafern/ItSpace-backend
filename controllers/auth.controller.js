@@ -11,7 +11,7 @@ const path = require('path');
 const notValidToken = 'ccf5ce427fa3697f09aec480969abe9c0810118a78c4ce92264b3d76e54bc277a8bad331ebb942ba24c2a8680b684ad0cc1765dd84842ed967278883f8f78b16';
 
 module.exports = {
-    googleLogin : async (req,res,next) => {
+    googleLoginFrontend : async (req,res,next) => {
         try {
             const {email,family_name,given_name,sub} = req.body;
 
