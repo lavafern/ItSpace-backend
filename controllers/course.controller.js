@@ -428,6 +428,7 @@ module.exports = {
                     id: courseId,
                 },
                 data: {
+                    code,
                     title,
                     price,
                     level,

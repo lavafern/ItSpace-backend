@@ -1,6 +1,6 @@
 # ItSpace - Backend
 
-Welcome to the itSpace Massive Open Online Course (MOOC) on Backend Development with Node.js! 🚀
+Welcome to the itSpace Massive Open Online Course (MOOC) on Backend Development with Node.js!
 
 ## Description
 
