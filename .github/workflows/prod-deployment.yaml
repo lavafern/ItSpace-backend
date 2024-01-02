@@ -3,7 +3,7 @@ name: deploy to Railway dev Environment
 on:
   push:
     branches:
-      - "develop"
+      - "production"
 
 jobs:
   deploy:
@@ -31,10 +31,10 @@ jobs:
       - name: Run migration
         run: railway run --service ${{ secrets.RAILWAY_SERVICE_ID }} npx prisma migrate deploy
         env: 
-          RAILWAY_TOKEN : ${{ secrets.DEV_TOKEN}}
+          RAILWAY_TOKEN : ${{ secrets.PROD_TOKEN}}
 
       
       - name: Deploy to Railway
         run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID}}
         env:
-          RAILWAY_TOKEN : ${{ secrets.DEV_TOKEN}}
+          RAILWAY_TOKEN : ${{ secrets.PROD_TOKEN}}
