@@ -48,7 +48,7 @@ module.exports = {
             const ratingId = checkRating.length < 1 ? -1 : checkRating[0].id;
 
 
-            const newRating = await prisma.rating.upsert({
+            const newRating = prisma.rating.upsert({
                 where : {
                     id : ratingId
                 },
@@ -77,10 +77,22 @@ module.exports = {
                 }
             });
 
+            const pushNotification = prisma.notification.create({
+                data : {
+                    authorId: userId,
+                    type : 'Memberi penilaian berhasil',
+                    message : `Terima kasih telah memberi penilaian untuk kelas ${checkCourse.title}.`,
+                    created_at : new Date(),
+                    is_read : false
+                }
+            });
+
+            const ratingAndNotif = await prisma.$transaction([newRating,pushNotification]);
+
             res.status(201).json({
                 success : true,
                 message : 'Successfully give rating',
-                data : newRating
+                data : ratingAndNotif[0]
             });
         } catch (err) {
             next(err);

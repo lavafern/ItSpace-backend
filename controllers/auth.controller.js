@@ -426,6 +426,7 @@ module.exports = {
                 }
             });
 
+            if (!foundUser.password) throw new BadRequestError('Kamu belum memasang password!');
             //checks if password correct
             const comparePassword = await new Promise((resolve,reject) => {
                 bcrypt.compare(oldPassword,foundUser.password,function (err,result) {
@@ -476,6 +477,55 @@ module.exports = {
                 message  : 'Succesfully reset password',
                 data : updatePassword
             });
+        } catch (err) {
+            next(err);
+        }
+    },
+
+    setPassword : async (req,res,next) => {
+        try {
+            const authorId = req.user.id;
+
+            const {newPassword,newPasswordValidation} = req.body;
+
+            if (!newPassword || !newPasswordValidation) throw new BadRequestError('Harap isi semua kolom');
+            if (newPassword !== newPasswordValidation) throw new BadRequestError('Password dan validasi tidak sama');
+            if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError('Harap masukan password 8 - 14 karakter');
+
+
+            const foundUser = await prisma.user.findUnique({
+                where : {
+                    id : authorId
+                }
+            });
+
+            if (foundUser.password) throw new BadRequestError('Kamu sudah memasang password');
+
+            const hashedPassword = await new Promise((resolve, reject) => {
+                bcrypt.hash(newPassword, 10, function(err, hash) {
+                    if (err) reject(err);
+                    resolve(hash) ;
+                });
+            }); 
+
+            const setPassword = await prisma.user.update({
+                where : {
+                    id : authorId
+                },
+                data : {
+                    password : hashedPassword
+                }
+            });
+
+            delete setPassword.googleId;
+            delete setPassword.password;
+
+            res.status(201).json({
+                success : true,
+                message : 'Succesfully set password',
+                data : setPassword
+            });
+
         } catch (err) {
             next(err);
         }
