@@ -101,7 +101,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'succesfully create new course',
+                message : 'Berhasil membuat kelas baru',
                 data : newCourse
             });
         } catch (err) {
@@ -229,7 +229,7 @@ module.exports = {
 
             return res.status(200).json({
                 success : true,
-                message : 'Sucessfully get all course',
+                message : 'Berhasil mendapatkan semua kelas',
                 data : result
             });
         } catch (err) {
@@ -329,7 +329,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'succesfully view course detail',
+                message : 'Berhasil mendapatkan detail kelas',
                 data : courseDetail
             });
         } catch (err) {
@@ -451,7 +451,7 @@ module.exports = {
                 
             res.status(201).json({
                 success: true,
-                message: 'Successfully update course',
+                message: 'Berhasil memperbarui kelas',
                 data: updatedCourse,
             });
         } catch (err) {
@@ -484,7 +484,7 @@ module.exports = {
 
             res.status(200).json({
                 status: true,
-                message: 'Successfully delete course',
+                message: 'Berhasil menghapus kelas',
                 data: deleteCourse,
             });
         } catch (err) {

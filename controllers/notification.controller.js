@@ -15,7 +15,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'Succesfully get notification of a user',
+                message : 'Berhasil mendapatkan notifikasi saya',
                 data : myNotifications
             });
         } catch (err) {
@@ -49,7 +49,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'Sucesfully delete notification',
+                message : 'Berhasil menghapus notifikasi',
                 data : deleteNotification
             });
         } catch (err) {
@@ -87,7 +87,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'Sucesfully read notification',
+                message : 'Berhasil membaca notifikasi',
                 data : updateNotification
             });
         } catch (err) {

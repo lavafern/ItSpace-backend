@@ -64,7 +64,7 @@ module.exports = {
                 .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
                 .status(201).json({
                     success : true,
-                    message : 'success create new account',
+                    message : 'Berhasil login dengan google',
                     data : userConstruct
                 });
 
@@ -166,7 +166,7 @@ module.exports = {
                 .cookie('otpEmail', email, { sameSite: 'none', httpOnly: false, secure: true })
                 .status(201).json({
                     success : true,
-                    message : 'success create new account',
+                    message : 'Berhasil membuat akun',
                     data : newUser
                 });
         } catch (err) {
@@ -210,7 +210,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'succesfully send new otp',
+                message : 'Berhasil mengirim otp',
                 data : verifyUser.email
             });
         } catch (err) {
@@ -262,7 +262,7 @@ module.exports = {
             res
                 .status(201).json({
                     success : true,
-                    message : 'successfully verify email',
+                    message : 'Berhasil verifikasi akun',
                     data : foundUser
                 });
         } catch (err) {
@@ -319,7 +319,7 @@ module.exports = {
                 .cookie('refreshToken',refreshToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
                 .status(200).json({
                     success : true,
-                    message : 'login success',
+                    message : 'Berhasil login',
                     data : foundUser
                 });
 
@@ -337,7 +337,7 @@ module.exports = {
                 .cookie('refreshToken',notValidToken, {httpOnly : true, maxAge: 3600000 * 24 * 7, sameSite: 'none', secure: true})
                 .json({
                     success : true,
-                    message : 'successfully logout',
+                    message : 'Berhasil logout',
                     data : null
                 });
         } catch (err) {
@@ -361,7 +361,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'success sending email',
+                message : 'Berhasil mengirim email reset password',
                 data :  user.email
             });
         } catch (err) {
@@ -403,7 +403,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message  : 'Succesfully reset password',
+                message  : 'Berhasil reset password',
                 data : updatePassword
             });
 
@@ -474,7 +474,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message  : 'Succesfully reset password',
+                message  : 'Berhasil ganti password',
                 data : updatePassword
             });
         } catch (err) {
@@ -539,14 +539,14 @@ module.exports = {
                     .cookie('accesToken',req.accesToken, {httpOnly : true, maxAge: 3600000 * 24 * 7  ,sameSite: 'none', secure: true})
                     .json({
                         success : true,
-                        message : 'jwt verify succes, new acces token generated',
+                        message : 'verifikasi token sukses',
                         data : req.user
                     });
             }
 
             return res.status(200).json({
                 success : true,
-                message : 'jwt verify succes',
+                message : 'verifikasi token sukses',
                 data : req.user
             });
         } catch (err) {
@@ -574,7 +574,7 @@ module.exports = {
 
             return res.status(200).json({
                 success : true,
-                message : 'if this user have enrolled?',
+                message : 'apakah user sudah daftar course?',
                 data : result
             });
         } catch (err) {

@@ -144,7 +144,7 @@ module.exports = {
 
             res.status(200).json({
                 success: true,
-                message: 'Succesfully get all video of chapter',
+                message: 'Berhasil mendapatkan video dari chapter',
                 data: allVideoOfChapter,
             });
         } catch (err) {

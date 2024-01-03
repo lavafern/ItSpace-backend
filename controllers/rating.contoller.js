@@ -91,7 +91,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'Successfully give rating',
+                message : 'Berhasil memberi rating',
                 data : ratingAndNotif[0]
             });
         } catch (err) {
@@ -141,7 +141,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'Succesfully delete rating',
+                message : 'Berhasil menghapus rating',
                 data : deleteRating
             });
 

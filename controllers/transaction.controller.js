@@ -111,7 +111,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'successfully create new transaction',
+                message : 'Berhasil membeli kelas',
                 data : newTransaction
             });
         } catch (err) {
@@ -214,7 +214,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'Succesfully get all transactions',
+                message : 'Berhasil mendapatkan semua transaksi',
                 data : result
             });
 
@@ -264,7 +264,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'Succesfully get transaction detail',
+                message : 'Berhasil mendapatkan detail transaksi',
                 data : transaction
             });
         } catch (err) {
@@ -347,7 +347,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'Transaction paid succesfully',
+                message : 'Berhasil membayar transaksi',
                 data : payAndEnroll
             });
         } catch (err) {
@@ -402,7 +402,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'Succesfully delete transaction',
+                message : 'Berhasil menghapus transaksi',
                 data : deleteTransaction
             });
         } catch (err) {
@@ -555,7 +555,7 @@ module.exports = {
 
             res.status(200).json({
                 success : true,
-                message : 'Succesfully get my transactions',
+                message : 'Berhasil mendapatkan transaksi saya',
                 data : result
             });
 

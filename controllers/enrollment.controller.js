@@ -85,7 +85,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'Succesfully create new enrollment',
+                message : 'Berhasil membuat enrollment baru',
                 data : enrollAndNotif[0]
             });
         } catch (err) {
@@ -279,7 +279,7 @@ module.exports = {
 
             return res.status(200).json({
                 success : true,
-                message : 'Sucessfully get all enrolled course course',
+                message : 'Berhasil mendapatkan kelas yang telah terdaftar',
                 data : result
             });
         } catch (err) {
