@@ -104,9 +104,8 @@ module.exports = {
 
             if (id !== req.user.id) throw new ForbiddenError('Anda tidak punya akses kesini');
            
-            let {email,name,phoneNumber,country,city} = req.body;
+            let {name,phoneNumber,country,city} = req.body;
 
-            if (!email)  throw new BadRequestError('Email wajib di isi');
             if (!name)  throw new BadRequestError('Nama wajib di isi');
             if (phoneNumber) {
                 if (isNaN(Number(phoneNumber))) throw new BadRequestError('Nomor telepon harus angka');
