@@ -426,6 +426,7 @@ module.exports = {
                 }
             });
 
+            if (!foundUser.password) throw new BadRequestError('Kamu belum memasang password!');
             //checks if password correct
             const comparePassword = await new Promise((resolve,reject) => {
                 bcrypt.compare(oldPassword,foundUser.password,function (err,result) {
