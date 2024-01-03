@@ -26,7 +26,7 @@ module.exports = {
 
             res.status(201).json({
                 succes : true,
-                message : 'succesfully create new category',
+                message : 'Berhasil menambahkan kategori',
                 data : newCategory
             });
         } catch (err) {
@@ -41,7 +41,7 @@ module.exports = {
             const categories = await prisma.category.findMany();
             res.status(200).json({
                 succes : true,
-                message : 'succesfully get all category',
+                message : 'Berhasil mendapatkan semua kategori',
                 data : categories
             });
         } catch (err) {
@@ -93,7 +93,7 @@ module.exports = {
 
             res.status(200).json({
                 succes : true,
-                message : 'succesfully update category',
+                message : 'Berhasil memperbarui kategori',
                 data : updatedCategory
             });
         } catch (err) {
@@ -127,7 +127,7 @@ module.exports = {
 
             res.status(200).json({
                 status: true,
-                message: 'Successfully delete category',
+                message: 'berhasil menghapus kategori',
                 data: deleteCategory
             });
         } catch (err) {

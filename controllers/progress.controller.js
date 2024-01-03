@@ -84,7 +84,7 @@ module.exports = {
             if (checkProgress.length > 0) {
                 return res.status(200).json({
                     success : true,
-                    message : 'You have already done this video',
+                    message : 'Kamu sudah menyelesaikan video ini',
                     data : checkProgress
                 });
             } 
@@ -173,7 +173,7 @@ module.exports = {
 
             return res.status(201).json({
                 success : true,
-                message : 'Successfully create new progress',
+                message : 'Berhasil membuat progress',
                 data : newProgress
             });
         } catch (err) {

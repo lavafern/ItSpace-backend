@@ -143,7 +143,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'Succesfully edit profile',
+                message : 'Berhasil memperbarui profil',
                 data : updatedProfile
             });
         } catch (err) {
@@ -206,7 +206,7 @@ module.exports = {
 
             res.status(201).json({
                 success : true,
-                message : 'Succesfully change Password',
+                message : 'Berhasil memperbarui password',
                 data : updatePassword
             });
         } catch (err) {
