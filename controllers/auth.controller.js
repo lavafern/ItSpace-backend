@@ -416,7 +416,7 @@ module.exports = {
             const {id} = req.user;
             const {oldPassword,newPassword,newPasswordValidation} = req.body;
 
-            if (!newPassword || !newPasswordValidation ) throw new BadRequestError('Harap isi semua kolom');
+            if (!newPassword || !newPasswordValidation || !oldPassword) throw new BadRequestError('Harap isi semua kolom');
             if (newPassword.length < 8 || newPassword.length > 14 ) throw new BadRequestError('Harap masukan password 8 - 14 karakter');
             if (newPassword !== newPasswordValidation ) throw new BadRequestError('Validasi password salah');
 
