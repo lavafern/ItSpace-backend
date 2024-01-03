@@ -17,9 +17,9 @@ module.exports = {
             let {title,price,level,isPremium,description,courseCategory ,mentorEmail,code,groupUrl,
             } = req.body;
 
-            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory || !isPremium) throw new BadRequestError('Tolong isi semua kolom');
-            price = Number(price);
             if (isNaN(price)) throw new BadRequestError('Kolom harga harus diisi dengan angka');
+            if (!title  || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory ) throw new BadRequestError('Tolong isi semua kolom');
+            price = Number(price);
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError('category dan email mentor harus array');
             if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError('isPremium harus 1 / 0');
             if (!(level === 'BEGINNER' || level === 'INTERMEDIATE' || level === 'ADVANCED')) throw new BadRequestError('level tidak valid');
@@ -348,7 +348,8 @@ module.exports = {
 
             if (isNaN(courseId)) throw new BadRequestError('Id harus diisi dengan angka');
             if (isNaN(price)) throw new BadRequestError('Kolom harga harus diisi dengan angka');
-            if (!title || !price || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory || !isPremium) throw new BadRequestError('Tolong isi semua kolom');
+            if (!title || !level  || !description || !code || !groupUrl || !mentorEmail || !courseCategory ) throw new BadRequestError('Tolong isi semua kolom');
+            price = Number(price);
             if (!(Array.isArray(courseCategory)) || !(Array.isArray(mentorEmail)) ) throw new BadRequestError('category dan email mentor harus array');
             if (!(isPremium == '1' || isPremium == '0')) throw new BadRequestError('isPremium harus 1 / 0');
             if (!(level === 'BEGINNER' || level === 'INTERMEDIATE' || level === 'ADVANCED')) throw new BadRequestError('level tidak valid');
