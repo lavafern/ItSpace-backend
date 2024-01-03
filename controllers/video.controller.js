@@ -136,6 +136,7 @@ module.exports = {
                     title : true,
                     description : true,
                     number : true,
+                    url : true,
                     duration : true,
                     chapterId : true
                 }
