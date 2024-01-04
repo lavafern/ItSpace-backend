@@ -12,7 +12,7 @@ module.exports  = {
                 where : {
                     NOT : [
                         {lastAccessed : null},
-                        {completed : false}
+                        {completed : true}
                     ],
                     lastAccessed : {
                         lte : new Date((new Date().setDate(new Date().getDate() - 3)))
