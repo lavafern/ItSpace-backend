@@ -27,7 +27,7 @@ module.exports = {
             if (title.length > 60) throw new BadRequestError('Judul tidak boleh lebih dari 60 karakter');
 
             isPremium = isPremium == '1' ? true : false;
-
+            code = code.toUpperCase();
             //check if code is exist
             const checkCode = await prisma.course.findUnique({
                 where: {
@@ -355,7 +355,8 @@ module.exports = {
             if (!(level === 'BEGINNER' || level === 'INTERMEDIATE' || level === 'ADVANCED')) throw new BadRequestError('level tidak valid');
             if (description.length > 1024)  throw new BadRequestError('Deskripsi harus tidak lebih dari 1024 karakter');
             if (title.length > 60) throw new BadRequestError('Judul tidak boleh lebih dari 60 karakter');
-
+            
+            code = code.toUpperCase();
             isPremium = isPremium == '1' ? true : false;
 
             //check course is exist
