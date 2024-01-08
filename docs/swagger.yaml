@@ -1,14 +1,18 @@
 openapi: 3.0.3
 info:
   title: ITspace - OpenAPI 3.0
-  description: |-
-     itSpace API documentation, binar final project K13
+  description: |
+     * itSpace API documentation, binar final project K13
+     * Implemented cronjobs for reminder features.
+     * Established admin and user roles for access control.
+     * Ensured secure HTTP-only cookie authentication.
+     * Google login with oauth2.
   contact:
     email: rian.rafli@gmail.com
   version: 1.0.0
 servers:
+  - url: https://it-space-production.up.railway.app/api/v1
   - url: https://it-space-develop.up.railway.app/api/v1
-  - url: http://localhost:8000/api/v1
 
 tags:
   - name: courses
