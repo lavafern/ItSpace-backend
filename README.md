@@ -13,7 +13,8 @@ This repository houses the backend code for a MOOC platform built with reliable 
 1. Clone the repository.
 2. Install dependencies: npm install
 3. Set up .env for environment variables.
-4. Start the server: npm start
+4. set up database : npx prisma migrate dev
+5. Start the server: npm start
 
 
 ### Branching and Feature Development
