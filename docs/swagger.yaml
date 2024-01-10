@@ -11,8 +11,7 @@ info:
     email: rian.rafli@gmail.com
   version: 1.0.0
 servers:
-  - url: https://it-space-production.up.railway.app/api/v1
-  - url: https://it-space-develop.up.railway.app/api/v1
+  - url: https://itspace.cyclic.app/api/v1
 
 tags:
   - name: courses
