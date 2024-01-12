@@ -30,10 +30,10 @@ module.exports  = {
 
 
             // send email to each user that hasnt open course page
-            matchEnrollment.forEach(i => {
+            Promise.all(matchEnrollment.map( async (i) => {
                 const html = reminderHtml(i.author.profile.name,i.course.title,FRONTEND_HOME_URL);
-                sendEmail(i.author.email,'Mari Lanjutkan Belajar Anda!',html);
-            });
+                await sendEmail(i.author.email,'Mari Lanjutkan Belajar Anda!',html);
+            }));
 
         });
     }
