@@ -157,7 +157,7 @@ module.exports = {
 
             const html = otpHtml(otp);
 
-            await sendEmail(email,'Verify Your Email',html);
+            sendEmail(email,'Verify Your Email',html);
             
             delete newUser.googleId;
             delete newUser.password;
@@ -206,7 +206,7 @@ module.exports = {
             });
 
             const html = otpHtml(otp);
-            await sendEmail(email,'New Otp',html);
+            sendEmail(email,'New Otp',html);
 
             res.status(201).json({
                 success : true,
@@ -357,7 +357,7 @@ module.exports = {
             if (!user) throw new NotFoundError('Email tidak terdaftar');
             const token = await signToken('resetPassword',{email : user.email},JWT_RESETPASSWORD_SECRET);
             const html = resetPasswordHtml(token,RESET_PASSWORD_URL);
-            await sendEmail(email,'Reset Your Password',html);
+            sendEmail(email,'Reset Your Password',html);
 
             res.status(200).json({
                 success : true,
