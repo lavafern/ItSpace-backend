@@ -6,10 +6,12 @@ const fs = require('fs');
 const YAML = require('yaml');
 const file  = fs.readFileSync(filepath, 'utf8');
 const swaggerDocument = YAML.parse(file);
-const CSS_URL ='https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css';
 
+const options = {
+    customCss: '.swagger-ui .topbar { display: none }'
+};
 
-router.use('/api-docs', swaggerUi.serve);
-router.get('/api-docs', swaggerUi.setup(swaggerDocument,{ customCssUrl: CSS_URL }));
+router.use('/api-docs', swaggerUi.serve,swaggerUi.setup(swaggerDocument, options));
+// router.get('/api-docs', swaggerUi.setup(swaggerDocument, options));
 
 module.exports = router;
