@@ -563,5 +563,21 @@ module.exports = {
         } catch (err) {
             next(err);
         }
+    },
+    totalIncome : async (req,res,next) => {
+        try {
+            const result = await prisma.$queryRaw`
+            SELECT total_keuntungan();
+            `;
+
+            res.status(200).json({
+                success : true,
+                message : 'Berhasil mendapatkan total keuntungan',
+                data : result[0]
+            });
+
+        } catch (err) {
+            next(err);
+        }
     }
 };

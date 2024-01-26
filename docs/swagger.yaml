@@ -140,12 +140,6 @@ paths:
           description: Search filter by its title
           example: javascript
         - in: query
-          name: order
-          schema:
-            type: string
-          description: order course by 
-          example: popularity
-        - in: query
           name: page
           example: 1
           schema:
@@ -702,7 +696,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse500' 
-  /auth/reset-password:
+  /auth/reset-password/{email}:
     get:
       tags:
         - auth
@@ -797,6 +791,12 @@ paths:
         - auth
       description: |
         * This endpoint serves to check if user has enrolled the course or not.
+      parameters:
+          - in: path
+            name: courseId
+            schema:
+              type: string
+            required: true
       responses:
         '201':
           description: Successful operation
@@ -2696,7 +2696,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse500'
-  
+  /ratings/{id}:
     delete:
       tags:
         - ratings
@@ -3273,6 +3273,12 @@ paths:
       description: |
         * This endpoint serves to get all notifications of a user.
         * Restricted access for author only.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         '201':
           description: Successful operation
@@ -3313,6 +3319,12 @@ paths:
       description: |
         * This endpoint serves to update a notifications isread is true.
         * Restricted access for author only.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         '201':
           description: Successful operation
@@ -3478,12 +3490,6 @@ paths:
           description: The ID of the course of the video to create.
         - in: path
           name: chapterId
-          schema:
-            type: integer
-          required: true
-          description: The ID of the chapter of the video to create.
-        - in: path
-          name: videoId
           schema:
             type: integer
           required: true

@@ -18,11 +18,10 @@ module.exports = {
 
             if (checkCategory) throw new BadRequestError('Kategori sudah ada');
 
-            const newCategory = await prisma.category.create({
-                data : {
-                    name
-                }
-            });
+            const newCategory = await prisma.$queryRaw`
+                INSERT INTO "Category"(name) 
+                VALUES(${name})
+            `;
 
             res.status(201).json({
                 succes : true,
@@ -38,7 +37,9 @@ module.exports = {
 
     getAllCategory : async (req,res,next) => {
         try {
-            const categories = await prisma.category.findMany();
+            const categories = await prisma.$queryRaw`
+                SELECT * from "Category"
+            `;
             res.status(200).json({
                 succes : true,
                 message : 'Berhasil mendapatkan semua kategori',
@@ -82,14 +83,11 @@ module.exports = {
             if (!checkId) throw new NotFoundError('Id tidak ditemukan');
             if (checkName) throw new BadRequestError('Gunakan nama lain');
 
-            const updatedCategory = await prisma.category.update({
-                where : {
-                    id
-                },
-                data: {
-                    name
-                }
-            });
+            const updatedCategory = await prisma.$queryRaw`
+                UPDATE "Category" 
+                SET name=${name}
+                WHERE id=${id}
+            `;
 
             res.status(200).json({
                 succes : true,
@@ -119,16 +117,18 @@ module.exports = {
             if (!checkCategory) throw new NotFoundError('Id tidak ditemukan');
 
 
-            let deleteCategory = await prisma.category.delete({
-                where: { 
-                    id
-                }
-            });
+            let deleteCategory = await prisma.$queryRaw`
+                DELETE FROM "Category"
+                WHERE id=${id}
+                RETURNING *
+            `;
+
+            console.log(deleteCategory);
 
             res.status(200).json({
                 status: true,
                 message: 'berhasil menghapus kategori',
-                data: deleteCategory
+                data: deleteCategory[0]
             });
         } catch (err) {
             next(err);

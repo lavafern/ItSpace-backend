@@ -244,5 +244,18 @@ module.exports = {
         } catch (err) {
             next(err);
         }
+    },
+    verifiedUserCount : async (req,res,next) => {
+        try {
+            const verifiedUsers = await prisma.$queryRaw`call verified_user_count(0);`;
+            console.log(verifiedUsers);
+            res.status(200).json({
+                success : true,
+                message : 'Succesfully get verified user count',
+                data : verifiedUsers[0]
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 };

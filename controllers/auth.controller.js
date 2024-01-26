@@ -74,7 +74,6 @@ module.exports = {
     },
     LoginWithGoogle : async (req,res,next) => {
         try {
-            console.log(req.user);
 
             const userConstruct = {
                 id : req.user.id,
